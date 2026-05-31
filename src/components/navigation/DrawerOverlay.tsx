@@ -29,7 +29,7 @@ const ITEMS: Item[] = [
 export function DrawerOverlay() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { drawerOpen, closeDrawer, plan, fuel } = useUIStore();
+  const { drawerOpen, closeDrawer, plan, fuel, signOut } = useUIStore();
 
   if (!drawerOpen) return null;
 
@@ -38,8 +38,7 @@ export function DrawerOverlay() {
     if (item.href) {
       router.push(item.href);
     } else if (item.action === "logout") {
-      // Wired to Clerk sign-out in Phase 4.
-      console.log("[LaunchDeckAI] Log out (pending Phase 4 auth)");
+      signOut();
     }
   };
 

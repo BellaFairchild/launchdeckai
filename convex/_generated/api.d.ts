@@ -9,6 +9,13 @@
  */
 
 import type * as ai from "../ai.js";
+import type * as assets from "../assets.js";
+import type * as blueprints from "../blueprints.js";
+import type * as helpers from "../helpers.js";
+import type * as milestones from "../milestones.js";
+import type * as missions from "../missions.js";
+import type * as templates from "../templates.js";
+import type * as users from "../users.js";
 
 import type {
   ApiFromModules,
@@ -18,6 +25,13 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   ai: typeof ai;
+  assets: typeof assets;
+  blueprints: typeof blueprints;
+  helpers: typeof helpers;
+  milestones: typeof milestones;
+  missions: typeof missions;
+  templates: typeof templates;
+  users: typeof users;
 }>;
 
 /**

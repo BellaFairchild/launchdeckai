@@ -1,11 +1,15 @@
 import React from "react";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
+import { ConvexProviderWithClerk } from "convex/react-clerk";
+import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
+import * as SecureStore from "expo-secure-store";
+
+import { authEnabled, CLERK_PUBLISHABLE_KEY } from "./auth";
 
 /**
  * Convex client. EXPO_PUBLIC_CONVEX_URL is written to .env.local by `npx convex dev`.
- * We always mount a provider (with a harmless placeholder if the URL is missing) so
- * `useAction`/`useQuery` hooks never crash when Convex isn't configured — calls just
- * fail at runtime and callers fall back to mock behavior.
+ * When a Clerk key is present we wrap with ClerkProvider + ConvexProviderWithClerk
+ * so Convex validates the Clerk session; otherwise a plain ConvexProvider (demo).
  */
 const url = process.env.EXPO_PUBLIC_CONVEX_URL ?? "https://placeholder.convex.cloud";
 
@@ -13,6 +17,33 @@ const convex = new ConvexReactClient(url, {
   unsavedChangesWarning: false,
 });
 
+/** Persist the Clerk session token in the device secure store. */
+const tokenCache = {
+  async getToken(key: string) {
+    try {
+      return await SecureStore.getItemAsync(key);
+    } catch {
+      return null;
+    }
+  },
+  async saveToken(key: string, value: string) {
+    try {
+      await SecureStore.setItemAsync(key, value);
+    } catch {
+      // ignore
+    }
+  },
+};
+
 export function ConvexClientProvider({ children }: { children: React.ReactNode }) {
-  return <ConvexProvider client={convex}>{children}</ConvexProvider>;
+  if (!authEnabled) {
+    return <ConvexProvider client={convex}>{children}</ConvexProvider>;
+  }
+  return (
+    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
+      <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+        {children}
+      </ConvexProviderWithClerk>
+    </ClerkProvider>
+  );
 }

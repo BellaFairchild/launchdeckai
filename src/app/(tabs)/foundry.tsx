@@ -27,6 +27,7 @@ export default function FoundryScreen() {
   const { plan, fuel, spendFuel } = useUIStore();
   const mission = useMissionStore((s) => s.mission);
   const addAsset = useMissionStore((s) => s.addAsset);
+  const convex = useMissionStore((s) => s.convex);
   const generateAsset = useAction(api.ai.generateAsset);
   const [savedTitle, setSavedTitle] = useState<string | null>(null);
   const [savedViaAI, setSavedViaAI] = useState(false);
@@ -69,18 +70,39 @@ export default function FoundryScreen() {
       // AI not configured / unreachable — keep the mock draft.
     }
 
-    // Deduct Fuel only after a successful generation (Docs/03 security rule).
-    spendFuel(tool.fuelCost);
-    addAsset({
-      type: tool.assetType,
-      title: params.signalLabel ?? tool.name,
-      content,
-      status: "in_prep",
-      category: tool.category,
-      signalId: params.signalId,
-      signalLabel: params.signalLabel,
-      signalPhase: params.signalPhase as SignalPhase | undefined,
-    });
+    // Persist + deduct Fuel only after a successful generation (Docs/03).
+    if (convex) {
+      // Server enforces plan/fuel, saves the asset, writes fuelHistory; the
+      // live query re-hydrates fuel + assets.
+      try {
+        await convex.createFoundryAsset({
+          tool: tool.id,
+          assetType: tool.assetType,
+          category: tool.category,
+          title: params.signalLabel ?? tool.name,
+          content,
+          signalId: params.signalId,
+          signalLabel: params.signalLabel,
+          signalPhase: params.signalPhase as SignalPhase | undefined,
+        });
+      } catch {
+        router.push("/(modals)/refuel");
+        setBusyTool(null);
+        return;
+      }
+    } else {
+      spendFuel(tool.fuelCost);
+      addAsset({
+        type: tool.assetType,
+        title: params.signalLabel ?? tool.name,
+        content,
+        status: "in_prep",
+        category: tool.category,
+        signalId: params.signalId,
+        signalLabel: params.signalLabel,
+        signalPhase: params.signalPhase as SignalPhase | undefined,
+      });
+    }
     setSavedTitle(params.signalLabel ?? tool.name);
     setSavedViaAI(viaAI);
     setBusyTool(null);

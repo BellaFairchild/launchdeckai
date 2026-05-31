@@ -43,6 +43,7 @@ function LinkRow({ label, onPress }: { label: string; onPress: () => void }) {
 export default function SettingsModal() {
   const router = useRouter();
   const plan = useUIStore((s) => s.plan);
+  const signOut = useUIStore((s) => s.signOut);
 
   const [notifications, setNotifications] = useState(true);
   const [sound, setSound] = useState(true);
@@ -90,7 +91,8 @@ export default function SettingsModal() {
           label="Log Out"
           variant="danger"
           onPress={() => {
-            // Wired to Clerk sign-out in Phase 4.
+            router.back();
+            signOut();
           }}
         />
         <Text className="text-center font-mono text-[11px] text-text-tertiary">

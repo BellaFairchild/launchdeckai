@@ -2,10 +2,13 @@ import React, { useState } from "react";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { KeyboardAvoidingView, Platform } from "react-native";
+import { useMutation } from "convex/react";
 
+import { api } from "@cvx/_generated/api";
 import { ScrollView, View, Text, TextInput, Pressable } from "@/tw";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
+import { authEnabled } from "@/lib/auth";
 import { useMissionStore } from "@/store/mission";
 import type { Platform as AppPlatform, MissionStage } from "@/types";
 
@@ -50,6 +53,8 @@ function Chip({ label, active, onPress }: { label: string; active: boolean; onPr
 export default function OnboardingScreen() {
   const router = useRouter();
   const updateMission = useMissionStore((s) => s.updateMission);
+  const createMission = useMutation(api.missions.createMission);
+  const [submitting, setSubmitting] = useState(false);
 
   const [step, setStep] = useState(0);
   const [appName, setAppName] = useState("");
@@ -66,8 +71,9 @@ export default function OnboardingScreen() {
     (step === 2 && audience.trim().length > 0) ||
     step >= 3;
 
-  const finish = () => {
-    updateMission({
+  const finish = async () => {
+    if (submitting) return;
+    const payload = {
       appName: appName.trim() || "My App",
       oneLiner: oneLiner.trim(),
       appDescription: oneLiner.trim(),
@@ -75,8 +81,21 @@ export default function OnboardingScreen() {
       platform,
       stage,
       launchDate: dateOffset ? Date.now() + dateOffset : undefined,
-      status: "active",
-    });
+    };
+
+    if (authEnabled) {
+      setSubmitting(true);
+      try {
+        await createMission(payload);
+        router.replace("/(tabs)/deck");
+      } catch {
+        setSubmitting(false);
+      }
+      return;
+    }
+
+    // Demo mode — update the mock mission.
+    updateMission({ ...payload, status: "active" });
     router.replace("/(tabs)/deck");
   };
 
@@ -226,7 +245,7 @@ export default function OnboardingScreen() {
                   onPress={() => setStep((s) => s + 1)}
                 />
               ) : (
-                <Button label="Create my Mission" fullWidth onPress={finish} />
+                <Button label="Create my Mission" fullWidth loading={submitting} onPress={finish} />
               )}
             </View>
           </View>

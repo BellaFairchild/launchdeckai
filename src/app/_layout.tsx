@@ -7,6 +7,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DrawerOverlay } from "@/components/navigation/DrawerOverlay";
+import { DataSync } from "@/components/DataSync";
 import { ConvexClientProvider } from "@/lib/convex";
 
 const DEEP = "#060B14";
@@ -16,6 +17,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: DEEP }}>
       <SafeAreaProvider>
         <ConvexClientProvider>
+          <DataSync />
           <ErrorBoundary>
           <StatusBar style="light" />
           <Stack
