@@ -1,0 +1,79 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+
+/* Platform-specific font families (resolved by react-native-css) */
+@media android {
+  :root {
+    --font-mono: monospace;
+    --font-sans: normal;
+  }
+}
+
+@media ios {
+  :root {
+    --font-mono: ui-monospace;
+    --font-sans: system-ui;
+  }
+}
+
+/*
+ * LaunchDeckAI design tokens — "calm mission control with handcrafted warmth".
+ * Source of truth: Docs/05_DESIGN_SYSTEM.md (merged with the web prototype palette).
+ * Use as Tailwind classes, e.g. bg-bg-deep, text-brand-teal, border-border-default.
+ */
+@layer theme {
+  @theme {
+    /* Type families — custom fonts loaded via expo-font in Phase 2 */
+    --font-display: "SpaceGrotesk", system-ui, sans-serif;
+    --font-body: "Inter", system-ui, sans-serif;
+    --font-mono: "JetBrainsMono", ui-monospace, monospace;
+
+    /* Backgrounds / surfaces */
+    --color-cosmic-black: #050816;
+    --color-bg-deep: #060B14;
+    --color-midnight-navy: #07114A;
+    --color-bg-surface: #0A1220;
+    --color-bg-card: #0E1520;
+    --color-bg-depleted: #0D1630;
+
+    /* Borders */
+    --color-border-default: #1E2D45;
+    --color-border-med: #2A4060;
+
+    /* Brand — blues / indigo */
+    --color-deep-indigo: #1426A8;
+    --color-electric-blue: #315DFF;
+    --color-brand-blue: #3B82F6;
+    --color-brand-blue-light: #60A5FA;
+
+    /* Brand — teal */
+    --color-rocket-teal: #10B7D6;
+    --color-brand-teal: #4DC8C0;
+    --color-brand-teal-light: #7DDBD6;
+    --color-brand-teal-dark: #2BA8A2;
+
+    /* Warm accents — walnut / gold / flame */
+    --color-walnut: #8B5327;
+    --color-walnut-dark: #5A3418;
+    --color-brand-gold: #F3B233;
+    --color-brand-flame: #FFD65A;
+
+    /* Status */
+    --color-status-success: #4ADE80;
+    --color-status-warning: #FF9B42;
+    --color-status-error: #FF5E5E;
+    --color-status-danger: #FF5E5E;
+
+    /* Signal phase colors (Docs/07) */
+    --color-signal-pre: #3B82F6;
+    --color-signal-launch: #4DC8C0;
+    --color-signal-post: #4ADE80;
+
+    /* Text */
+    --color-text-primary: #F5F7FA;
+    --color-text-secondary: #94A3B8;
+    --color-text-tertiary: #64748B;
+    --color-text-muted: #6B7280;
+  }
+}
