@@ -1,6 +1,7 @@
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { View, Text, Pressable } from "@/tw";
+import { captureError } from "@/lib/monitoring";
 
 type Props = { children: React.ReactNode };
 type State = { error: Error | null };
@@ -17,8 +18,7 @@ export class ErrorBoundary extends React.Component<Props, State> {
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    // Sentry is wired in Phase 14; for now surface to the console.
-    console.error("[LaunchDeckAI] Uncaught error:", error, info.componentStack);
+    captureError(error, { componentStack: info.componentStack });
   }
 
   reset = () => this.setState({ error: null });

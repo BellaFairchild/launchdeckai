@@ -8,6 +8,12 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { PLANS } from "@/constants/plans";
 import { useUIStore } from "@/store/ui";
+import { useMissionStore } from "@/store/mission";
+import {
+  requestNotificationPermission,
+  scheduleLaunchReminders,
+  cancelReminders,
+} from "@/lib/notifications";
 
 function ToggleRow({
   label,
@@ -44,10 +50,23 @@ export default function SettingsModal() {
   const router = useRouter();
   const plan = useUIStore((s) => s.plan);
   const signOut = useUIStore((s) => s.signOut);
+  const launchDate = useMissionStore((s) => s.mission.launchDate);
 
-  const [notifications, setNotifications] = useState(true);
+  const [notifications, setNotifications] = useState(false);
   const [sound, setSound] = useState(true);
   const [haptics, setHaptics] = useState(true);
+
+  const onToggleNotifications = async (next: boolean) => {
+    if (next) {
+      const granted = await requestNotificationPermission();
+      if (!granted) return; // leave the toggle off if permission denied
+      await scheduleLaunchReminders(launchDate);
+      setNotifications(true);
+    } else {
+      await cancelReminders();
+      setNotifications(false);
+    }
+  };
 
   return (
     <View className="flex-1 bg-bg-deep">
@@ -70,7 +89,7 @@ export default function SettingsModal() {
 
         <Card variant="glass">
           <Text className="mb-1 font-display text-base font-bold text-text-primary">Preferences</Text>
-          <ToggleRow label="Launch reminders" value={notifications} onValueChange={setNotifications} />
+          <ToggleRow label="Launch reminders" value={notifications} onValueChange={onToggleNotifications} />
           <ToggleRow label="Sound effects" value={sound} onValueChange={setSound} />
           <ToggleRow label="Haptics" value={haptics} onValueChange={setHaptics} />
         </Card>

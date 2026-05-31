@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 
+import { track } from "@/lib/analytics";
+import { haptics } from "@/lib/haptics";
 import { ScrollView, View, Text, Pressable } from "@/tw";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -73,6 +75,10 @@ export default function SignalDeckModal() {
   const plan = useUIStore((s) => s.plan);
   const [exported, setExported] = useState(false);
 
+  useEffect(() => {
+    track("signal_deck_opened");
+  }, []);
+
   const t = tMinus(mission.launchDate);
   const readyCount = SIGNAL_TEMPLATES.filter(
     (s) => signalStatus(s.id, assets) === "flight_ready",
@@ -81,11 +87,13 @@ export default function SignalDeckModal() {
   const canExport = planMeets(plan, "commander");
 
   const onTransmit = () => {
+    track("transmit_sequence_tapped", { canExport });
     if (!canExport) {
       router.push("/(modals)/refuel");
       return;
     }
     setExported(true);
+    haptics.success();
   };
 
   const onForge = (signal: SignalTemplate) => {

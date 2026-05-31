@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { SignalBars, type SignalStatus } from "@/components/ui/SignalBars";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { useMissionStore } from "@/store/mission";
+import { haptics } from "@/lib/haptics";
 import type { Asset, AssetStatus } from "@/types";
 
 const STATUS_BARS: Record<AssetStatus, SignalStatus> = {
@@ -89,7 +90,10 @@ export default function CargoModal() {
             <AssetRow
               key={asset.id}
               asset={asset}
-              onMarkReady={() => updateAssetStatus(asset.id, "flight_ready")}
+              onMarkReady={() => {
+                updateAssetStatus(asset.id, "flight_ready");
+                haptics.success();
+              }}
               onViewSignal={() => router.push("/(modals)/signal-deck")}
             />
           ))

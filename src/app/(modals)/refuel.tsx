@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/Badge";
 import { AstroAvatar } from "@/components/astro/AstroAvatar";
 import { PLANS, PLAN_ORDER, type Plan } from "@/constants/plans";
 import { useUIStore } from "@/store/ui";
+import { haptics } from "@/lib/haptics";
+import { track } from "@/lib/analytics";
 import {
   revenueCatEnabled,
   getPlanPackages,
@@ -41,6 +43,8 @@ export default function RefuelModal() {
     if (!revenueCatEnabled) {
       // Demo / dev: switch plan directly (mock, or the dev Convex setPlan).
       setPlan(id);
+      haptics.success();
+      track("plan_upgraded", { plan: id, via: "demo" });
       return;
     }
     const pkg = pkgFor(id);
@@ -51,7 +55,11 @@ export default function RefuelModal() {
     setBusyPlan(id);
     try {
       const ok = await purchasePlan(pkg);
-      if (ok) setNote("Purchase complete — your plan updates once RevenueCat confirms it.");
+      if (ok) {
+        setNote("Purchase complete — your plan updates once RevenueCat confirms it.");
+        haptics.success();
+        track("plan_upgraded", { plan: id, via: "revenuecat" });
+      }
     } catch {
       setNote("Purchase failed. Please try again.");
     } finally {

@@ -9,6 +9,8 @@ import { ScrollView, View, Text, TextInput, Pressable } from "@/tw";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/cn";
 import { authEnabled } from "@/lib/auth";
+import { track } from "@/lib/analytics";
+import { haptics } from "@/lib/haptics";
 import { useMissionStore } from "@/store/mission";
 import type { Platform as AppPlatform, MissionStage } from "@/types";
 
@@ -83,10 +85,17 @@ export default function OnboardingScreen() {
       launchDate: dateOffset ? Date.now() + dateOffset : undefined,
     };
 
+    const celebrate = () => {
+      haptics.success();
+      track("onboarding_completed");
+      track("mission_created", { platform, stage });
+    };
+
     if (authEnabled) {
       setSubmitting(true);
       try {
         await createMission(payload);
+        celebrate();
         router.replace("/(tabs)/deck");
       } catch {
         setSubmitting(false);
@@ -96,6 +105,7 @@ export default function OnboardingScreen() {
 
     // Demo mode — update the mock mission.
     updateMission({ ...payload, status: "active" });
+    celebrate();
     router.replace("/(tabs)/deck");
   };
 

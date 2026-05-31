@@ -13,6 +13,7 @@ import { useMissionStore } from "@/store/mission";
 import { useUIStore } from "@/store/ui";
 import { PLANS, planMeets } from "@/constants/plans";
 import { readinessLabel, tMinus, formatLaunchDate } from "@/lib/launch";
+import { track } from "@/lib/analytics";
 
 type Mode = "standard" | "powerful";
 type Msg = { id: number; role: "user" | "assistant"; text: string };
@@ -98,6 +99,7 @@ export default function CopilotModal() {
     setMessages((prev) => [...prev, { id: prev.length, role: "user", text: trimmed }]);
     setInput("");
     setBusy(true);
+    track("copilot_message_sent", { mode });
 
     let reply = buildReply(trimmed);
     try {

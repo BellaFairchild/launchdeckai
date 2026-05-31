@@ -7,6 +7,7 @@ import { KeyboardAvoidingView, Platform } from "react-native";
 import { View, Text, TextInput, Pressable } from "@/tw";
 import { Button } from "@/components/ui/Button";
 import { AstroAvatar } from "@/components/astro/AstroAvatar";
+import { track } from "@/lib/analytics";
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -41,6 +42,7 @@ export default function SignUpScreen() {
     try {
       const res = await signUp.attemptEmailAddressVerification({ code: code.trim() });
       if (res.status === "complete") {
+        track("user_signed_up");
         await setActive({ session: res.createdSessionId });
         router.replace("/");
       } else {

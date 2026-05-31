@@ -14,6 +14,8 @@ import { FOUNDRY_TOOLS, type FoundryTool } from "@/constants/foundryTools";
 import { useMissionStore } from "@/store/mission";
 import { useUIStore } from "@/store/ui";
 import { planMeets, PLANS } from "@/constants/plans";
+import { haptics } from "@/lib/haptics";
+import { track } from "@/lib/analytics";
 import type { SignalPhase } from "@/types";
 
 export default function FoundryScreen() {
@@ -106,6 +108,10 @@ export default function FoundryScreen() {
     setSavedTitle(params.signalLabel ?? tool.name);
     setSavedViaAI(viaAI);
     setBusyTool(null);
+    haptics.success();
+    track("foundry_asset_generated", { tool: tool.id, viaAI });
+    track("cargo_asset_saved", { type: tool.assetType });
+    if (params.signalId) track("signal_asset_forged", { signalId: params.signalId });
   };
 
   return (

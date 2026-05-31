@@ -12,6 +12,8 @@ import { useUIStore } from "@/store/ui";
 import { planMeets, PLANS } from "@/constants/plans";
 import { MILESTONE_CATEGORIES } from "@/constants/milestoneTemplates";
 import { readinessLabel } from "@/lib/launch";
+import { haptics } from "@/lib/haptics";
+import { track } from "@/lib/analytics";
 import type { Milestone } from "@/types";
 
 function MilestoneRow({
@@ -110,7 +112,12 @@ export default function MissionsScreen() {
                       key={m.id}
                       milestone={m}
                       locked={locked}
-                      onComplete={() => completeMilestone(m.id)}
+                      onComplete={() => {
+                        completeMilestone(m.id);
+                        haptics.success();
+                        track("milestone_completed", { category: m.category });
+                        track("fuel_earned", { amount: m.fuelReward, reason: "milestone" });
+                      }}
                       onUnlock={() => router.push("/(modals)/refuel")}
                     />
                   );
