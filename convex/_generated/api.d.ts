@@ -12,8 +12,10 @@ import type * as ai from "../ai.js";
 import type * as assets from "../assets.js";
 import type * as blueprints from "../blueprints.js";
 import type * as helpers from "../helpers.js";
+import type * as http from "../http.js";
 import type * as milestones from "../milestones.js";
 import type * as missions from "../missions.js";
+import type * as subscriptions from "../subscriptions.js";
 import type * as templates from "../templates.js";
 import type * as users from "../users.js";
 
@@ -28,8 +30,10 @@ declare const fullApi: ApiFromModules<{
   assets: typeof assets;
   blueprints: typeof blueprints;
   helpers: typeof helpers;
+  http: typeof http;
   milestones: typeof milestones;
   missions: typeof missions;
+  subscriptions: typeof subscriptions;
   templates: typeof templates;
   users: typeof users;
 }>;

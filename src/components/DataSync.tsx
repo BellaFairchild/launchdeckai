@@ -5,6 +5,7 @@ import { useClerk } from "@clerk/clerk-expo";
 import { api } from "@cvx/_generated/api";
 import type { Id, Doc } from "@cvx/_generated/dataModel";
 import { authEnabled } from "@/lib/auth";
+import { configurePurchases } from "@/lib/purchases";
 import { useUIStore } from "@/store/ui";
 import { useMissionStore } from "@/store/mission";
 import { BLUEPRINT_SECTIONS } from "@/constants/blueprintSections";
@@ -134,6 +135,8 @@ function DataSyncInner() {
           void setPlan({ plan });
         },
       });
+      // Tie RevenueCat purchases to the Clerk user (no-op without RC keys).
+      configurePurchases(data.user.clerkId);
     }
     if (data.mission) {
       useMissionStore.getState().hydrate({
