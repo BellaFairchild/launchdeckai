@@ -1,0 +1,71 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile containing plan and app fuel details.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "plan": { "type": "string", "enum": ["cadet", "commander", "admiral"] },
+        "fuelBalance": { "type": "number" },
+        "currentStreak": { "type": "number" },
+        "level": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "displayName", "plan", "fuelBalance", "currentStreak", "level", "createdAt", "updatedAt"]
+    },
+    "Mission": {
+      "title": "Mission",
+      "description": "Represents a single project launch mission.",
+      "type": "object",
+      "properties": {
+        "ownerId": { "type": "string" },
+        "appName": { "type": "string" },
+        "appDescription": { "type": "string" },
+        "oneLiner": { "type": "string" },
+        "targetAudience": { "type": "string" },
+        "platform": { "type": "string", "enum": ["ios", "android", "both"] },
+        "launchDate": { "type": "number" },
+        "stage": { "type": "string", "enum": ["building", "testing", "store_prep", "ready_to_submit"] },
+        "status": { "type": "string", "enum": ["active", "launched", "archived"] },
+        "readinessScore": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["ownerId", "appName", "appDescription", "oneLiner", "platform", "launchDate", "stage", "status", "readinessScore", "createdAt", "updatedAt"]
+    },
+    "Milestone": {
+      "title": "Milestone",
+      "description": "A node in the flight path.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "requiredPlan": { "type": "string" },
+        "status": { "type": "string" },
+        "date": { "type": "string" },
+        "isLocked": { "type": "boolean" },
+        "description": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "category", "completed", "requiredPlan", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores user profiles."
+    },
+    "/missions/{missionId}": {
+      "schema": { "$ref": "#/entities/Mission" },
+      "description": "Stores user missions."
+    },
+    "/missions/{missionId}/milestones/{milestoneId}": {
+      "schema": { "$ref": "#/entities/Milestone" },
+      "description": "Stores milestones for a mission."
+    }
+  }
+}

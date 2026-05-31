@@ -1,0 +1,94 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'displayName', 'plan', 'fuelBalance', 'currentStreak', 'level', 'createdAt', 'updatedAt'])
+        && data.email is string && data.email.size() <= 150
+        && data.displayName is string && data.displayName.size() <= 100
+        && data.plan in ['cadet', 'commander', 'admiral']
+        && data.fuelBalance is number
+        && data.currentStreak is number
+        && data.level is number
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && request.auth.uid == userId;
+      allow list: if false; // Users cannot scratch list other users
+      allow create: if isSignedIn() 
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && incoming().email == request.auth.token.email
+        && isValidUser(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isSignedIn() 
+        && isValidId(userId)
+        && request.auth.uid == userId
+        && isValidUser(incoming())
+        && incoming().email == existing().email
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time;
+      allow delete: if false;
+    }
+
+    function isValidMission(data) {
+      return data.keys().hasAll(['ownerId', 'appName', 'appDescription', 'oneLiner', 'targetAudience', 'platform', 'launchDate', 'stage', 'status', 'readinessScore', 'createdAt', 'updatedAt'])
+        && data.ownerId is string && data.ownerId.size() <= 128
+        && data.appName is string && data.appName.size() <= 100
+        && data.appDescription is string && data.appDescription.size() <= 500
+        && data.oneLiner is string && data.oneLiner.size() <= 200
+        && data.targetAudience is string && data.targetAudience.size() <= 150
+        && data.platform in ['ios', 'android', 'both']
+        && data.launchDate is number
+        && data.stage in ['building', 'testing', 'store_prep', 'ready_to_submit']
+        && data.status in ['active', 'launched', 'archived']
+        && data.readinessScore is number
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    match /missions/{missionId} {
+      allow get: if isSignedIn() && isValidId(missionId) && existing().ownerId == request.auth.uid;
+      allow list: if isSignedIn() && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn()
+        && isValidId(missionId)
+        && incoming().ownerId == request.auth.uid
+        && isValidMission(incoming())
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isSignedIn()
+        && isValidId(missionId)
+        && existing().ownerId == request.auth.uid
+        && incoming().ownerId == existing().ownerId
+        && isValidMission(incoming())
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time;
+      allow delete: if isSignedIn() && isValidId(missionId) && existing().ownerId == request.auth.uid;
+
+      match /milestones/{milestoneId} {
+        allow get: if isSignedIn() && isValidId(missionId) && isValidId(milestoneId) 
+                   && get(/databases/$(database)/documents/missions/$(missionId)).data.ownerId == request.auth.uid;
+        allow list: if isSignedIn() && isValidId(missionId)
+                   && get(/databases/$(database)/documents/missions/$(missionId)).data.ownerId == request.auth.uid;
+        allow write: if false; // Add specific validations for Milestone writes later if needed.
+      }
+    }
+  }
+}
