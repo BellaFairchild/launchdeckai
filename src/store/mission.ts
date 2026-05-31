@@ -76,7 +76,16 @@ type MissionState = {
   assets: Asset[];
   completeMilestone: (id: string) => void;
   saveBlueprint: (section: BlueprintSection, fields: Record<string, string>) => void;
+  /** Add a generated/forged asset (Foundry, Signal forge). Returns the new id. */
+  addAsset: (asset: Omit<Asset, "id" | "updatedAt">) => string;
+  updateAssetStatus: (id: string, status: Asset["status"]) => void;
 };
+
+let assetCounterSeed = 100;
+function nextAssetId(): string {
+  assetCounterSeed += 1;
+  return `a_${assetCounterSeed}`;
+}
 
 const initialMilestones = buildMilestones();
 
@@ -113,6 +122,22 @@ export const useMissionStore = create<MissionState>((set, get) => ({
         ...get().blueprints,
         [section]: { section, fields, completionStatus },
       },
+    });
+  },
+
+  addAsset: (asset) => {
+    const id = nextAssetId();
+    set({
+      assets: [{ ...asset, id, updatedAt: Date.now() }, ...get().assets],
+    });
+    return id;
+  },
+
+  updateAssetStatus: (id, status) => {
+    set({
+      assets: get().assets.map((a) =>
+        a.id === id ? { ...a, status, updatedAt: Date.now() } : a,
+      ),
     });
   },
 }));
