@@ -76,6 +76,8 @@ type MissionState = {
   assets: Asset[];
   completeMilestone: (id: string) => void;
   saveBlueprint: (section: BlueprintSection, fields: Record<string, string>) => void;
+  /** Update core mission fields (used by onboarding; replaced by Convex mutation later). */
+  updateMission: (partial: Partial<Mission>) => void;
   /** Add a generated/forged asset (Foundry, Signal forge). Returns the new id. */
   addAsset: (asset: Omit<Asset, "id" | "updatedAt">) => string;
   updateAssetStatus: (id: string, status: Asset["status"]) => void;
@@ -139,5 +141,9 @@ export const useMissionStore = create<MissionState>((set, get) => ({
         a.id === id ? { ...a, status, updatedAt: Date.now() } : a,
       ),
     });
+  },
+
+  updateMission: (partial) => {
+    set({ mission: { ...get().mission, ...partial } });
   },
 }));
