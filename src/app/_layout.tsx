@@ -7,6 +7,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DrawerOverlay } from "@/components/navigation/DrawerOverlay";
+import { ConvexClientProvider } from "@/lib/convex";
 
 const DEEP = "#060B14";
 
@@ -14,7 +15,8 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: DEEP }}>
       <SafeAreaProvider>
-        <ErrorBoundary>
+        <ConvexClientProvider>
+          <ErrorBoundary>
           <StatusBar style="light" />
           <Stack
             screenOptions={{
@@ -27,7 +29,8 @@ export default function RootLayout() {
             <Stack.Screen name="(modals)" options={{ presentation: "modal" }} />
           </Stack>
           <DrawerOverlay />
-        </ErrorBoundary>
+          </ErrorBoundary>
+        </ConvexClientProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

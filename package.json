@@ -6,9 +6,11 @@
     "lightningcss": "1.30.1"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.100.1",
     "@expo/ui": "~56.0.15",
     "@tailwindcss/postcss": "^4.3.0",
     "clsx": "^2.1.1",
+    "convex": "^1.39.1",
     "expo": "~56.0.8",
     "expo-constants": "~56.0.16",
     "expo-device": "~56.0.4",

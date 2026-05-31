@@ -8,6 +8,9 @@
       ],
       "@/assets/*": [
         "./assets/*"
+      ],
+      "@cvx/*": [
+        "./convex/*"
       ]
     }
   },
@@ -22,6 +25,7 @@
     "node_modules",
     "web-prototype",
     "dist",
-    ".expo"
+    ".expo",
+    "convex"
   ]
 }

@@ -1,7 +1,10 @@
 import React, { useState } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator } from "react-native";
+import { useAction } from "convex/react";
 
+import { api } from "@cvx/_generated/api";
 import { ScrollView, View, Text, Pressable } from "@/tw";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -22,24 +25,56 @@ export default function FoundryScreen() {
     tool?: string;
   }>();
   const { plan, fuel, spendFuel } = useUIStore();
+  const mission = useMissionStore((s) => s.mission);
   const addAsset = useMissionStore((s) => s.addAsset);
+  const generateAsset = useAction(api.ai.generateAsset);
   const [savedTitle, setSavedTitle] = useState<string | null>(null);
+  const [savedViaAI, setSavedViaAI] = useState(false);
+  const [busyTool, setBusyTool] = useState<string | null>(null);
 
-  const onGenerate = (tool: FoundryTool) => {
+  const onGenerate = async (tool: FoundryTool) => {
     if (!planMeets(plan, tool.requiredPlan)) {
       router.push("/(modals)/refuel");
       return;
     }
-    if (!spendFuel(tool.fuelCost)) {
-      // Fuel wall
+    if (fuel < tool.fuelCost) {
+      // Fuel wall — never deduct on insufficient balance.
       router.push("/(modals)/refuel");
       return;
     }
-    // Mock generation. Real AI runs server-side via Convex Actions (backend phase).
+
+    setBusyTool(tool.id);
+    // Try the real Convex Action (server-side Anthropic). Falls back to a mock
+    // draft if Convex/the key isn't configured yet, so the loop always works.
+    let content = `Draft ${tool.name} for ${mission.appName} (mock — set ANTHROPIC_API_KEY for real AI).`;
+    let viaAI = false;
+    try {
+      const res = await generateAsset({
+        tool: tool.id,
+        toolLabel: tool.name,
+        mode: planMeets(plan, "admiral") ? "powerful" : "standard",
+        mission: {
+          appName: mission.appName,
+          oneLiner: mission.oneLiner,
+          appDescription: mission.appDescription,
+          targetAudience: mission.targetAudience,
+          platform: mission.platform,
+          stage: mission.stage,
+        },
+        signalLabel: params.signalLabel,
+      });
+      content = res.content;
+      viaAI = true;
+    } catch {
+      // AI not configured / unreachable — keep the mock draft.
+    }
+
+    // Deduct Fuel only after a successful generation (Docs/03 security rule).
+    spendFuel(tool.fuelCost);
     addAsset({
       type: tool.assetType,
       title: params.signalLabel ?? tool.name,
-      content: `Draft ${tool.name} for your launch (mock).`,
+      content,
       status: "in_prep",
       category: tool.category,
       signalId: params.signalId,
@@ -47,6 +82,8 @@ export default function FoundryScreen() {
       signalPhase: params.signalPhase as SignalPhase | undefined,
     });
     setSavedTitle(params.signalLabel ?? tool.name);
+    setSavedViaAI(viaAI);
+    setBusyTool(null);
   };
 
   return (
@@ -70,7 +107,8 @@ export default function FoundryScreen() {
                 Saved to Cargo Bay
               </Text>
               <Text className="mt-0.5 font-body text-sm text-text-secondary">
-                “{savedTitle}” is in_prep. Mark it flight-ready in Cargo Bay.
+                “{savedTitle}” is in_prep ({savedViaAI ? "AI-generated" : "mock draft"}).
+                Mark it flight-ready in Cargo Bay.
               </Text>
               <Button
                 label="View in Cargo Bay →"
@@ -109,20 +147,25 @@ export default function FoundryScreen() {
                   </View>
                 </View>
                 <Pressable
-                  onPress={() => onGenerate(tool)}
+                  onPress={() => (busyTool ? undefined : onGenerate(tool))}
                   accessibilityRole="button"
                   className={
-                    "mt-3 min-h-[44px] items-center justify-center rounded-full px-4 py-2.5 " +
-                    (locked ? "bg-bg-depleted border border-border-default" : "bg-brand-teal active:opacity-90")
+                    "mt-3 min-h-[44px] flex-row items-center justify-center gap-2 rounded-full px-4 py-2.5 " +
+                    (locked ? "bg-bg-depleted border border-border-default" : "bg-brand-teal active:opacity-90") +
+                    (busyTool && busyTool !== tool.id ? " opacity-60" : "")
                   }
                 >
-                  <Text className={locked ? "font-body font-semibold text-text-tertiary" : "font-body font-semibold text-bg-deep"}>
-                    {locked
-                      ? `🔒 Unlock with ${PLANS[tool.requiredPlan].name}`
-                      : affordable
-                        ? `Generate · ${tool.fuelCost} Fuel`
-                        : `Need ${tool.fuelCost} Fuel — Refuel`}
-                  </Text>
+                  {busyTool === tool.id ? (
+                    <ActivityIndicator size="small" color="#060B14" />
+                  ) : (
+                    <Text className={locked ? "font-body font-semibold text-text-tertiary" : "font-body font-semibold text-bg-deep"}>
+                      {locked
+                        ? `🔒 Unlock with ${PLANS[tool.requiredPlan].name}`
+                        : affordable
+                          ? `Generate · ${tool.fuelCost} Fuel`
+                          : `Need ${tool.fuelCost} Fuel — Refuel`}
+                    </Text>
+                  )}
                 </Pressable>
               </Card>
             );
