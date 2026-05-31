@@ -100,3 +100,82 @@ export const generateAsset = action({
     return { content: content || "(No content generated.)" };
   },
 });
+
+const COPILOT_SYSTEM = `You are Astro, the AI launch copilot inside LaunchDeckAI — a calm, capable guide for first-time app creators.
+
+Give mission-aware launch guidance. Rules:
+- Be concise: 2-5 sentences. Warm, specific, practical — never generic.
+- Reference the creator's actual Mission (app, audience, readiness, next milestones, gaps).
+- Suggest a concrete next step where helpful.
+- Output ONLY your reply — no preamble, no reasoning, no "Here is...".`;
+
+export const copilotReply = action({
+  args: {
+    mode: v.optional(v.union(v.literal("standard"), v.literal("powerful"))),
+    mission: missionContextValidator,
+    /** Live launch state for context (Docs/06 §Astro required context). */
+    context: v.object({
+      readinessScore: v.number(),
+      incompleteMilestones: v.array(v.string()),
+      blueprintProgress: v.number(),
+      signalsReady: v.number(),
+      launchLabel: v.string(),
+    }),
+    /** Conversation so far (must start with a user turn, alternating). */
+    messages: v.array(
+      v.object({
+        role: v.union(v.literal("user"), v.literal("assistant")),
+        content: v.string(),
+      }),
+    ),
+  },
+  returns: v.object({ content: v.string() }),
+  handler: async (_ctx, args) => {
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      throw new Error(
+        "AI is not configured yet. Set ANTHROPIC_API_KEY in the Convex environment (npx convex env set ANTHROPIC_API_KEY ...).",
+      );
+    }
+
+    const client = new Anthropic({ apiKey });
+    const model = args.mode === "powerful" ? POWERFUL_MODEL : STANDARD_MODEL;
+
+    const m = args.mission;
+    const c = args.context;
+    const contextBlock = [
+      "Current Mission context:",
+      `- App: ${m.appName} — "${m.oneLiner}"`,
+      `- Audience: ${m.targetAudience}`,
+      `- Platform: ${m.platform}${m.stage ? `, stage: ${m.stage}` : ""}`,
+      `- Launch: ${c.launchLabel}`,
+      `- Readiness: ${c.readinessScore}%`,
+      `- Blueprint completion: ${c.blueprintProgress}%`,
+      `- Signals ready: ${c.signalsReady}/16`,
+      c.incompleteMilestones.length
+        ? `- Top incomplete milestones: ${c.incompleteMilestones.slice(0, 5).join("; ")}`
+        : "- All available milestones complete.",
+    ].join("\n");
+
+    const message = await client.messages.create({
+      model,
+      max_tokens: 1024,
+      system: [
+        { type: "text", text: COPILOT_SYSTEM, cache_control: { type: "ephemeral" } },
+        { type: "text", text: contextBlock },
+      ],
+      messages: args.messages.map((msg) => ({
+        role: msg.role,
+        content: msg.content,
+      })),
+    });
+
+    const content = message.content
+      .filter((b): b is Anthropic.TextBlock => b.type === "text")
+      .map((b) => b.text)
+      .join("\n")
+      .trim();
+
+    return { content: content || "(No reply generated.)" };
+  },
+});

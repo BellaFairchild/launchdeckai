@@ -1,7 +1,9 @@
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
-import { KeyboardAvoidingView, Platform } from "react-native";
+import { KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
+import { useAction } from "convex/react";
 
+import { api } from "@cvx/_generated/api";
 import { ScrollView, View, Text, TextInput, Pressable } from "@/tw";
 import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
@@ -10,7 +12,7 @@ import { cn } from "@/lib/cn";
 import { useMissionStore } from "@/store/mission";
 import { useUIStore } from "@/store/ui";
 import { PLANS, planMeets } from "@/constants/plans";
-import { readinessLabel } from "@/lib/launch";
+import { readinessLabel, tMinus, formatLaunchDate } from "@/lib/launch";
 
 type Mode = "standard" | "powerful";
 type Msg = { id: number; role: "user" | "assistant"; text: string };
@@ -27,11 +29,13 @@ const STANDARD_COST = 2;
 
 export default function CopilotModal() {
   const router = useRouter();
-  const { mission, milestones } = useMissionStore();
+  const { mission, milestones, blueprints, assets } = useMissionStore();
   const { plan, fuel, spendFuel } = useUIStore();
+  const copilotReply = useAction(api.ai.copilotReply);
 
   const [mode, setMode] = useState<Mode>("standard");
   const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([
     {
       id: 0,
@@ -58,23 +62,66 @@ export default function CopilotModal() {
     return `For ${mission.appName} — “${mission.oneLiner}” aimed at ${mission.targetAudience} — here's my take: focus on “${next?.title ?? "staging your launch"}” next, then prepare your Signal Deck.`;
   };
 
-  const send = (text: string) => {
+  const buildContext = () => {
+    const t = tMinus(mission.launchDate);
+    const blueprintValues = Object.values(blueprints);
+    const blueprintProgress = Math.round(
+      blueprintValues.reduce((sum, b) => sum + b.completionStatus, 0) /
+        Math.max(1, blueprintValues.length),
+    );
+    return {
+      readinessScore: mission.readinessScore,
+      incompleteMilestones: milestones.filter((m) => !m.completed).map((m) => m.title),
+      blueprintProgress,
+      signalsReady: assets.filter((a) => a.signalId && a.status === "flight_ready").length,
+      launchLabel: `${t.label} · ${formatLaunchDate(mission.launchDate)}`,
+    };
+  };
+
+  const send = async (text: string) => {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || busy) return;
     if (mode === "powerful" && !planMeets(plan, "admiral")) {
       router.push("/(modals)/refuel");
       return;
     }
-    if (mode === "standard" && !spendFuel(STANDARD_COST)) {
+    if (mode === "standard" && fuel < STANDARD_COST) {
       router.push("/(modals)/refuel");
       return;
     }
-    setMessages((prev) => [
-      ...prev,
-      { id: prev.length, role: "user", text: trimmed },
-      { id: prev.length + 1, role: "assistant", text: buildReply(trimmed) },
-    ]);
+
+    const history = messages
+      .filter((m) => !(m.id === 0 && m.role === "assistant")) // drop greeting
+      .map((m) => ({ role: m.role, content: m.text }));
+    const convo = [...history, { role: "user" as const, content: trimmed }];
+
+    setMessages((prev) => [...prev, { id: prev.length, role: "user", text: trimmed }]);
     setInput("");
+    setBusy(true);
+
+    let reply = buildReply(trimmed);
+    try {
+      const res = await copilotReply({
+        mode,
+        mission: {
+          appName: mission.appName,
+          oneLiner: mission.oneLiner,
+          appDescription: mission.appDescription,
+          targetAudience: mission.targetAudience,
+          platform: mission.platform,
+          stage: mission.stage,
+        },
+        context: buildContext(),
+        messages: convo,
+      });
+      reply = res.content;
+    } catch {
+      // AI not configured / unreachable — fall back to the mock reply.
+    }
+
+    if (mode === "standard") spendFuel(STANDARD_COST);
+    setMessages((prev) => [...prev, { id: prev.length, role: "assistant", text: reply }]);
+    setBusy(false);
   };
 
   const powerfulLocked = !planMeets(plan, "admiral");
@@ -144,6 +191,17 @@ export default function CopilotModal() {
             </View>
           ))}
 
+          {busy ? (
+            <View className="self-start">
+              <Card variant="glass">
+                <View className="flex-row items-center gap-2">
+                  <ActivityIndicator size="small" color="#4DC8C0" />
+                  <Text className="font-body text-sm text-text-tertiary">Astro is thinking…</Text>
+                </View>
+              </Card>
+            </View>
+          ) : null}
+
           {/* Suggested prompts */}
           <View className="mt-1 flex-row flex-wrap gap-2">
             {SUGGESTED.map((p) => (
@@ -171,9 +229,17 @@ export default function CopilotModal() {
           <Pressable
             onPress={() => send(input)}
             accessibilityLabel="Send"
-            className="h-11 w-11 items-center justify-center rounded-full bg-brand-teal active:opacity-80"
+            disabled={busy}
+            className={cn(
+              "h-11 w-11 items-center justify-center rounded-full bg-brand-teal",
+              busy ? "opacity-60" : "active:opacity-80",
+            )}
           >
-            <Text className="text-lg text-bg-deep">↑</Text>
+            {busy ? (
+              <ActivityIndicator size="small" color="#060B14" />
+            ) : (
+              <Text className="text-lg text-bg-deep">↑</Text>
+            )}
           </Pressable>
         </View>
       </KeyboardAvoidingView>
