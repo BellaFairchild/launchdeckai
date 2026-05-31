@@ -15,7 +15,11 @@ type UIState = {
   // TEMP placeholders (replaced by backend-owned state in Phase 4+)
   plan: Plan;
   fuel: number;
+  streak: number;
   setPlan: (plan: Plan) => void;
+  addFuel: (amount: number) => void;
+  /** Returns false if insufficient Fuel (no deduction). */
+  spendFuel: (amount: number) => boolean;
 };
 
 export const useUIStore = create<UIState>((set) => ({
@@ -26,5 +30,18 @@ export const useUIStore = create<UIState>((set) => ({
 
   plan: "cadet",
   fuel: 420,
+  streak: 3,
   setPlan: (plan) => set({ plan }),
+  addFuel: (amount) => set((s) => ({ fuel: Math.max(0, s.fuel + amount) })),
+  spendFuel: (amount) => {
+    let ok = false;
+    set((s) => {
+      if (s.fuel >= amount) {
+        ok = true;
+        return { fuel: s.fuel - amount };
+      }
+      return {};
+    });
+    return ok;
+  },
 }));
