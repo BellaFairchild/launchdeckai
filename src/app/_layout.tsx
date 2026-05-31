@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { DrawerOverlay } from "@/components/navigation/DrawerOverlay";
 
 const DEEP = "#060B14";
 
@@ -25,6 +26,7 @@ export default function RootLayout() {
             <Stack.Screen name="(auth)" />
             <Stack.Screen name="(modals)" options={{ presentation: "modal" }} />
           </Stack>
+          <DrawerOverlay />
         </ErrorBoundary>
       </SafeAreaProvider>
     </GestureHandlerRootView>
