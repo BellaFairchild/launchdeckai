@@ -15,6 +15,8 @@ export interface PlanSpec {
   priceYearly?: string;
   bestFor: string;
   fuel: string;
+  /** Numeric fuel allowance for the period — used by the Refuel gauge readout. */
+  fuelCap: number;
   activeMissions: string;
   aiAccess: string;
   exportAccess: boolean;
@@ -30,6 +32,7 @@ export const PLANS: Record<Plan, PlanSpec> = {
     price: "Free",
     bestFor: "First-time builders getting organized",
     fuel: "25 Fuel cap · 5/day drip",
+    fuelCap: 25,
     activeMissions: "1 Active Mission",
     aiAccess: "Standard Copilot (daily limit)",
     exportAccess: false,
@@ -48,6 +51,7 @@ export const PLANS: Record<Plan, PlanSpec> = {
     priceYearly: "$152/yr",
     bestFor: "Serious builders preparing for launch",
     fuel: "1,500 Fuel / mo",
+    fuelCap: 1500,
     activeMissions: "3 Active Missions",
     aiAccess: "Unlimited Copilot",
     exportAccess: true,
@@ -66,6 +70,7 @@ export const PLANS: Record<Plan, PlanSpec> = {
     priceYearly: "$390/yr",
     bestFor: "Advanced creators and power launchers",
     fuel: "5,000 Fuel / mo",
+    fuelCap: 5000,
     activeMissions: "Unlimited Missions",
     aiAccess: "Powerful AI mode",
     exportAccess: true,

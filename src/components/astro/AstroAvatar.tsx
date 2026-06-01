@@ -1,9 +1,9 @@
-import React from "react";
-import { Image } from "@/tw/image";
-import { View } from "@/tw";
-import { cn } from "@/lib/cn";
 import { astroAssets, type AstroPose } from "@/constants/astroAssets";
 import type { Plan } from "@/constants/plans";
+import { cn } from "@/lib/cn";
+import { squareSize } from "@/lib/sizeStyle";
+import { View } from "@/tw";
+import { Image } from "@/tw/image";
 
 export type AstroVariant = "orb" | "bust" | "fullBody";
 
@@ -57,11 +57,11 @@ export function AstroAvatar({
           PLAN_RING[plan],
           className,
         )}
-        style={{ width: resolvedSize, height: resolvedSize }}
+        style={squareSize(resolvedSize)}
       >
         <Image
           source={source}
-          style={{ width: resolvedSize, height: resolvedSize }}
+          style={squareSize(resolvedSize)}
           className="object-contain"
         />
       </View>
@@ -72,7 +72,7 @@ export function AstroAvatar({
     <Image
       accessibilityLabel={`Astro (${plan})`}
       source={source}
-      style={{ width: resolvedSize, height: resolvedSize }}
+      style={squareSize(resolvedSize)}
       className={cn("object-contain", className)}
     />
   );

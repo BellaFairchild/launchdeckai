@@ -1,7 +1,8 @@
 import { Stack, useRouter } from "expo-router";
+import { StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { Pressable, Text, View } from "@/tw";
+import { Pressable, Text } from "@/tw";
 
 /** Shared close (X) header for all modal screens so they're dismissible on every platform. */
 function ModalHeader() {
@@ -24,12 +25,19 @@ function ModalHeader() {
 
 export default function ModalsLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerShown: true,
-        header: () => <ModalHeader />,
-        contentStyle: { backgroundColor: "#060B14" },
-      }}
-    />
+    <View style={styles.root}>
+      <Stack
+        screenOptions={{
+          headerShown: true,
+          header: () => <ModalHeader />,
+          contentStyle: styles.content,
+        }}
+      />
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: "#060B14" },
+  content: { flex: 1, backgroundColor: "#060B14" },
+});

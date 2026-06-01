@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 
-import { ScrollView, View, Text } from "@/tw";
+import { Pressable, ScrollView, View, Text } from "@/tw";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { FuelGauge } from "@/components/ui/FuelGauge";
+import { GradientView } from "@/components/ui/GradientView";
 import { AstroAvatar } from "@/components/astro/AstroAvatar";
 import { PLANS, PLAN_ORDER, type Plan } from "@/constants/plans";
 import { useUIStore } from "@/store/ui";
@@ -27,7 +29,7 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 export default function RefuelModal() {
-  const { plan, setPlan } = useUIStore();
+  const { plan, fuel, setPlan } = useUIStore();
   const [packages, setPackages] = useState<PlanPackage[]>([]);
   const [busyPlan, setBusyPlan] = useState<Plan | null>(null);
   const [note, setNote] = useState<string | null>(null);
@@ -67,6 +69,25 @@ export default function RefuelModal() {
     }
   };
 
+  const cap = PLANS[plan].fuelCap;
+  const planName = PLANS[plan].name;
+  const idx = PLAN_ORDER.indexOf(plan);
+  const nextPlan = PLAN_ORDER[idx + 1] ?? null;
+  const resetStr = (() => {
+    const now = new Date();
+    const d = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  })();
+
+  const onRefuel = () => {
+    if (nextPlan) {
+      onCta(nextPlan);
+    } else {
+      haptics.success();
+      setNote("You're on the top tier — fully fueled, Commander.");
+    }
+  };
+
   return (
     <View className="flex-1 bg-bg-deep">
       <ScrollView contentContainerClassName="gap-4 px-5 py-4 pb-12">
@@ -75,6 +96,55 @@ export default function RefuelModal() {
           <Text className="font-body text-sm text-text-secondary">
             Upgrade your command tier. Downgrades lock features — they never delete your data.
           </Text>
+        </View>
+
+        {/* Fuel hero */}
+        <View
+          className="relative overflow-hidden rounded-3xl border border-border-med bg-bg-card p-5"
+          style={{
+            shadowColor: "#5BE7B0",
+            shadowOpacity: 0.18,
+            shadowRadius: 22,
+            shadowOffset: { width: 0, height: 10 },
+            elevation: 10,
+          }}
+        >
+          <View className="items-center rounded-3xl bg-bg-deep/60 py-3">
+            <FuelGauge value={fuel} max={cap} size={240} />
+          </View>
+          <Text
+            className="mt-4 text-center font-mono text-4xl font-bold"
+            style={{
+              color: "#5BE7B0",
+              textShadowColor: "rgba(91,231,176,0.5)",
+              textShadowOffset: { width: 0, height: 0 },
+              textShadowRadius: 16,
+            }}
+          >
+            {fuel.toLocaleString()} Fuel
+          </Text>
+          <Text className="mt-1 text-center font-body text-xs text-text-tertiary">
+            {fuel.toLocaleString()} / {cap.toLocaleString()} Fuel · {planName} Plan · Resets{" "}
+            {resetStr}
+          </Text>
+          <Pressable
+            onPress={onRefuel}
+            accessibilityRole="button"
+            accessibilityLabel="Refuel Mission"
+            style={{
+              shadowColor: "#5BE7B0",
+              shadowOpacity: 0.5,
+              shadowRadius: 16,
+              shadowOffset: { width: 0, height: 4 },
+              elevation: 8,
+            }}
+            className="relative mt-5 min-h-[52px] items-center justify-center overflow-hidden rounded-full active:opacity-90"
+          >
+            <GradientView colors={["#6BEFBE", "#3FD6A0"]} direction="horizontal" />
+            <Text className="font-body text-base font-bold" style={{ color: "#062018" }}>
+              Refuel Mission
+            </Text>
+          </Pressable>
         </View>
 
         {note ? (

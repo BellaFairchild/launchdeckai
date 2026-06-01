@@ -1,6 +1,8 @@
 import React from "react";
 import { Text, View } from "@/tw";
 import { cn } from "@/lib/cn";
+import { Icon } from "./Icon";
+import { colors } from "@/constants/colors";
 
 export type BadgeVariant =
   | "plan"
@@ -38,13 +40,16 @@ export function Badge({ label, variant = "status", className }: Props) {
   return (
     <View
       className={cn(
-        "self-start rounded-full px-2.5 py-1",
+        "flex-row items-center gap-1 self-start rounded-full px-2.5 py-1",
         CONTAINER[variant],
         className,
       )}
     >
+      {variant === "locked" ? (
+        <Icon name="lock" size={11} color={colors.textTertiary} />
+      ) : null}
       <Text className={cn("font-mono text-[11px] uppercase tracking-wider", LABEL[variant])}>
-        {variant === "locked" ? `🔒 ${label}` : label}
+        {label}
       </Text>
     </View>
   );

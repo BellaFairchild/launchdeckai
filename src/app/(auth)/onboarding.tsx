@@ -1,19 +1,19 @@
-import React, { useState } from "react";
-import { useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { KeyboardAvoidingView, Platform } from "react-native";
 import { useMutation } from "convex/react";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import { KeyboardAvoidingView, Platform } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { api } from "@cvx/_generated/api";
-import { ScrollView, View, Text, TextInput, Pressable } from "@/tw";
+import { ScreenBackground } from "@/components/layout/ScreenBackground";
 import { Button } from "@/components/ui/Button";
-import { cn } from "@/lib/cn";
-import { authEnabled } from "@/lib/auth";
 import { track } from "@/lib/analytics";
+import { authEnabled } from "@/lib/auth";
+import { cn } from "@/lib/cn";
 import { haptics } from "@/lib/haptics";
-import { StarryNight } from "@/components/StarryNight";
 import { useMissionStore } from "@/store/mission";
+import { Pressable, ScrollView, Text, TextInput, View } from "@/tw";
 import type { Platform as AppPlatform, MissionStage } from "@/types";
+import { api } from "@cvx/_generated/api";
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -37,16 +37,31 @@ const DATE_OPTIONS: { label: string; offset: number | null }[] = [
   { label: "Not sure yet", offset: null },
 ];
 
-function Chip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+function Chip({
+  label,
+  active,
+  onPress,
+}: {
+  label: string;
+  active: boolean;
+  onPress: () => void;
+}) {
   return (
     <Pressable
       onPress={onPress}
       className={cn(
         "rounded-full border px-4 py-2.5",
-        active ? "border-brand-teal bg-brand-teal/15" : "border-border-med bg-bg-surface",
+        active
+          ? "border-brand-teal bg-brand-teal/15"
+          : "border-border-med bg-bg-surface",
       )}
     >
-      <Text className={cn("font-body text-sm font-semibold", active ? "text-brand-teal" : "text-text-secondary")}>
+      <Text
+        className={cn(
+          "font-body text-sm font-semibold",
+          active ? "text-brand-teal" : "text-text-secondary",
+        )}
+      >
         {label}
       </Text>
     </Pressable>
@@ -111,8 +126,7 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <View className="flex-1 bg-bg-deep">
-      <StarryNight />
+    <ScreenBackground>
       <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
@@ -189,10 +203,17 @@ export default function OnboardingScreen() {
 
             {step === 3 && (
               <View className="gap-3">
-                <Text className="font-display text-2xl font-bold text-text-primary">Platform</Text>
+                <Text className="font-display text-2xl font-bold text-text-primary">
+                  Platform
+                </Text>
                 <View className="flex-row flex-wrap gap-2">
                   {PLATFORMS.map((p) => (
-                    <Chip key={p.id} label={p.label} active={platform === p.id} onPress={() => setPlatform(p.id)} />
+                    <Chip
+                      key={p.id}
+                      label={p.label}
+                      active={platform === p.id}
+                      onPress={() => setPlatform(p.id)}
+                    />
                   ))}
                 </View>
               </View>
@@ -205,7 +226,12 @@ export default function OnboardingScreen() {
                 </Text>
                 <View className="flex-row flex-wrap gap-2">
                   {STAGES.map((s) => (
-                    <Chip key={s.id} label={s.label} active={stage === s.id} onPress={() => setStage(s.id)} />
+                    <Chip
+                      key={s.id}
+                      label={s.label}
+                      active={stage === s.id}
+                      onPress={() => setStage(s.id)}
+                    />
                   ))}
                 </View>
               </View>
@@ -216,7 +242,9 @@ export default function OnboardingScreen() {
                 <Text className="font-display text-2xl font-bold text-text-primary">
                   Target launch
                 </Text>
-                <Text className="font-body text-sm text-text-secondary">Optional — you can change this later.</Text>
+                <Text className="font-body text-sm text-text-secondary">
+                  Optional — you can change this later.
+                </Text>
                 <View className="flex-row flex-wrap gap-2">
                   {DATE_OPTIONS.map((d) => (
                     <Chip
@@ -236,8 +264,9 @@ export default function OnboardingScreen() {
                   Ready for launch prep 🚀
                 </Text>
                 <Text className="font-body text-sm text-text-secondary">
-                  {appName || "Your app"} — “{oneLiner || "your one-liner"}” for {audience || "your audience"} on{" "}
-                  {platform}. We&apos;ll set up your milestones and Blueprints.
+                  {appName || "Your app"} — “{oneLiner || "your one-liner"}” for{" "}
+                  {audience || "your audience"} on {platform}. We&apos;ll set up
+                  your milestones and Blueprints.
                 </Text>
               </View>
             )}
@@ -246,7 +275,11 @@ export default function OnboardingScreen() {
           {/* Footer nav */}
           <View className="flex-row gap-2 px-6 pb-4">
             {step > 0 ? (
-              <Button label="Back" variant="ghost" onPress={() => setStep((s) => s - 1)} />
+              <Button
+                label="Back"
+                variant="ghost"
+                onPress={() => setStep((s) => s - 1)}
+              />
             ) : null}
             <View className="flex-1">
               {step < TOTAL - 1 ? (
@@ -257,12 +290,17 @@ export default function OnboardingScreen() {
                   onPress={() => setStep((s) => s + 1)}
                 />
               ) : (
-                <Button label="Create my Mission" fullWidth loading={submitting} onPress={finish} />
+                <Button
+                  label="Create my Mission"
+                  fullWidth
+                  loading={submitting}
+                  onPress={finish}
+                />
               )}
             </View>
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </View>
+    </ScreenBackground>
   );
 }

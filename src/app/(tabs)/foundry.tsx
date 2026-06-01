@@ -1,22 +1,23 @@
-import React, { useState } from "react";
-import { useRouter, useLocalSearchParams } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { ActivityIndicator } from "react-native";
 import { useAction } from "convex/react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useState } from "react";
+import { ActivityIndicator } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { api } from "@cvx/_generated/api";
-import { ScrollView, View, Text, Pressable } from "@/tw";
-import { Card } from "@/components/ui/Card";
+import { TabScreen } from "@/components/layout/TabScreen";
 import { Badge } from "@/components/ui/Badge";
-import { FuelBadge } from "@/components/ui/FuelBadge";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { FuelBadge } from "@/components/ui/FuelBadge";
 import { FOUNDRY_TOOLS, type FoundryTool } from "@/constants/foundryTools";
+import { planMeets, PLANS } from "@/constants/plans";
+import { track } from "@/lib/analytics";
+import { haptics } from "@/lib/haptics";
 import { useMissionStore } from "@/store/mission";
 import { useUIStore } from "@/store/ui";
-import { planMeets, PLANS } from "@/constants/plans";
-import { haptics } from "@/lib/haptics";
-import { track } from "@/lib/analytics";
+import { Pressable, ScrollView, Text, View } from "@/tw";
 import type { SignalPhase } from "@/types";
+import { api } from "@cvx/_generated/api";
 
 export default function FoundryScreen() {
   const router = useRouter();
@@ -111,11 +112,12 @@ export default function FoundryScreen() {
     haptics.success();
     track("foundry_asset_generated", { tool: tool.id, viaAI });
     track("cargo_asset_saved", { type: tool.assetType });
-    if (params.signalId) track("signal_asset_forged", { signalId: params.signalId });
+    if (params.signalId)
+      track("signal_asset_forged", { signalId: params.signalId });
   };
 
   return (
-    <View className="flex-1">
+    <TabScreen>
       <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
         <ScrollView contentContainerClassName="gap-3 px-5 py-4 pb-24">
           {params.signalId ? (
@@ -135,8 +137,9 @@ export default function FoundryScreen() {
                 Saved to Cargo Bay
               </Text>
               <Text className="mt-0.5 font-body text-sm text-text-secondary">
-                “{savedTitle}” is in_prep ({savedViaAI ? "AI-generated" : "mock draft"}).
-                Mark it flight-ready in Cargo Bay.
+                “{savedTitle}” is in_prep (
+                {savedViaAI ? "AI-generated" : "mock draft"}). Mark it
+                flight-ready in Cargo Bay.
               </Text>
               <Button
                 label="View in Cargo Bay →"
@@ -167,9 +170,16 @@ export default function FoundryScreen() {
                       {tool.description}
                     </Text>
                     <View className="mt-2 flex-row items-center gap-2">
-                      <FuelBadge amount={tool.fuelCost} size="sm" warning={!affordable} />
+                      <FuelBadge
+                        amount={tool.fuelCost}
+                        size="sm"
+                        warning={!affordable}
+                      />
                       {locked ? (
-                        <Badge label={`Needs ${PLANS[tool.requiredPlan].name}`} variant="locked" />
+                        <Badge
+                          label={`Needs ${PLANS[tool.requiredPlan].name}`}
+                          variant="locked"
+                        />
                       ) : null}
                     </View>
                   </View>
@@ -179,14 +189,22 @@ export default function FoundryScreen() {
                   accessibilityRole="button"
                   className={
                     "mt-3 min-h-[44px] flex-row items-center justify-center gap-2 rounded-full px-4 py-2.5 " +
-                    (locked ? "bg-bg-depleted border border-border-default" : "bg-brand-teal active:opacity-90") +
+                    (locked
+                      ? "bg-bg-depleted border border-border-default"
+                      : "bg-brand-teal active:opacity-90") +
                     (busyTool && busyTool !== tool.id ? " opacity-60" : "")
                   }
                 >
                   {busyTool === tool.id ? (
                     <ActivityIndicator size="small" color="#060B14" />
                   ) : (
-                    <Text className={locked ? "font-body font-semibold text-text-tertiary" : "font-body font-semibold text-bg-deep"}>
+                    <Text
+                      className={
+                        locked
+                          ? "font-body font-semibold text-text-tertiary"
+                          : "font-body font-semibold text-bg-deep"
+                      }
+                    >
                       {locked
                         ? `🔒 Unlock with ${PLANS[tool.requiredPlan].name}`
                         : affordable
@@ -200,6 +218,6 @@ export default function FoundryScreen() {
           })}
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </TabScreen>
   );
 }

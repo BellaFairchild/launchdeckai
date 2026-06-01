@@ -4,6 +4,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Pressable, Text, View } from "@/tw";
 import { FuelBadge } from "@/components/ui/FuelBadge";
+import { Icon } from "@/components/ui/Icon";
+import { colors } from "@/constants/colors";
 import { useUIStore } from "@/store/ui";
 
 /** Shared top bar on tab screens: drawer menu, wordmark, and Fuel pill. */
@@ -25,7 +27,7 @@ export function AppHeader() {
           accessibilityLabel="Open menu"
           className="h-11 w-11 items-center justify-center -ml-2"
         >
-          <Text className="text-xl text-text-primary">☰</Text>
+          <Icon name="menu" size={24} color={colors.textPrimary} />
         </Pressable>
 
         <Text className="font-display text-base font-bold tracking-wide text-text-primary">

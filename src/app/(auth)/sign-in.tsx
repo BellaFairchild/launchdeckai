@@ -1,14 +1,14 @@
-import React, { useState } from "react";
-import { useRouter } from "expo-router";
 import { useSignIn, useSSO } from "@clerk/clerk-expo";
 import * as Linking from "expo-linking";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import { useState } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { View, Text, TextInput, Pressable } from "@/tw";
-import { Button } from "@/components/ui/Button";
 import { AstroAvatar } from "@/components/astro/AstroAvatar";
-import { StarryNight } from "@/components/StarryNight";
+import { ScreenBackground } from "@/components/layout/ScreenBackground";
+import { Button } from "@/components/ui/Button";
+import { Pressable, Text, TextInput, View } from "@/tw";
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -30,7 +30,9 @@ export default function SignInScreen() {
         await setActive({ session: res.createdSessionId });
         router.replace("/");
       } else {
-        setError("Additional verification required — check your Clerk settings.");
+        setError(
+          "Additional verification required — check your Clerk settings.",
+        );
       }
     } catch (e: any) {
       setError(e?.errors?.[0]?.message ?? "Sign-in failed.");
@@ -56,15 +58,21 @@ export default function SignInScreen() {
   };
 
   return (
-    <View className="flex-1 bg-bg-deep">
-      <StarryNight />
+    <ScreenBackground>
       <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
           <View className="flex-1 justify-center gap-4 px-7">
             <View className="items-center gap-2">
               <AstroAvatar plan="cadet" variant="bust" size={96} />
-              <Text className="font-display text-2xl font-bold text-text-primary">Welcome back, Commander</Text>
-              <Text className="font-body text-sm text-text-secondary">Sign in to resume your launch.</Text>
+              <Text className="font-display text-2xl font-bold text-text-primary">
+                Welcome back, Commander
+              </Text>
+              <Text className="font-body text-sm text-text-secondary">
+                Sign in to resume your launch.
+              </Text>
             </View>
 
             <View className="gap-2">
@@ -87,29 +95,54 @@ export default function SignInScreen() {
               />
             </View>
 
-            {error ? <Text className="font-body text-sm text-status-error">{error}</Text> : null}
+            {error ? (
+              <Text className="font-body text-sm text-status-error">
+                {error}
+              </Text>
+            ) : null}
 
-            <Button label="Sign In" fullWidth loading={busy} onPress={onSignIn} />
+            <Button
+              label="Sign In"
+              fullWidth
+              loading={busy}
+              onPress={onSignIn}
+            />
 
             <View className="flex-row items-center gap-3">
               <View className="h-px flex-1 bg-border-default" />
-              <Text className="font-mono text-[11px] uppercase tracking-wider text-text-tertiary">or</Text>
+              <Text className="font-mono text-[11px] uppercase tracking-wider text-text-tertiary">
+                or
+              </Text>
               <View className="h-px flex-1 bg-border-default" />
             </View>
 
             <View className="gap-2">
-              <Button label="Continue with Google" variant="secondary" fullWidth onPress={() => onOAuth("oauth_google")} />
-              <Button label="Continue with Apple" variant="secondary" fullWidth onPress={() => onOAuth("oauth_apple")} />
+              <Button
+                label="Continue with Google"
+                variant="secondary"
+                fullWidth
+                onPress={() => onOAuth("oauth_google")}
+              />
+              <Button
+                label="Continue with Apple"
+                variant="secondary"
+                fullWidth
+                onPress={() => onOAuth("oauth_apple")}
+              />
             </View>
 
-            <Pressable onPress={() => router.replace("/(auth)/sign-up")} className="items-center py-2">
+            <Pressable
+              onPress={() => router.replace("/(auth)/sign-up")}
+              className="items-center py-2"
+            >
               <Text className="font-body text-sm text-text-secondary">
-                New here? <Text className="text-brand-teal">Create an account</Text>
+                New here?{" "}
+                <Text className="text-brand-teal">Create an account</Text>
               </Text>
             </Pressable>
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </View>
+    </ScreenBackground>
   );
 }

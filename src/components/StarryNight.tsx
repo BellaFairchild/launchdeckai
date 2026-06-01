@@ -1,11 +1,11 @@
 import React, { useMemo } from "react";
-import { View, StyleSheet, useWindowDimensions } from "react-native";
+import { StyleSheet, useWindowDimensions, View } from "react-native";
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withRepeat,
-  withTiming,
-  Easing,
+    Easing,
+    useAnimatedStyle,
+    useSharedValue,
+    withRepeat,
+    withTiming,
 } from "react-native-reanimated";
 
 /**
@@ -46,25 +46,39 @@ export function StarryNight() {
     );
   }, [twinkle, neb]);
 
-  const twinkleStyle = useAnimatedStyle(() => ({ opacity: 0.35 + twinkle.value * 0.55 }));
+  const twinkleStyle = useAnimatedStyle(() => ({
+    opacity: 0.35 + twinkle.value * 0.55,
+  }));
   const nebStyle = useAnimatedStyle(() => ({
     opacity: 0.05 + neb.value * 0.05,
     transform: [{ scale: 0.9 + neb.value * 0.2 }],
   }));
 
   return (
-    <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+    <View style={[StyleSheet.absoluteFill, { pointerEvents: "none" }]}>
       <Animated.View
         style={[
           styles.nebula,
-          { backgroundColor: "#1426A8", top: height * 0.1, left: width * 0.05, width: width * 0.7, height: width * 0.7 },
+          {
+            backgroundColor: "#1426A8",
+            top: height * 0.1,
+            left: width * 0.05,
+            width: width * 0.7,
+            height: width * 0.7,
+          },
           nebStyle,
         ]}
       />
       <Animated.View
         style={[
           styles.nebula,
-          { backgroundColor: "#10B7D6", bottom: height * 0.1, right: width * 0.02, width: width * 0.8, height: width * 0.8 },
+          {
+            backgroundColor: "#10B7D6",
+            bottom: height * 0.1,
+            right: width * 0.02,
+            width: width * 0.8,
+            height: width * 0.8,
+          },
           nebStyle,
         ]}
       />
@@ -72,15 +86,39 @@ export function StarryNight() {
       {dim.map((s, i) => (
         <View
           key={`d${i}`}
-          style={[styles.star, { left: s.x, top: s.y, width: s.size, height: s.size, opacity: s.opacity }]}
+          style={[
+            styles.star,
+            {
+              left: s.x,
+              top: s.y,
+              width: s.size,
+              height: s.size,
+              opacity: s.opacity,
+            },
+          ]}
         />
       ))}
 
-      <Animated.View style={[StyleSheet.absoluteFill, twinkleStyle]} pointerEvents="none">
+      <Animated.View
+        style={[
+          StyleSheet.absoluteFill,
+          twinkleStyle,
+          { pointerEvents: "none" },
+        ]}
+      >
         {bright.map((s, i) => (
           <View
             key={`b${i}`}
-            style={[styles.star, { left: s.x, top: s.y, width: s.size + 0.6, height: s.size + 0.6, opacity: s.opacity }]}
+            style={[
+              styles.star,
+              {
+                left: s.x,
+                top: s.y,
+                width: s.size + 0.6,
+                height: s.size + 0.6,
+                opacity: s.opacity,
+              },
+            ]}
           />
         ))}
       </Animated.View>
@@ -90,5 +128,9 @@ export function StarryNight() {
 
 const styles = StyleSheet.create({
   nebula: { position: "absolute", borderRadius: 9999 },
-  star: { position: "absolute", backgroundColor: "#FFFFFF", borderRadius: 9999 },
+  star: {
+    position: "absolute",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 9999,
+  },
 });

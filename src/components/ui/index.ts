@@ -1,5 +1,10 @@
 export { Button, type ButtonVariant } from "./Button";
 export { Card, type CardVariant } from "./Card";
+export { Icon, type IconName } from "./Icon";
+export { GradientView } from "./GradientView";
+export { GalaxyBackdrop } from "./GalaxyBackdrop";
+export { NebulaBackdrop } from "./NebulaBackdrop";
+export { ProgressBar } from "./ProgressBar";
 export { Badge, type BadgeVariant } from "./Badge";
 export { FuelBadge } from "./FuelBadge";
 export { ProgressRing } from "./ProgressRing";

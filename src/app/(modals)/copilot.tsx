@@ -1,19 +1,23 @@
-import React, { useState } from "react";
-import { useRouter } from "expo-router";
-import { KeyboardAvoidingView, Platform, ActivityIndicator } from "react-native";
 import { useAction } from "convex/react";
+import { useRouter } from "expo-router";
+import { useState } from "react";
+import {
+    ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
+} from "react-native";
 
-import { api } from "@cvx/_generated/api";
-import { ScrollView, View, Text, TextInput, Pressable } from "@/tw";
-import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { AstroAvatar } from "@/components/astro/AstroAvatar";
+import { Badge } from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
+import { PLANS, planMeets } from "@/constants/plans";
+import { track } from "@/lib/analytics";
 import { cn } from "@/lib/cn";
+import { formatLaunchDate, readinessLabel, tMinus } from "@/lib/launch";
 import { useMissionStore } from "@/store/mission";
 import { useUIStore } from "@/store/ui";
-import { PLANS, planMeets } from "@/constants/plans";
-import { readinessLabel, tMinus, formatLaunchDate } from "@/lib/launch";
-import { track } from "@/lib/analytics";
+import { Pressable, ScrollView, Text, TextInput, View } from "@/tw";
+import { api } from "@cvx/_generated/api";
 
 type Mode = "standard" | "powerful";
 type Msg = { id: number; role: "user" | "assistant"; text: string };
@@ -72,9 +76,13 @@ export default function CopilotModal() {
     );
     return {
       readinessScore: mission.readinessScore,
-      incompleteMilestones: milestones.filter((m) => !m.completed).map((m) => m.title),
+      incompleteMilestones: milestones
+        .filter((m) => !m.completed)
+        .map((m) => m.title),
       blueprintProgress,
-      signalsReady: assets.filter((a) => a.signalId && a.status === "flight_ready").length,
+      signalsReady: assets.filter(
+        (a) => a.signalId && a.status === "flight_ready",
+      ).length,
       launchLabel: `${t.label} · ${formatLaunchDate(mission.launchDate)}`,
     };
   };
@@ -96,7 +104,10 @@ export default function CopilotModal() {
       .map((m) => ({ role: m.role, content: m.text }));
     const convo = [...history, { role: "user" as const, content: trimmed }];
 
-    setMessages((prev) => [...prev, { id: prev.length, role: "user", text: trimmed }]);
+    setMessages((prev) => [
+      ...prev,
+      { id: prev.length, role: "user", text: trimmed },
+    ]);
     setInput("");
     setBusy(true);
     track("copilot_message_sent", { mode });
@@ -122,14 +133,17 @@ export default function CopilotModal() {
     }
 
     if (mode === "standard") spendFuel(STANDARD_COST);
-    setMessages((prev) => [...prev, { id: prev.length, role: "assistant", text: reply }]);
+    setMessages((prev) => [
+      ...prev,
+      { id: prev.length, role: "assistant", text: reply },
+    ]);
     setBusy(false);
   };
 
   const powerfulLocked = !planMeets(plan, "admiral");
 
   return (
-    <View className="flex-1 bg-bg-deep">
+    <View className="flex-1 bg-bg-deep" style={{ flex: 1 }}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -138,11 +152,15 @@ export default function CopilotModal() {
         <View className="flex-row items-center gap-3 border-b border-border-default px-5 py-3">
           <AstroAvatar plan={plan} variant="orb" size={52} />
           <View className="flex-1">
-            <Text className="font-display text-lg font-bold text-text-primary">Astro</Text>
+            <Text className="font-display text-lg font-bold text-text-primary">
+              Astro
+            </Text>
             <View className="mt-0.5 flex-row items-center gap-2">
               <Badge label={PLANS[plan].name} variant="plan" />
               <Text className="font-mono text-[11px] text-text-tertiary">
-                {mode === "standard" ? `${STANDARD_COST} Fuel / msg` : "Powerful mode"}
+                {mode === "standard"
+                  ? `${STANDARD_COST} Fuel / msg`
+                  : "Powerful mode"}
               </Text>
             </View>
           </View>
@@ -156,7 +174,9 @@ export default function CopilotModal() {
             return (
               <Pressable
                 key={m}
-                onPress={() => (locked ? router.push("/(modals)/refuel") : setMode(m))}
+                onPress={() =>
+                  locked ? router.push("/(modals)/refuel") : setMode(m)
+                }
                 className={cn(
                   "flex-1 items-center rounded-full border px-3 py-2",
                   active
@@ -188,7 +208,9 @@ export default function CopilotModal() {
               )}
             >
               <Card variant={msg.role === "user" ? "elevated" : "glass"}>
-                <Text className="font-body text-sm text-text-primary">{msg.text}</Text>
+                <Text className="font-body text-sm text-text-primary">
+                  {msg.text}
+                </Text>
               </Card>
             </View>
           ))}
@@ -198,7 +220,9 @@ export default function CopilotModal() {
               <Card variant="glass">
                 <View className="flex-row items-center gap-2">
                   <ActivityIndicator size="small" color="#4DC8C0" />
-                  <Text className="font-body text-sm text-text-tertiary">Astro is thinking…</Text>
+                  <Text className="font-body text-sm text-text-tertiary">
+                    Astro is thinking…
+                  </Text>
                 </View>
               </Card>
             </View>
@@ -212,7 +236,9 @@ export default function CopilotModal() {
                 onPress={() => send(p)}
                 className="rounded-full border border-border-med bg-bg-surface px-3 py-1.5 active:opacity-80"
               >
-                <Text className="font-body text-xs text-text-secondary">{p}</Text>
+                <Text className="font-body text-xs text-text-secondary">
+                  {p}
+                </Text>
               </Pressable>
             ))}
           </View>

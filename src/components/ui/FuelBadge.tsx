@@ -1,6 +1,9 @@
 import React from "react";
+
 import { Text, View } from "@/tw";
 import { cn } from "@/lib/cn";
+import { Icon } from "./Icon";
+import { colors } from "@/constants/colors";
 
 type Props = {
   /** Current Fuel balance. */
@@ -16,9 +19,21 @@ type Props = {
 /** Fuel = the app's energy/credits currency. Flame icon + amount. */
 export function FuelBadge({ amount, warning, glow, size = "md", className }: Props) {
   const isSmall = size === "sm";
+  const flameColor = warning ? colors.statusWarning : colors.brandFlame;
   return (
     <View
       accessibilityLabel={`${amount} Fuel`}
+      style={
+        glow
+          ? {
+              shadowColor: colors.brandGold,
+              shadowOpacity: 0.5,
+              shadowRadius: 10,
+              shadowOffset: { width: 0, height: 0 },
+              elevation: 6,
+            }
+          : undefined
+      }
       className={cn(
         "flex-row items-center gap-1.5 self-start rounded-full border px-3 py-1",
         warning
@@ -28,7 +43,7 @@ export function FuelBadge({ amount, warning, glow, size = "md", className }: Pro
         className,
       )}
     >
-      <Text className={cn(isSmall ? "text-xs" : "text-sm")}>🔥</Text>
+      <Icon name="flame" size={isSmall ? 12 : 14} color={flameColor} />
       <Text
         className={cn(
           "font-mono font-medium",

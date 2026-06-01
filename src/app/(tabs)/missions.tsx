@@ -1,19 +1,19 @@
-import React from "react";
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { ScrollView, View, Text, Pressable } from "@/tw";
-import { Card } from "@/components/ui/Card";
+import { TabScreen } from "@/components/layout/TabScreen";
 import { Badge } from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
 import { FuelBadge } from "@/components/ui/FuelBadge";
 import { ProgressRing } from "@/components/ui/ProgressRing";
+import { MILESTONE_CATEGORIES } from "@/constants/milestoneTemplates";
+import { planMeets, PLANS } from "@/constants/plans";
+import { track } from "@/lib/analytics";
+import { haptics } from "@/lib/haptics";
+import { readinessLabel } from "@/lib/launch";
 import { useMissionStore } from "@/store/mission";
 import { useUIStore } from "@/store/ui";
-import { planMeets, PLANS } from "@/constants/plans";
-import { MILESTONE_CATEGORIES } from "@/constants/milestoneTemplates";
-import { readinessLabel } from "@/lib/launch";
-import { haptics } from "@/lib/haptics";
-import { track } from "@/lib/analytics";
+import { Pressable, ScrollView, Text, View } from "@/tw";
 import type { Milestone } from "@/types";
 
 function MilestoneRow({
@@ -35,7 +35,11 @@ function MilestoneRow({
           onPress={locked ? onUnlock : completed ? undefined : onComplete}
           accessibilityRole="checkbox"
           accessibilityState={{ checked: completed, disabled: locked }}
-          accessibilityLabel={completed ? `${milestone.title} complete` : `Complete ${milestone.title}`}
+          accessibilityLabel={
+            completed
+              ? `${milestone.title} complete`
+              : `Complete ${milestone.title}`
+          }
           className={
             "mt-0.5 h-7 w-7 items-center justify-center rounded-full border " +
             (completed
@@ -45,7 +49,9 @@ function MilestoneRow({
                 : "border-brand-teal")
           }
         >
-          <Text className={completed ? "text-status-success" : "text-text-tertiary"}>
+          <Text
+            className={completed ? "text-status-success" : "text-text-tertiary"}
+          >
             {completed ? "✓" : locked ? "🔒" : ""}
           </Text>
         </Pressable>
@@ -54,7 +60,9 @@ function MilestoneRow({
           <Text
             className={
               "font-body text-base font-semibold " +
-              (completed ? "text-text-secondary line-through" : "text-text-primary")
+              (completed
+                ? "text-text-secondary line-through"
+                : "text-text-primary")
             }
           >
             {milestone.title}
@@ -65,7 +73,10 @@ function MilestoneRow({
           <View className="mt-2 flex-row items-center gap-2">
             <FuelBadge amount={milestone.fuelReward} size="sm" />
             {locked ? (
-              <Badge label={`Needs ${PLANS[milestone.requiredPlan].name}`} variant="locked" />
+              <Badge
+                label={`Needs ${PLANS[milestone.requiredPlan].name}`}
+                variant="locked"
+              />
             ) : null}
           </View>
         </View>
@@ -80,18 +91,23 @@ export default function MissionsScreen() {
   const plan = useUIStore((s) => s.plan);
 
   return (
-    <View className="flex-1">
+    <TabScreen>
       <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
         <ScrollView contentContainerClassName="gap-4 px-5 py-4 pb-24">
           <Card variant="glass">
             <View className="flex-row items-center gap-4">
-              <ProgressRing progress={mission.readinessScore} size={72} strokeWidth={7} />
+              <ProgressRing
+                progress={mission.readinessScore}
+                size={72}
+                strokeWidth={7}
+              />
               <View className="flex-1">
                 <Text className="font-display text-lg font-bold text-text-primary">
                   {readinessLabel(mission.readinessScore)}
                 </Text>
                 <Text className="font-body text-sm text-text-secondary">
-                  {milestones.filter((m) => m.completed).length}/{milestones.length} milestones cleared
+                  {milestones.filter((m) => m.completed).length}/
+                  {milestones.length} milestones cleared
                 </Text>
               </View>
             </View>
@@ -116,7 +132,10 @@ export default function MissionsScreen() {
                         completeMilestone(m.id);
                         haptics.success();
                         track("milestone_completed", { category: m.category });
-                        track("fuel_earned", { amount: m.fuelReward, reason: "milestone" });
+                        track("fuel_earned", {
+                          amount: m.fuelReward,
+                          reason: "milestone",
+                        });
                       }}
                       onUnlock={() => router.push("/(modals)/refuel")}
                     />
@@ -127,6 +146,6 @@ export default function MissionsScreen() {
           })}
         </ScrollView>
       </SafeAreaView>
-    </View>
+    </TabScreen>
   );
 }

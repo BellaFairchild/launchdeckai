@@ -1,7 +1,7 @@
-import React from "react";
-import Svg, { Circle } from "react-native-svg";
-import { View, Text } from "@/tw";
 import { colors } from "@/constants/colors";
+import { squareSize } from "@/lib/sizeStyle";
+import { Text, View } from "@/tw";
+import Svg, { Circle } from "react-native-svg";
 
 type Props = {
   /** 0-100 */
@@ -35,7 +35,7 @@ export function ProgressRing({
   return (
     <View
       accessibilityLabel={`${Math.round(clamped)} percent${caption ? ` ${caption}` : ""}`}
-      style={{ width: size, height: size }}
+      style={squareSize(size)}
       className="items-center justify-center"
     >
       <Svg width={size} height={size}>

@@ -1,14 +1,14 @@
-import React, { useState } from "react";
-import { useRouter } from "expo-router";
 import { useSignUp } from "@clerk/clerk-expo";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import { useState } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import { View, Text, TextInput, Pressable } from "@/tw";
-import { Button } from "@/components/ui/Button";
 import { AstroAvatar } from "@/components/astro/AstroAvatar";
-import { StarryNight } from "@/components/StarryNight";
+import { ScreenBackground } from "@/components/layout/ScreenBackground";
+import { Button } from "@/components/ui/Button";
 import { track } from "@/lib/analytics";
+import { Pressable, Text, TextInput, View } from "@/tw";
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -41,7 +41,9 @@ export default function SignUpScreen() {
     setBusy(true);
     setError(null);
     try {
-      const res = await signUp.attemptEmailAddressVerification({ code: code.trim() });
+      const res = await signUp.attemptEmailAddressVerification({
+        code: code.trim(),
+      });
       if (res.status === "complete") {
         track("user_signed_up");
         await setActive({ session: res.createdSessionId });
@@ -57,10 +59,12 @@ export default function SignUpScreen() {
   };
 
   return (
-    <View className="flex-1 bg-bg-deep">
-      <StarryNight />
+    <ScreenBackground>
       <SafeAreaView style={{ flex: 1 }}>
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
           <View className="flex-1 justify-center gap-4 px-7">
             <View className="items-center gap-2">
               <AstroAvatar plan="cadet" variant="bust" size={96} />
@@ -95,11 +99,24 @@ export default function SignUpScreen() {
                     className="rounded-2xl border border-border-med bg-bg-card px-4 py-3 font-body text-base text-text-primary"
                   />
                 </View>
-                {error ? <Text className="font-body text-sm text-status-error">{error}</Text> : null}
-                <Button label="Create Account" fullWidth loading={busy} onPress={onSignUp} />
-                <Pressable onPress={() => router.replace("/(auth)/sign-in")} className="items-center py-2">
+                {error ? (
+                  <Text className="font-body text-sm text-status-error">
+                    {error}
+                  </Text>
+                ) : null}
+                <Button
+                  label="Create Account"
+                  fullWidth
+                  loading={busy}
+                  onPress={onSignUp}
+                />
+                <Pressable
+                  onPress={() => router.replace("/(auth)/sign-in")}
+                  className="items-center py-2"
+                >
                   <Text className="font-body text-sm text-text-secondary">
-                    Already have an account? <Text className="text-brand-teal">Sign in</Text>
+                    Already have an account?{" "}
+                    <Text className="text-brand-teal">Sign in</Text>
                   </Text>
                 </Pressable>
               </>
@@ -113,13 +130,22 @@ export default function SignUpScreen() {
                   keyboardType="number-pad"
                   className="rounded-2xl border border-border-med bg-bg-card px-4 py-3 text-center font-mono text-xl tracking-[6px] text-text-primary"
                 />
-                {error ? <Text className="font-body text-sm text-status-error">{error}</Text> : null}
-                <Button label="Verify" fullWidth loading={busy} onPress={onVerify} />
+                {error ? (
+                  <Text className="font-body text-sm text-status-error">
+                    {error}
+                  </Text>
+                ) : null}
+                <Button
+                  label="Verify"
+                  fullWidth
+                  loading={busy}
+                  onPress={onVerify}
+                />
               </>
             )}
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
-    </View>
+    </ScreenBackground>
   );
 }

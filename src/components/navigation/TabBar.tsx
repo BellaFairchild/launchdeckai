@@ -10,7 +10,10 @@ type TabBarProps = Parameters<
   NonNullable<ComponentProps<typeof Tabs>["tabBar"]>
 >[0];
 import { cn } from "@/lib/cn";
+import { colors } from "@/constants/colors";
 import { AstroAvatar } from "@/components/astro/AstroAvatar";
+import { Icon, type IconName } from "@/components/ui/Icon";
+import { GradientView } from "@/components/ui/GradientView";
 import { useUIStore } from "@/store/ui";
 
 const TAB_LABEL: Record<string, string> = {
@@ -18,13 +21,6 @@ const TAB_LABEL: Record<string, string> = {
   missions: "Missions",
   blueprints: "Blueprints",
   foundry: "Foundry",
-};
-
-const TAB_GLYPH: Record<string, string> = {
-  deck: "◎",
-  missions: "✓",
-  blueprints: "▤",
-  foundry: "⚙",
 };
 
 function TabButton({
@@ -47,13 +43,31 @@ function TabButton({
       accessibilityLabel={TAB_LABEL[name] ?? name}
       className="flex-1 items-center justify-center gap-1 py-1"
     >
-      <Text className={cn("text-lg", focused ? "text-brand-teal" : "text-text-tertiary")}>
-        {TAB_GLYPH[name] ?? "•"}
-      </Text>
+      <View
+        style={
+          focused
+            ? {
+                shadowColor: colors.brandTeal,
+                shadowOpacity: 0.7,
+                shadowRadius: 9,
+                shadowOffset: { width: 0, height: 0 },
+              }
+            : undefined
+        }
+      >
+        <Icon
+          name={(name as IconName) ?? "deck"}
+          size={24}
+          color={focused ? colors.brandTeal : colors.textTertiary}
+          strokeWidth={focused ? 2.2 : 2}
+        />
+      </View>
       <Text
         className={cn(
-          "font-body text-[11px]",
-          focused ? "text-brand-teal" : "text-text-tertiary",
+          "text-[11px]",
+          focused
+            ? "font-body font-semibold text-brand-teal"
+            : "font-body text-text-tertiary",
         )}
       >
         {TAB_LABEL[name] ?? name}
@@ -103,8 +117,20 @@ export function TabBar({ state, navigation }: TabBarProps) {
   return (
     <View
       style={{ paddingBottom: insets.bottom }}
-      className="flex-row items-center border-t border-border-default bg-bg-surface px-2 pt-1.5"
+      className="relative flex-row items-center border-t border-border-default bg-bg-surface px-2 pt-2"
     >
+      {/* lit top edge */}
+      <View
+        pointerEvents="none"
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: 1,
+          backgroundColor: "rgba(255,255,255,0.06)",
+        }}
+      />
       {left.map(renderTab)}
 
       <View className="w-16 items-center">
@@ -112,9 +138,20 @@ export function TabBar({ state, navigation }: TabBarProps) {
           onPress={() => router.push("/(modals)/copilot")}
           accessibilityRole="button"
           accessibilityLabel="Open AI Copilot"
-          className="-mt-7 h-16 w-16 items-center justify-center rounded-full border border-border-med bg-bg-card active:opacity-80"
+          style={{
+            shadowColor: colors.rocketTeal,
+            shadowOpacity: 0.55,
+            shadowRadius: 14,
+            shadowOffset: { width: 0, height: 0 },
+            elevation: 10,
+          }}
+          className="-mt-7 h-16 w-16 items-center justify-center overflow-hidden rounded-full active:opacity-90"
         >
-          <AstroAvatar plan={plan} variant="orb" size={52} />
+          {/* gradient launch ring */}
+          <GradientView colors={["#1426A8", "#10B7D6"]} direction="diagonal" />
+          <View className="h-[58px] w-[58px] items-center justify-center rounded-full bg-bg-card">
+            <AstroAvatar plan={plan} variant="orb" size={50} />
+          </View>
         </Pressable>
       </View>
 

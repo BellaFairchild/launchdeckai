@@ -1,22 +1,26 @@
 import { Tabs } from "expo-router";
-import { View } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 
-import { TabBar } from "@/components/navigation/TabBar";
+import { ScreenBackground } from "@/components/layout/ScreenBackground";
 import { AppHeader } from "@/components/navigation/AppHeader";
-import { StarryNight } from "@/components/StarryNight";
+import { TabBar } from "@/components/navigation/TabBar";
 
-const DEEP = "#060B14";
+const isWeb = Platform.OS === "web";
 
 export default function TabsLayout() {
   return (
-    <View style={{ flex: 1, backgroundColor: DEEP }}>
-      <StarryNight />
+    <ScreenBackground>
       <Tabs
+        style={styles.tabs}
+        sceneContainerStyle={styles.sceneContainer}
         tabBar={(props) => <TabBar {...props} />}
         screenOptions={{
           headerShown: true,
           header: () => <AppHeader />,
-          sceneStyle: { backgroundColor: "transparent" },
+          sceneStyle: styles.scene,
+          lazy: true,
+          // freezeOnBlur is native-only; on web it does not detach ghost scenes.
+          freezeOnBlur: !isWeb,
         }}
       >
         <Tabs.Screen name="deck" options={{ title: "Deck" }} />
@@ -24,6 +28,16 @@ export default function TabsLayout() {
         <Tabs.Screen name="blueprints" options={{ title: "Blueprints" }} />
         <Tabs.Screen name="foundry" options={{ title: "Foundry" }} />
       </Tabs>
-    </View>
+    </ScreenBackground>
   );
 }
+
+const styles = StyleSheet.create({
+  tabs: { flex: 1 },
+  sceneContainer: {
+    flex: 1,
+    backgroundColor: "transparent",
+    overflow: "hidden",
+  },
+  scene: { flex: 1, backgroundColor: "transparent", overflow: "hidden" },
+});
