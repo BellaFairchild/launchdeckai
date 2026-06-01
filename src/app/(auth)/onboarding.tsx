@@ -11,6 +11,7 @@ import { cn } from "@/lib/cn";
 import { authEnabled } from "@/lib/auth";
 import { track } from "@/lib/analytics";
 import { haptics } from "@/lib/haptics";
+import { StarryNight } from "@/components/StarryNight";
 import { useMissionStore } from "@/store/mission";
 import type { Platform as AppPlatform, MissionStage } from "@/types";
 
@@ -111,6 +112,7 @@ export default function OnboardingScreen() {
 
   return (
     <View className="flex-1 bg-bg-deep">
+      <StarryNight />
       <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}

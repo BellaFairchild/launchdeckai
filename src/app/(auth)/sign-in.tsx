@@ -8,6 +8,7 @@ import { KeyboardAvoidingView, Platform } from "react-native";
 import { View, Text, TextInput, Pressable } from "@/tw";
 import { Button } from "@/components/ui/Button";
 import { AstroAvatar } from "@/components/astro/AstroAvatar";
+import { StarryNight } from "@/components/StarryNight";
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -56,6 +57,7 @@ export default function SignInScreen() {
 
   return (
     <View className="flex-1 bg-bg-deep">
+      <StarryNight />
       <SafeAreaView style={{ flex: 1 }}>
         <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
           <View className="flex-1 justify-center gap-4 px-7">

@@ -45,7 +45,7 @@ export default function DeckScreen() {
   const recentCargo = [...assets].sort((a, b) => b.updatedAt - a.updatedAt)[0];
 
   return (
-    <View className="flex-1 bg-bg-deep">
+    <View className="flex-1">
       <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
         <ScrollView contentContainerClassName="gap-4 px-5 py-4 pb-24">
           {/* Active Mission */}

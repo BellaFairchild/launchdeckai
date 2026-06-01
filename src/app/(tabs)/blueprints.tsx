@@ -13,7 +13,7 @@ export default function BlueprintsScreen() {
   const blueprints = useMissionStore((s) => s.blueprints);
 
   return (
-    <View className="flex-1 bg-bg-deep">
+    <View className="flex-1">
       <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
         <ScrollView contentContainerClassName="gap-3 px-5 py-4 pb-24">
           <Text className="px-1 font-body text-sm text-text-secondary">

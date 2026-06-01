@@ -80,7 +80,7 @@ export default function MissionsScreen() {
   const plan = useUIStore((s) => s.plan);
 
   return (
-    <View className="flex-1 bg-bg-deep">
+    <View className="flex-1">
       <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
         <ScrollView contentContainerClassName="gap-4 px-5 py-4 pb-24">
           <Card variant="glass">
