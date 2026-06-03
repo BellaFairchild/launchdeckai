@@ -112,3 +112,14 @@ export interface SignalTemplate {
   relativeTiming: string;
   order: number;
 }
+
+/**
+ * A scheduled broadcast for a single signal: where to post + when. The
+ * device-local reminder is keyed by `broadcast:{signalId}`, so no notification
+ * id is stored here.
+ */
+export interface Broadcast {
+  signalId: string;
+  destinationUrl: string;
+  scheduledAt: number; // epoch ms
+}

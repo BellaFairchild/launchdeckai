@@ -22,6 +22,8 @@ export type AnalyticsEvent =
   | "signal_shared"
   | "broadcast_scheduler_opened"
   | "broadcast_scheduled"
+  | "broadcast_cancelled"
+  | "broadcast_reminder_tapped"
   | "transmit_sequence_tapped"
   | "copilot_message_sent"
   | "plan_upgraded";
