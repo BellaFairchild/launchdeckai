@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Modal } from "react-native";
 
 import { Button } from "@/components/ui/Button";
@@ -8,6 +8,7 @@ import { colors } from "@/constants/colors";
 import { cn } from "@/lib/cn";
 import { haptics } from "@/lib/haptics";
 import { playClick } from "@/lib/audio";
+import { isValidDestinationUrl, normalizeDestinationUrl } from "@/lib/url";
 import { Pressable, ScrollView, Text, TextInput, View } from "@/tw";
 
 const MONTHS = [
@@ -35,9 +36,17 @@ type Props = {
   title?: string;
   /** Date the picker opens on. Defaults to today. */
   initialDate?: Date;
+  /** When editing an existing plan: prefill day/time. */
+  initialWhen?: Date;
+  /** When editing an existing plan: prefill the destination URL. */
+  initialUrl?: string;
+  /** True when editing an existing plan (shows Remove). */
+  editing?: boolean;
   onClose: () => void;
-  /** Fires with the chosen broadcast date + time on confirm. */
-  onConfirm: (when: Date) => void;
+  /** Fires with the chosen broadcast date + time and destination URL. */
+  onConfirm: (when: Date, url: string) => void;
+  /** Remove the existing plan (only shown when editing). */
+  onRemove?: () => void;
 };
 
 function buildGrid(year: number, month: number): (number | null)[] {
@@ -59,16 +68,25 @@ export function BroadcastScheduler({
   visible,
   title,
   initialDate,
+  initialWhen,
+  initialUrl,
+  editing,
   onClose,
   onConfirm,
+  onRemove,
 }: Props) {
-  const base = initialDate ?? new Date();
+  const base = initialWhen ?? initialDate ?? new Date();
   const today = new Date();
 
   const [year, setYear] = useState(base.getFullYear());
   const [month, setMonth] = useState(base.getMonth());
-  const [day, setDay] = useState<number | null>(null);
-  const [time, setTime] = useState("");
+  const [day, setDay] = useState<number | null>(initialWhen ? initialWhen.getDate() : null);
+  const [time, setTime] = useState(
+    initialWhen
+      ? `${String(initialWhen.getHours()).padStart(2, "0")}:${String(initialWhen.getMinutes()).padStart(2, "0")}`
+      : "",
+  );
+  const [url, setUrl] = useState(initialUrl ?? "");
   const [picker, setPicker] = useState<"month" | "year" | null>(null);
 
   const grid = useMemo(() => buildGrid(year, month), [year, month]);
@@ -77,8 +95,13 @@ export function BroadcastScheduler({
     return Array.from({ length: 8 }, (_, i) => start + i);
   }, [today]);
 
+  const urlValid = isValidDestinationUrl(url);
   const timeValid = TIME_RE.test(time);
-  const canConfirm = day !== null && timeValid;
+  const canConfirm = urlValid && day !== null && timeValid;
+
+  useEffect(() => {
+    if (!visible) setPicker(null);
+  }, [visible]);
 
   const reset = () => {
     setPicker(null);
@@ -89,7 +112,7 @@ export function BroadcastScheduler({
     const [hh, mm] = time.split(":").map((n) => parseInt(n, 10));
     const when = new Date(year, month, day, hh, mm, 0, 0);
     haptics.success();
-    onConfirm(when);
+    onConfirm(when, normalizeDestinationUrl(url));
   };
 
   return (
@@ -121,6 +144,37 @@ export function BroadcastScheduler({
             {title ? (
               <Text className="mb-3 font-mono text-[11px] uppercase tracking-wider text-text-tertiary">
                 Schedule · {title}
+              </Text>
+            ) : null}
+
+            {/* Destination */}
+            <Text className="mb-1.5 font-display text-lg font-bold text-text-primary">
+              Destination
+            </Text>
+            <View
+              className={cn(
+                "mb-4 flex-row items-center gap-2.5 rounded-2xl border bg-bg-card px-4",
+                url.length > 0 && !urlValid
+                  ? "border-status-error/60"
+                  : "border-border-default",
+              )}
+            >
+              <Icon name="link" size={20} color={colors.textSecondary} />
+              <TextInput
+                value={url}
+                onChangeText={setUrl}
+                placeholder="https://… where you'll post"
+                placeholderTextColor={colors.textTertiary}
+                keyboardType="url"
+                autoCapitalize="none"
+                autoCorrect={false}
+                accessibilityLabel="Broadcast destination URL"
+                className="min-h-[48px] flex-1 font-body text-base text-text-primary"
+              />
+            </View>
+            {url.length > 0 && !urlValid ? (
+              <Text className="-mt-2.5 mb-3 font-body text-xs text-status-error">
+                Enter a link like https://x.com/compose or buffer.com/queue.
               </Text>
             ) : null}
 
@@ -316,6 +370,18 @@ export function BroadcastScheduler({
                 />
               </View>
             </View>
+
+            {editing && onRemove ? (
+              <Pressable
+                onPress={onRemove}
+                accessibilityRole="button"
+                className="mt-3 items-center py-2 active:opacity-70"
+              >
+                <Text className="font-body text-sm text-status-error">
+                  Remove broadcast
+                </Text>
+              </Pressable>
+            ) : null}
           </View>
         </Pressable>
       </Pressable>
