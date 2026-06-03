@@ -10,7 +10,7 @@ import { setAnalyticsUser } from "@/lib/analytics";
 import { useUIStore } from "@/store/ui";
 import { useMissionStore } from "@/store/mission";
 import { BLUEPRINT_SECTIONS } from "@/constants/blueprintSections";
-import type { Mission, Milestone, Blueprint, Asset, BlueprintSection } from "@/types";
+import type { Mission, Milestone, Blueprint, Asset, BlueprintSection, Broadcast } from "@/types";
 
 function mapMission(d: Doc<"missions">): Mission {
   return {
@@ -55,6 +55,14 @@ function mapAsset(d: Doc<"assets">): Asset {
   };
 }
 
+function mapBroadcast(d: Doc<"broadcasts">): Broadcast {
+  return {
+    signalId: d.signalId,
+    destinationUrl: d.destinationUrl,
+    scheduledAt: d.scheduledAt,
+  };
+}
+
 function mapBlueprints(docs: Doc<"blueprints">[]): Record<BlueprintSection, Blueprint> {
   const out = {} as Record<BlueprintSection, Blueprint>;
   for (const section of BLUEPRINT_SECTIONS) {
@@ -80,6 +88,8 @@ function DataSyncInner() {
   const saveBlueprint = useMutation(api.blueprints.save);
   const updateStatus = useMutation(api.assets.updateStatus);
   const createFoundryAsset = useMutation(api.assets.createFoundryAsset);
+  const scheduleBroadcast = useMutation(api.broadcasts.schedule);
+  const cancelBroadcast = useMutation(api.broadcasts.cancel);
   const setPlan = useMutation(api.users.setPlan);
 
   // Expose Clerk sign-out to the UI store (used by the drawer + settings).
@@ -121,8 +131,18 @@ function DataSyncInner() {
           signalPhase: a.signalPhase,
         });
       },
+      scheduleBroadcast: (plan) => {
+        void scheduleBroadcast({
+          signalId: plan.signalId,
+          destinationUrl: plan.destinationUrl,
+          scheduledAt: plan.scheduledAt,
+        });
+      },
+      cancelBroadcast: (signalId) => {
+        void cancelBroadcast({ signalId });
+      },
     });
-  }, [isAuthenticated, completeMilestone, saveBlueprint, updateStatus, createFoundryAsset]);
+  }, [isAuthenticated, completeMilestone, saveBlueprint, updateStatus, createFoundryAsset, scheduleBroadcast, cancelBroadcast]);
 
   // Hydrate stores from the live Convex query.
   React.useEffect(() => {
@@ -146,6 +166,7 @@ function DataSyncInner() {
         milestones: data.milestones.map(mapMilestone),
         blueprints: mapBlueprints(data.blueprints),
         assets: data.assets.map(mapAsset),
+        broadcasts: data.broadcasts.map(mapBroadcast),
       });
     }
   }, [isAuthenticated, data, setPlan]);
