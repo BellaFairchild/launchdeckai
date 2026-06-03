@@ -185,14 +185,14 @@ signature, HPF 80 Hz, C-major pentatonic.
 **Recommended trigger sites** (pair each with `haptics.success()`; signature wins
 over UI, never < 500 ms apart):
 
-| Cue | Where to fire |
-| --- | ------------- |
-| `cargo_saved` | asset → flight-ready (**wired**: `CategoryGrid` mark-ready) + bundle export |
-| `blueprint_complete` | a Blueprint section reaches 100% completion |
-| `signal_transmit` | Signal Deck "Transmit Sequence" (Commander) / per-signal broadcast scheduled |
-| `signal_receive` | optional — incoming Copilot reply / signal flips flight-ready |
-| `plan_unlock` | Refuel: Cadet→Commander→Admiral upgrade, or a gated feature unlocks |
-| `launch_chime` | first entry to a newly-unlocked feature; **not** every foreground (cold start still uses the brand stinger) |
+| Cue | Where to fire | Status |
+| --- | ------------- | ------ |
+| `cargo_saved` | asset → flight-ready (`CategoryGrid` mark-ready) + bundle export | ✅ wired |
+| `signal_transmit` | Signal Deck "Transmit Sequence" (`signal-deck` onTransmit) | ✅ wired |
+| `plan_unlock` | Refuel plan upgrade — demo + RevenueCat paths (`refuel` onCta) | ✅ wired |
+| `signal_receive` | incoming Copilot reply (`copilot`) | ✅ wired |
+| `blueprint_complete` | a Blueprint section reaches 100% (`blueprints/[section]` onSave) | ⏳ pending — save site is in concurrent WIP; wire when settled |
+| `launch_chime` | first entry to a newly-unlocked feature; **not** every foreground (cold start = brand stinger) | ⏳ pending — needs a product call on which activation moment (onboarding's "enter deck" already fires `milestone`) |
 
 ## Deliverables checklist (sound designer)
 
