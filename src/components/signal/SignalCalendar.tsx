@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Segmented } from "@/components/ui/Segmented";
 import { SignalBars, type SignalStatus } from "@/components/ui/SignalBars";
+import { Icon } from "@/components/ui/Icon";
 import { colors } from "@/constants/colors";
+import { useMissionStore } from "@/store/mission";
 import {
   SIGNAL_PHASES,
   SIGNAL_TEMPLATES,
@@ -63,12 +65,14 @@ function DayCell({
   status,
   selected,
   past,
+  scheduled,
   onPress,
 }: {
   day: SignalDay;
   status: SignalStatus;
   selected: boolean;
   past: boolean;
+  scheduled: boolean;
   onPress: () => void;
 }) {
   return (
@@ -92,7 +96,12 @@ function DayCell({
         <Text className="font-mono text-[11px] uppercase tracking-[1.5px] text-text-tertiary">
           {day.weekday} · {day.month}
         </Text>
-        <SignalBars status={status} size="sm" />
+        <View className="flex-row items-center gap-1.5">
+          {scheduled ? (
+            <Icon name="signal" size={14} color={colors.brandTeal} />
+          ) : null}
+          <SignalBars status={status} size="sm" />
+        </View>
       </View>
       <View className="flex-row items-end justify-between">
         <Text className="font-display text-2xl font-bold leading-none text-text-primary">
@@ -115,11 +124,13 @@ function DayCell({
 function DayDetail({
   day,
   assets,
+  scheduledIds,
   onForge,
   onViewCargo,
 }: {
   day: SignalDay;
   assets: Asset[];
+  scheduledIds: Set<string>;
   onForge: (s: SignalTemplate) => void;
   onViewCargo: () => void;
 }) {
@@ -139,14 +150,26 @@ function DayDetail({
                   <Text className="font-body text-base font-semibold text-text-primary">
                     {s.label}
                   </Text>
-                  <Text className="font-mono text-[11px] uppercase tracking-wider text-text-tertiary">
-                    {s.platform}
-                  </Text>
+                  <View className="flex-row items-center gap-1.5">
+                    <Text className="font-mono text-[11px] uppercase tracking-wider text-text-tertiary">
+                      {s.platform}
+                    </Text>
+                    {scheduledIds.has(s.id) ? (
+                      <View className="flex-row items-center gap-1">
+                        <Icon name="signal" size={12} color={colors.brandTeal} />
+                        <Text className="font-mono text-[10px] uppercase tracking-wider text-brand-teal">
+                          Scheduled
+                        </Text>
+                      </View>
+                    ) : null}
+                  </View>
                 </View>
                 <SignalBars status={status} />
               </View>
               <SignalActions
                 status={status}
+                signalId={s.id}
+                platform={s.platform}
                 label={s.label}
                 onForge={() => onForge(s)}
                 onViewCargo={onViewCargo}
@@ -201,7 +224,7 @@ function TimelineRow({
           </Pressable>
           {expanded ? (
             <View className="mt-3">
-              <SignalActions status={status} label={signal.label} onForge={onForge} onViewCargo={onViewCargo} />
+              <SignalActions status={status} signalId={signal.id} platform={signal.platform} label={signal.label} onForge={onForge} onViewCargo={onViewCargo} />
             </View>
           ) : null}
         </Card>
@@ -237,6 +260,11 @@ export function SignalCalendar({
   const days = useMemo(
     () => groupSignalsByDay(phaseSignals, launchDate),
     [phaseSignals, launchDate],
+  );
+  const broadcasts = useMissionStore((s) => s.broadcasts);
+  const scheduledIds = useMemo(
+    () => new Set(broadcasts.map((b) => b.signalId)),
+    [broadcasts],
   );
 
   // On phase change, orient to the "you are here" day and collapse rows.
@@ -304,6 +332,7 @@ export function SignalCalendar({
                     status={aggregateStatus(day.signals, assets)}
                     selected={day.dateMs === selectedDay}
                     past={isPastDay(day.dateMs)}
+                    scheduled={day.signals.some((s) => scheduledIds.has(s.id))}
                     onPress={() => setSelectedDay(day.dateMs)}
                   />
                 ) : (
@@ -318,6 +347,7 @@ export function SignalCalendar({
             <DayDetail
               day={selected}
               assets={assets}
+              scheduledIds={scheduledIds}
               onForge={onForge}
               onViewCargo={onViewCargo}
             />
