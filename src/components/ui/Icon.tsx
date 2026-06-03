@@ -31,6 +31,7 @@ export type IconName =
   | "user"
   | "box" // cargo
   | "signal"
+  | "link" // chain link — destination URL
   | "book" // launch library
   | "settings"
   | "help" // support life-ring
@@ -198,6 +199,13 @@ function glyph(name: IconName, c: string, sw: number): React.ReactNode {
           <Path d="M15.4 8.6 a5 5 0 0 1 0 6.8" {...stroke} />
           <Path d="M6 6 a8.5 8.5 0 0 0 0 12" {...stroke} opacity={0.45} />
           <Path d="M18 6 a8.5 8.5 0 0 1 0 12" {...stroke} opacity={0.45} />
+        </>
+      );
+    case "link":
+      return (
+        <>
+          <Path d="M10.5 13.5 a3.5 3.5 0 0 1 0 -5 L13 6 a3.5 3.5 0 0 1 5 5 L16.6 12.4" {...stroke} />
+          <Path d="M13.5 10.5 a3.5 3.5 0 0 1 0 5 L11 18 a3.5 3.5 0 0 1 -5 -5 L7.4 11.6" {...stroke} />
         </>
       );
     case "book":
