@@ -88,27 +88,37 @@ export function BroadcastScheduler({
   );
   const [url, setUrl] = useState(initialUrl ?? "");
   const [picker, setPicker] = useState<"month" | "year" | null>(null);
+  const [pastError, setPastError] = useState(false);
 
   const grid = useMemo(() => buildGrid(year, month), [year, month]);
   const years = useMemo(() => {
-    const start = today.getFullYear();
+    const start = new Date().getFullYear();
     return Array.from({ length: 8 }, (_, i) => start + i);
-  }, [today]);
+  }, []);
 
   const urlValid = isValidDestinationUrl(url);
   const timeValid = TIME_RE.test(time);
-  const canConfirm = urlValid && day !== null && timeValid;
+  const selectedWhen = useMemo(() => {
+    if (day === null || !timeValid) return null;
+    const [hh, mm] = time.split(":").map((n) => parseInt(n, 10));
+    return new Date(year, month, day, hh, mm, 0, 0);
+  }, [day, timeValid, time, year, month]);
+  const canConfirm = urlValid && selectedWhen !== null;
 
   const reset = () => {
     setPicker(null);
   };
 
   const confirm = () => {
-    if (!canConfirm || day === null) return;
-    const [hh, mm] = time.split(":").map((n) => parseInt(n, 10));
-    const when = new Date(year, month, day, hh, mm, 0, 0);
+    if (!canConfirm || selectedWhen === null) return;
+    // Date.now() lives in the handler (not render) so a future-check stays pure.
+    if (selectedWhen.getTime() <= Date.now()) {
+      setPastError(true);
+      return;
+    }
+    setPastError(false);
     haptics.success();
-    onConfirm(when, normalizeDestinationUrl(url));
+    onConfirm(selectedWhen, normalizeDestinationUrl(url));
   };
 
   return (
@@ -287,6 +297,7 @@ export function BroadcastScheduler({
                           playClick();
                           haptics.light();
                           setDay(d);
+                          setPastError(false);
                         }}
                         accessibilityRole="button"
                         accessibilityState={{ selected: isSelected }}
@@ -334,7 +345,10 @@ export function BroadcastScheduler({
               <Icon name="clock" size={20} color={colors.textSecondary} />
               <TextInput
                 value={time}
-                onChangeText={setTime}
+                onChangeText={(t) => {
+                  setTime(t);
+                  setPastError(false);
+                }}
                 placeholder="hh:mm"
                 placeholderTextColor={colors.textTertiary}
                 keyboardType="numbers-and-punctuation"
@@ -345,6 +359,11 @@ export function BroadcastScheduler({
             {time.length > 0 && !timeValid ? (
               <Text className="mt-1.5 font-body text-xs text-status-error">
                 Enter a 24-hour time like 09:30 or 18:45.
+              </Text>
+            ) : null}
+            {pastError ? (
+              <Text className="mt-1.5 font-body text-xs text-status-error">
+                Pick a future date and time.
               </Text>
             ) : null}
 

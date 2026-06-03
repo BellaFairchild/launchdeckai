@@ -159,6 +159,7 @@ export function SignalActions({
       )}
 
       <BroadcastScheduler
+        key={schedulerOpen ? "open" : "closed"}
         visible={schedulerOpen}
         title={label}
         editing={!!broadcast}

@@ -35,7 +35,9 @@ function setup(overrides = {}) {
 }
 
 it("does not confirm until url + day + time are all valid", () => {
-  const { onConfirm } = setup();
+  // Pin to a fixed future month so day 15 is always in the future (the
+  // scheduler blocks past date/times).
+  const { onConfirm } = setup({ initialDate: new Date(2099, 0, 1) });
   fireEvent.press(screen.getByText("Schedule"));
   expect(onConfirm).not.toHaveBeenCalled();
 
