@@ -50,7 +50,7 @@ export default function RefuelModal() {
       // Demo / dev: switch plan directly (mock, or the dev Convex setPlan).
       setPlan(id);
       haptics.success();
-      playSignature("fuel_earned");
+      playSignature("plan_unlock");
       track("plan_upgraded", { plan: id, via: "demo" });
       return;
     }

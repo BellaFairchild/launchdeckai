@@ -15,7 +15,7 @@ import {
     TOTAL_SIGNALS,
 } from "@/constants/signalTemplates";
 import { track } from "@/lib/analytics";
-import { playSignature } from "@/lib/audio";
+import { playSignalTransmit } from "@/lib/audio";
 import { haptics } from "@/lib/haptics";
 import { formatLaunchDate, tMinus } from "@/lib/launch";
 import { useMissionStore } from "@/store/mission";
@@ -100,7 +100,7 @@ export default function SignalDeckModal() {
     }
     setExported(true);
     haptics.success();
-    playSignature("signal_ready");
+    playSignalTransmit();
   };
 
   const onForge = (signal: SignalTemplate) => {
