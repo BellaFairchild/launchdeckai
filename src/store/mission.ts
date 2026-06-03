@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-import type { Mission, Milestone, Blueprint, Asset, BlueprintSection } from "@/types";
+import type { Mission, Milestone, Blueprint, Asset, BlueprintSection, Broadcast } from "@/types";
 import { MILESTONE_TEMPLATES } from "@/constants/milestoneTemplates";
 import { BLUEPRINT_SECTIONS } from "@/constants/blueprintSections";
 import { useUIStore } from "./ui";
@@ -89,6 +89,8 @@ export type ConvexAdapter = {
   ) => void;
   updateAssetStatus: (id: string, status: Asset["status"]) => void;
   createFoundryAsset: (args: FoundryAssetArgs) => Promise<void>;
+  scheduleBroadcast: (plan: Broadcast) => void;
+  cancelBroadcast: (signalId: string) => void;
 };
 
 type MissionState = {
@@ -96,6 +98,7 @@ type MissionState = {
   milestones: Milestone[];
   blueprints: Record<BlueprintSection, Blueprint>;
   assets: Asset[];
+  broadcasts: Broadcast[];
   convex: ConvexAdapter | null;
 
   setConvex: (adapter: ConvexAdapter | null) => void;
@@ -104,6 +107,7 @@ type MissionState = {
     milestones: Milestone[];
     blueprints: Record<BlueprintSection, Blueprint>;
     assets: Asset[];
+    broadcasts: Broadcast[];
   }) => void;
 
   completeMilestone: (id: string) => void;
@@ -111,6 +115,8 @@ type MissionState = {
   updateMission: (partial: Partial<Mission>) => void;
   addAsset: (asset: Omit<Asset, "id" | "updatedAt">) => string;
   updateAssetStatus: (id: string, status: Asset["status"]) => void;
+  scheduleBroadcast: (plan: Broadcast) => void;
+  cancelBroadcast: (signalId: string) => void;
 };
 
 let assetCounterSeed = 100;
@@ -136,6 +142,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
   milestones: initialMilestones,
   blueprints: buildBlueprints(INITIAL_MISSION),
   assets: INITIAL_ASSETS,
+  broadcasts: [],
   convex: null,
 
   setConvex: (adapter) => set({ convex: adapter }),
@@ -145,6 +152,7 @@ export const useMissionStore = create<MissionState>((set, get) => ({
       milestones: data.milestones,
       blueprints: data.blueprints,
       assets: data.assets,
+      broadcasts: data.broadcasts,
     }),
 
   completeMilestone: (id) => {
@@ -201,5 +209,28 @@ export const useMissionStore = create<MissionState>((set, get) => ({
 
   updateMission: (partial) => {
     set({ mission: { ...get().mission, ...partial } });
+  },
+
+  scheduleBroadcast: (plan) => {
+    const convex = get().convex;
+    if (convex) {
+      convex.scheduleBroadcast(plan);
+      return;
+    }
+    set({
+      broadcasts: [
+        ...get().broadcasts.filter((b) => b.signalId !== plan.signalId),
+        plan,
+      ],
+    });
+  },
+
+  cancelBroadcast: (signalId) => {
+    const convex = get().convex;
+    if (convex) {
+      convex.cancelBroadcast(signalId);
+      return;
+    }
+    set({ broadcasts: get().broadcasts.filter((b) => b.signalId !== signalId) });
   },
 }));
