@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Modal } from "react-native";
 
 import { Button } from "@/components/ui/Button";
@@ -98,10 +98,6 @@ export function BroadcastScheduler({
   const urlValid = isValidDestinationUrl(url);
   const timeValid = TIME_RE.test(time);
   const canConfirm = urlValid && day !== null && timeValid;
-
-  useEffect(() => {
-    if (!visible) setPicker(null);
-  }, [visible]);
 
   const reset = () => {
     setPicker(null);
