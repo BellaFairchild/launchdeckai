@@ -1,18 +1,40 @@
 import { useRouter } from "expo-router";
+import { useState } from "react";
+import { Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { TabScreen } from "@/components/layout/TabScreen";
+import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { ProgressRing } from "@/components/ui/ProgressRing";
 import { colors } from "@/constants/colors";
 import { BLUEPRINT_SECTIONS } from "@/constants/blueprintSections";
+import { blueprintFileName, buildBlueprintHtml } from "@/lib/blueprintPdf";
+import { exportHtmlAsPdf } from "@/lib/exportPdf";
 import { useMissionStore } from "@/store/mission";
 import { Pressable, ScrollView, Text, View } from "@/tw";
 
 export default function BlueprintsScreen() {
   const router = useRouter();
   const blueprints = useMissionStore((s) => s.blueprints);
+  const [exporting, setExporting] = useState(false);
+
+  const onDownload = async () => {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      const html = buildBlueprintHtml(blueprints);
+      await exportHtmlAsPdf(html, blueprintFileName(blueprints));
+    } catch {
+      Alert.alert(
+        "Export failed",
+        "Couldn't create the PDF. Please try again.",
+      );
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <TabScreen>
@@ -69,6 +91,14 @@ export default function BlueprintsScreen() {
               </Card>
             );
           })}
+
+          <View className="mt-2">
+            <Button
+              label="Download Blueprint"
+              loading={exporting}
+              onPress={onDownload}
+            />
+          </View>
         </ScrollView>
       </SafeAreaView>
     </TabScreen>
