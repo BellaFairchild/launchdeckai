@@ -19,6 +19,9 @@ export type AnalyticsEvent =
   | "cargo_asset_saved"
   | "signal_deck_opened"
   | "signal_asset_forged"
+  | "signal_shared"
+  | "broadcast_scheduler_opened"
+  | "broadcast_scheduled"
   | "transmit_sequence_tapped"
   | "copilot_message_sent"
   | "plan_upgraded";

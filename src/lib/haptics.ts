@@ -1,23 +1,38 @@
 import * as Haptics from "expo-haptics";
 import { Platform } from "react-native";
 
+import { getAudioPreferences } from "@/store/audioPreferences";
+
 const native = Platform.OS === "ios" || Platform.OS === "android";
+
+function hapticsOn() {
+  return getAudioPreferences().hapticsEnabled;
+}
 
 /** Small haptic vocabulary for LaunchDeckAI's signature moments (no-op on web). */
 export const haptics = {
   light: () => {
-    if (native) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
+    if (!hapticsOn() || !native) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});
   },
   medium: () => {
-    if (native) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    if (!hapticsOn() || !native) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
   },
   success: () => {
-    if (native) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+    if (!hapticsOn() || !native) return;
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
+      () => {},
+    );
   },
   warning: () => {
-    if (native) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => {});
+    if (!hapticsOn() || !native) return;
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(
+      () => {},
+    );
   },
   selection: () => {
-    if (native) Haptics.selectionAsync().catch(() => {});
+    if (!hapticsOn() || !native) return;
+    Haptics.selectionAsync().catch(() => {});
   },
 };

@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-01T00:00:00Z",
+  "title": "Design System: LaunchDeckAI",
+  "extensions": {
+    "colorMeta": {
+      "rocket-teal": {
+        "role": "primary",
+        "displayName": "Rocket Teal",
+        "canonical": "#10B7D6",
+        "tonalRamp": ["#04222A", "#073B47", "#0A5A6B", "#0E8197", "#10B7D6", "#3FCBE2", "#7DDEEF", "#C4F2F8"]
+      },
+      "deep-indigo": {
+        "role": "primary",
+        "displayName": "Deep Indigo",
+        "canonical": "#1426A8",
+        "tonalRamp": ["#070C2C", "#0B1342", "#0F1C66", "#12208C", "#1426A8", "#2C42C8", "#5A6FE0", "#A6B2F2"]
+      },
+      "brand-gold": {
+        "role": "secondary",
+        "displayName": "Brand Gold",
+        "canonical": "#F3B233",
+        "tonalRamp": ["#2E2008", "#4A340C", "#6E4E11", "#A8761A", "#F3B233", "#F6C45E", "#F9D78D", "#FCEBC4"]
+      },
+      "walnut": {
+        "role": "secondary",
+        "displayName": "Walnut",
+        "canonical": "#8B5327",
+        "tonalRamp": ["#1F1108", "#34200F", "#4C2F16", "#6A4220", "#8B5327", "#A86C3C", "#C68F63", "#E3C0A0"]
+      },
+      "cosmic-black": {
+        "role": "neutral",
+        "displayName": "Cosmic Black",
+        "canonical": "#050816",
+        "tonalRamp": ["#050816", "#0A1024", "#101A3A", "#192A57", "#243A78", "#3C549C", "#6B7EBE", "#A9B4DC"]
+      },
+      "bg-card": {
+        "role": "neutral",
+        "displayName": "Panel Surface",
+        "canonical": "#0E1520",
+        "tonalRamp": ["#070B12", "#0E1520", "#162234", "#22344F", "#33496B", "#4D6790", "#7D93B5", "#B8C6DC"]
+      },
+      "text-primary": {
+        "role": "neutral",
+        "displayName": "Cloud White",
+        "canonical": "#F5F7FA",
+        "tonalRamp": ["#6B7280", "#94A3B8", "#B0BBCB", "#C9D1DC", "#DCE2EA", "#E9EDF2", "#F5F7FA", "#FFFFFF"]
+      },
+      "status-success": {
+        "role": "tertiary",
+        "displayName": "Flight-Ready Green",
+        "canonical": "#4ADE80",
+        "tonalRamp": ["#0C2A18", "#114324", "#175E33", "#1F8347", "#4ADE80", "#74E69D", "#A1EEBC", "#D2F7DF"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Screen-defining moments only: launch day, hero headers." },
+      "headline": { "displayName": "Headline", "purpose": "Primary screen titles (h1)." },
+      "title": { "displayName": "Title", "purpose": "Section and card headings (h2/h3)." },
+      "body": { "displayName": "Body", "purpose": "Default reading text; calm late-night legibility. 65-75ch measure." },
+      "label": { "displayName": "Label", "purpose": "Badges, captions, status chips. 12px floor for legible text." },
+      "mono": { "displayName": "Telemetry Mono", "purpose": "Live numeric state: Fuel, readiness %, counts, countdowns." }
+    },
+    "shadows": [
+      { "name": "panel-depth", "value": "0 8px 16px rgba(1,4,10,0.5)", "purpose": "Default glass card; quiet near-black diffusion." },
+      { "name": "lifted-depth", "value": "0 12px 22px rgba(1,4,10,0.6)", "purpose": "Elevated cards that sit above the field." },
+      { "name": "primary-glow", "value": "0 6px 16px rgba(16,183,214,0.45)", "purpose": "Teal glow under the primary button; the action radiates." },
+      { "name": "premium-glow", "value": "0 10px 20px rgba(243,178,51,0.22)", "purpose": "Gold halo on premium surfaces and the premium button." },
+      { "name": "warning-glow", "value": "0 10px 18px rgba(255,155,66,0.18)", "purpose": "Hue-matched halo on warning status cards." },
+      { "name": "success-glow", "value": "0 10px 18px rgba(74,222,128,0.16)", "purpose": "Hue-matched halo on success status cards." },
+      { "name": "lit-edge", "value": "inset 0 1px 0 rgba(255,255,255,0.07)", "purpose": "1px catch of light on the top lip of every panel." }
+    ],
+    "motion": [
+      { "name": "ease-out-quint", "value": "cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Default calm ease for slides and state transitions. No bounce." },
+      { "name": "glow-pulse", "value": "1600ms ease-in-out infinite alternate", "purpose": "Gentle glow breathing on Fuel and signature-moment accents." },
+      { "name": "ring-fill", "value": "700ms cubic-bezier(0.22, 1, 0.36, 1)", "purpose": "Readiness/progress ring filling slightly on milestone complete." }
+    ],
+    "breakpoints": [
+      { "name": "phone", "value": "0px" },
+      { "name": "tablet", "value": "768px" },
+      { "name": "max-content", "value": "800px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The single 'go' action per screen. Launch gradient with a teal glow beneath.",
+      "html": "<button class=\"ds-btn-primary\">Start Mission<svg class=\"ds-arrow\" viewBox=\"0 0 24 24\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"#FFFFFF\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg></button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px; padding: 12px 20px; border: none; border-radius: 9999px; background: linear-gradient(135deg, #1426A8 0%, #10B7D6 100%); color: #FFFFFF; font-family: Inter, system-ui, sans-serif; font-weight: 600; font-size: 16px; box-shadow: 0 6px 16px rgba(16,183,214,0.45); cursor: pointer; transition: opacity 0.2s, box-shadow 0.2s; } .ds-btn-primary:hover { box-shadow: 0 8px 22px rgba(16,183,214,0.55); } .ds-btn-primary:active { opacity: 0.9; } .ds-btn-primary:focus-visible { outline: 2px solid #4DC8C0; outline-offset: 2px; }"
+    },
+    {
+      "name": "Premium Button",
+      "kind": "button",
+      "refersTo": "button-premium",
+      "description": "Upgrade / Refuel action. Walnut-to-gold gradient with a gold glow.",
+      "html": "<button class=\"ds-btn-premium\">Refuel</button>",
+      "css": ".ds-btn-premium { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 12px 20px; border: none; border-radius: 9999px; background: linear-gradient(135deg, #8B5327 0%, #F3B233 100%); color: #060B14; font-family: Inter, system-ui, sans-serif; font-weight: 600; font-size: 16px; box-shadow: 0 10px 20px rgba(243,178,51,0.22); cursor: pointer; transition: opacity 0.2s; } .ds-btn-premium:active { opacity: 0.9; } .ds-btn-premium:focus-visible { outline: 2px solid #F3B233; outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Lowest-emphasis text action. Transparent with teal label.",
+      "html": "<button class=\"ds-btn-ghost\">Maybe later</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 12px 20px; border: none; border-radius: 9999px; background: transparent; color: #4DC8C0; font-family: Inter, system-ui, sans-serif; font-weight: 600; font-size: 16px; cursor: pointer; transition: opacity 0.2s; } .ds-btn-ghost:active { opacity: 0.7; } .ds-btn-ghost:focus-visible { outline: 2px solid #4DC8C0; outline-offset: 2px; }"
+    },
+    {
+      "name": "Glass Card",
+      "kind": "card",
+      "refersTo": "card-glass",
+      "description": "Default content panel. Lit-top surface gradient, full 1px border, near-black glow.",
+      "html": "<div class=\"ds-card-glass\"><div class=\"ds-card-edge\"></div><div class=\"ds-card-body\"><div class=\"ds-card-title\">Next move</div><div class=\"ds-card-text\">Write your App Store subtitle. Astro drafted three options.</div></div></div>",
+      "css": ".ds-card-glass { position: relative; overflow: hidden; border-radius: 24px; border: 1px solid #1E2D45; background: linear-gradient(180deg, #15233B 0%, #0B1220 100%); box-shadow: 0 8px 16px rgba(1,4,10,0.5); } .ds-card-edge { position: absolute; top: 0; left: 0; right: 0; height: 1px; background: rgba(255,255,255,0.07); } .ds-card-body { padding: 16px; } .ds-card-title { font-family: SpaceGrotesk, system-ui, sans-serif; font-weight: 600; font-size: 20px; color: #F5F7FA; margin-bottom: 6px; } .ds-card-text { font-family: Inter, system-ui, sans-serif; font-size: 16px; line-height: 1.5; color: #94A3B8; }"
+    },
+    {
+      "name": "Premium Card",
+      "kind": "card",
+      "refersTo": "card-premium",
+      "description": "Upgrade / reward surface. Warm walnut gradient, gold-tinted border and glow.",
+      "html": "<div class=\"ds-card-premium\"><div class=\"ds-card-edge\"></div><div class=\"ds-card-body\"><div class=\"ds-card-title\">Commander</div><div class=\"ds-card-text\">Unlock unlimited Foundry generations and priority Astro.</div></div></div>",
+      "css": ".ds-card-premium { position: relative; overflow: hidden; border-radius: 24px; border: 1px solid rgba(243,178,51,0.45); background: linear-gradient(180deg, #241A11 0%, #0F1018 100%); box-shadow: 0 10px 20px rgba(243,178,51,0.22); } .ds-card-edge { position: absolute; top: 0; left: 0; right: 0; height: 1px; background: rgba(255,255,255,0.07); } .ds-card-body { padding: 16px; } .ds-card-title { font-family: SpaceGrotesk, system-ui, sans-serif; font-weight: 600; font-size: 20px; color: #F3B233; margin-bottom: 6px; } .ds-card-text { font-family: Inter, system-ui, sans-serif; font-size: 16px; line-height: 1.5; color: #94A3B8; }"
+    },
+    {
+      "name": "Search Input",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Text field. Surface fill, quiet border, teal focus glow matching the primary action.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Ask Astro anything\" />",
+      "css": ".ds-input { width: 100%; min-height: 44px; padding: 12px 16px; border: 1px solid #1E2D45; border-radius: 12px; background: #0A1220; color: #F5F7FA; font-family: Inter, system-ui, sans-serif; font-size: 16px; transition: border-color 0.2s, box-shadow 0.2s; } .ds-input::placeholder { color: #6B7280; } .ds-input:focus { outline: none; border-color: #10B7D6; box-shadow: 0 0 0 3px rgba(16,183,214,0.25); }"
+    },
+    {
+      "name": "Signal Bars",
+      "kind": "custom",
+      "refersTo": "signal-bars",
+      "description": "Three vertical bars for Signal Deck readiness. Count plus color, never color alone.",
+      "html": "<div class=\"ds-signal\" role=\"img\" aria-label=\"Signal 2 of 3, in prep\"><span class=\"ds-bar on warn\"></span><span class=\"ds-bar on warn\"></span><span class=\"ds-bar\"></span></div>",
+      "css": ".ds-signal { display: inline-flex; align-items: flex-end; gap: 4px; height: 28px; } .ds-bar { width: 8px; border-radius: 4px; background: #1E2D45; } .ds-bar:nth-child(1) { height: 12px; } .ds-bar:nth-child(2) { height: 20px; } .ds-bar:nth-child(3) { height: 28px; } .ds-bar.on.warn { background: #FF9B42; } .ds-bar.on.ready { background: #4ADE80; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Calm Mission Control with Handcrafted Warmth",
+    "overview": "LaunchDeckAI is a flight deck at night, not a cockpit in a crisis. The surface is deep cosmic space, almost black but tinted toward indigo, and the interface floats on it as a small set of lit, rounded panels. Light is the primary material: a gradient warms the top edge of every card, a teal glow sits under the primary action, a gold pulse marks a reward earned. The handcrafted warmth comes from walnut and gold, the human counterweight to all the blue. The audience is a first-time app creator who is quietly scared of missing something, so the system is engineered to lower the heart rate: low density, one clear next move per screen, calm orbital motion. Craft concentrates on four earned signature moments and stays quiet between them.",
+    "keyCharacteristics": [
+      "Deep, indigo-tinted dark space as the canvas; light and glow as the primary material.",
+      "Cool blue/teal for structure and signal, warm walnut/gold for reward and humanity.",
+      "Low density, one clear next move per screen, anxiety reduction as a design requirement.",
+      "Soft pill buttons and large-radius glass panels; nothing sharp, nothing flat.",
+      "Calm orbital motion punctuated by four earned, high-craft signature moments."
+    ],
+    "rules": [
+      { "name": "The Tinted-Neutral Rule", "body": "Pure #000 and #fff are forbidden. Every background is tinted toward indigo (#050816, not #000000) and every white is cloud-white (#F5F7FA). The screen should feel like a warm instrument, not a printout.", "section": "colors" },
+      { "name": "The Gold-Is-Rare Rule", "body": "Gold and flame are the reward currency. They appear on premium surfaces and the earned signature moments, never as a default accent or a decorative gradient. Spend gold like Fuel.", "section": "colors" },
+      { "name": "The Telemetry Rule", "body": "Numbers that represent state (Fuel, readiness, signal counts, countdowns) are set in JetBrains Mono. Numbers that are just words stay in Inter. Mono signals a live instrument reading.", "section": "typography" },
+      { "name": "The Scale-Step Rule", "body": "Hierarchy comes from the documented scale (32/28/24/20/18/16/14/12/11) with weight contrast, never arbitrary sizes. Steps stay at least 1.25 apart.", "section": "typography" },
+      { "name": "The Glow-Is-Elevation Rule", "body": "Depth is built from a lit top edge plus a soft, often colored glow beneath, never a hard gray drop shadow. If a surface looks like a 2014-era box-shadow, the glow is too dark and too tight: widen the radius and tint it toward the surface's own hue.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do tint every neutral toward indigo: backgrounds anchor on #050816 / #060B14, white is cloud-white #F5F7FA. Pure #000 and #fff are banned.",
+      "Do build depth from a lit top edge (1px rgba(255,255,255,0.07)) plus a soft, hue-matched glow beneath. The glow is the elevation.",
+      "Do keep buttons as full pills with a 44px minimum height and reserve the teal-glow primary for the single most important action on a screen.",
+      "Do set live numeric state (Fuel, readiness %, counts, countdowns) in JetBrains Mono so it reads as telemetry.",
+      "Do pair every status with an icon, label, or shape (SignalBars count, readiness ring, fuel glyph). Never rely on color alone.",
+      "Do honor reduced motion: degrade the starfield, orbital transitions, and glow pulses to calm static or cross-fade equivalents.",
+      "Do concentrate craft on the four signature moments (Fuel earned, milestone complete, signal ready, launch day) and keep everything between them quiet.",
+      "Do show one clear next move per screen. Reduce density to reduce anxiety."
+    ],
+    "donts": [
+      "Don't build a sterile checklist tool: no plain checkbox lists stripped of Astro, the readiness ring, Fuel, or the launch-world metaphor. Progress must feel like momentum on a mission.",
+      "Don't build a corporate SaaS dashboard: no flat gray cards, no dense data tables, no enterprise-cool detachment, and no big-number-plus-stat-row hero-metric template.",
+      "Don't drift into childish gamification: no cartoon mascots, candy colors, or confetti spam. Astro is calm and capable, not a Duolingo owl.",
+      "Don't fall into the generic dark crypto/AI reflex: no neon-on-black, no purple gradients, no glowing grid lines.",
+      "Don't use a border-left / border-right greater than 1px as a colored accent stripe. Cards always take a full 1px border.",
+      "Don't use gradient text (background-clip: text). Emphasis comes from weight, size, and the solid brand colors.",
+      "Don't nest cards inside cards, and don't wrap everything in a container. Most content sits directly on the field.",
+      "Don't use hard gray drop shadows or bouncy/elastic motion. Glow-as-elevation and calm ease-out only."
+    ]
+  }
+}

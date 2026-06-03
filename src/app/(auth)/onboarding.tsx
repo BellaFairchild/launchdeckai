@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ScreenBackground } from "@/components/layout/ScreenBackground";
 import { Button } from "@/components/ui/Button";
 import { track } from "@/lib/analytics";
+import { playSignature } from "@/lib/audio";
 import { authEnabled } from "@/lib/auth";
 import { cn } from "@/lib/cn";
 import { haptics } from "@/lib/haptics";
@@ -103,6 +104,7 @@ export default function OnboardingScreen() {
 
     const celebrate = () => {
       haptics.success();
+      playSignature("milestone");
       track("onboarding_completed");
       track("mission_created", { platform, stage });
     };

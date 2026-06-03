@@ -129,7 +129,7 @@ export default function CopilotModal() {
       });
       reply = res.content;
     } catch {
-      // AI not configured / unreachable — fall back to the mock reply.
+      // Unreachable Convex — keep the local mock reply.
     }
 
     if (mode === "standard") spendFuel(STANDARD_COST);

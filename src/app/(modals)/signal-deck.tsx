@@ -1,26 +1,29 @@
-import React, { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
 
-import { track } from "@/lib/analytics";
-import { haptics } from "@/lib/haptics";
-import { ScrollView, View, Text, Pressable } from "@/tw";
-import { Card } from "@/components/ui/Card";
+import { SignalActions } from "@/components/signal/SignalActions";
+import { SignalCalendar } from "@/components/signal/SignalCalendar";
+import { signalStatus } from "@/components/signal/status";
 import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { Segmented } from "@/components/ui/Segmented";
 import { SignalBars, type SignalStatus } from "@/components/ui/SignalBars";
-import { SIGNAL_TEMPLATES, SIGNAL_PHASES, TOTAL_SIGNALS } from "@/constants/signalTemplates";
+import { planMeets } from "@/constants/plans";
+import {
+    SIGNAL_PHASES,
+    SIGNAL_TEMPLATES,
+    TOTAL_SIGNALS,
+} from "@/constants/signalTemplates";
+import { track } from "@/lib/analytics";
+import { playSignature } from "@/lib/audio";
+import { haptics } from "@/lib/haptics";
+import { formatLaunchDate, tMinus } from "@/lib/launch";
 import { useMissionStore } from "@/store/mission";
 import { useUIStore } from "@/store/ui";
-import { planMeets } from "@/constants/plans";
-import { tMinus, formatLaunchDate } from "@/lib/launch";
-import type { Asset, SignalTemplate } from "@/types";
+import { Pressable, ScrollView, Text, View } from "@/tw";
+import type { SignalTemplate } from "@/types";
 
-/** Compute a signal's status from its linked Cargo Bay asset (Docs/07: never manual). */
-function signalStatus(signalId: string, assets: Asset[]): SignalStatus {
-  const linked = assets.find((a) => a.signalId === signalId);
-  if (!linked) return "not_loaded";
-  if (linked.status === "flight_ready" || linked.status === "exported") return "flight_ready";
-  return "in_prep";
-}
+type DeckView = "list" | "calendar";
 
 function SignalRow({
   signal,
@@ -36,7 +39,11 @@ function SignalRow({
   const [open, setOpen] = useState(false);
   return (
     <Card variant={status === "flight_ready" ? "success" : "glass"}>
-      <Pressable onPress={() => setOpen((o) => !o)} accessibilityRole="button">
+      <Pressable
+        onPress={() => setOpen((o) => !o)}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: open }}
+      >
         <View className="flex-row items-center gap-3">
           <SignalBars status={status} />
           <View className="flex-1">
@@ -52,17 +59,13 @@ function SignalRow({
       </Pressable>
 
       {open ? (
-        <View className="mt-3 gap-2">
-          {status === "not_loaded" ? (
-            <Button label={`Forge this signal →`} size="sm" onPress={onForge} />
-          ) : status === "in_prep" ? (
-            <>
-              <Text className="font-body text-sm text-status-warning">Needs finishing</Text>
-              <Button label="View in Cargo Bay →" size="sm" variant="secondary" onPress={onViewCargo} />
-            </>
-          ) : (
-            <Button label="View in Cargo Bay" size="sm" variant="secondary" onPress={onViewCargo} />
-          )}
+        <View className="mt-3">
+          <SignalActions
+            status={status}
+            label={signal.label}
+            onForge={onForge}
+            onViewCargo={onViewCargo}
+          />
         </View>
       ) : null}
     </Card>
@@ -74,6 +77,7 @@ export default function SignalDeckModal() {
   const { mission, assets } = useMissionStore();
   const plan = useUIStore((s) => s.plan);
   const [exported, setExported] = useState(false);
+  const [view, setView] = useState<DeckView>("list");
 
   useEffect(() => {
     track("signal_deck_opened");
@@ -94,6 +98,7 @@ export default function SignalDeckModal() {
     }
     setExported(true);
     haptics.success();
+    playSignature("signal_ready");
   };
 
   const onForge = (signal: SignalTemplate) => {
@@ -107,6 +112,8 @@ export default function SignalDeckModal() {
       },
     });
   };
+
+  const onViewCargo = () => router.push("/(modals)/cargo");
 
   return (
     <View className="flex-1 bg-bg-deep">
@@ -125,14 +132,15 @@ export default function SignalDeckModal() {
             </Text>
           </View>
           <Button
-            label={canExport ? "Transmit Sequence" : "Transmit Sequence"}
+            label="Transmit Sequence"
             variant={canExport ? "premium" : "locked"}
             className="mt-3"
             onPress={onTransmit}
           />
           {exported ? (
             <Text className="mt-2 font-body text-sm text-status-success">
-              ✓ signal-pack.zip exported (mock) — schedule, JSON, and flight-ready content.
+              ✓ signal-pack.zip exported (mock) — schedule, JSON, and
+              flight-ready content.
             </Text>
           ) : null}
           {!canExport ? (
@@ -142,34 +150,57 @@ export default function SignalDeckModal() {
           ) : null}
         </Card>
 
-        {SIGNAL_PHASES.map((phase) => {
-          const signals = SIGNAL_TEMPLATES.filter((s) => s.phase === phase.id);
-          return (
-            <View key={phase.id} className="gap-2">
-              <View className="flex-row items-center gap-2 px-1">
-                <View
-                  style={{ backgroundColor: phase.color }}
-                  className="h-2.5 w-2.5 rounded-full"
-                />
-                <Text className="font-display text-base font-bold text-text-primary">
-                  {phase.title}
+        {/* View toggle: list (default) ⇄ calendar */}
+        <Segmented
+          options={[
+            { value: "list", label: "List" },
+            { value: "calendar", label: "Calendar" },
+          ]}
+          value={view}
+          onChange={setView}
+          className="self-center"
+        />
+
+        {view === "calendar" ? (
+          <SignalCalendar
+            launchDate={mission.launchDate}
+            assets={assets}
+            onForge={onForge}
+            onViewCargo={onViewCargo}
+            onSetDate={() => router.push("/(modals)/settings")}
+          />
+        ) : (
+          SIGNAL_PHASES.map((phase) => {
+            const signals = SIGNAL_TEMPLATES.filter(
+              (s) => s.phase === phase.id,
+            );
+            return (
+              <View key={phase.id} className="gap-2">
+                <View className="flex-row items-center gap-2 px-1">
+                  <View
+                    style={{ backgroundColor: phase.color }}
+                    className="h-2.5 w-2.5 rounded-full"
+                  />
+                  <Text className="font-display text-base font-bold text-text-primary">
+                    {phase.title}
+                  </Text>
+                </View>
+                <Text className="px-1 font-mono text-[11px] uppercase tracking-wider text-text-tertiary">
+                  {phase.subtitle}
                 </Text>
+                {signals.map((signal) => (
+                  <SignalRow
+                    key={signal.id}
+                    signal={signal}
+                    status={signalStatus(signal.id, assets)}
+                    onForge={() => onForge(signal)}
+                    onViewCargo={onViewCargo}
+                  />
+                ))}
               </View>
-              <Text className="px-1 font-mono text-[11px] uppercase tracking-wider text-text-tertiary">
-                {phase.subtitle}
-              </Text>
-              {signals.map((signal) => (
-                <SignalRow
-                  key={signal.id}
-                  signal={signal}
-                  status={signalStatus(signal.id, assets)}
-                  onForge={() => onForge(signal)}
-                  onViewCargo={() => router.push("/(modals)/cargo")}
-                />
-              ))}
-            </View>
-          );
-        })}
+            );
+          })
+        )}
       </ScrollView>
     </View>
   );

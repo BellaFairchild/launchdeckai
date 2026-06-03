@@ -9,6 +9,7 @@
  */
 
 import type * as ai from "../ai.js";
+import type * as aiMock from "../aiMock.js";
 import type * as assets from "../assets.js";
 import type * as blueprints from "../blueprints.js";
 import type * as helpers from "../helpers.js";
@@ -27,6 +28,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   ai: typeof ai;
+  aiMock: typeof aiMock;
   assets: typeof assets;
   blueprints: typeof blueprints;
   helpers: typeof helpers;

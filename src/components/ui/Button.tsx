@@ -1,9 +1,11 @@
 import React from "react";
-import { ActivityIndicator } from "react-native";
 import type { ViewStyle } from "react-native";
+import { ActivityIndicator } from "react-native";
 
-import { Pressable, Text, View } from "@/tw";
+import { playClick, playLocked } from "@/lib/audio";
 import { cn } from "@/lib/cn";
+import { haptics } from "@/lib/haptics";
+import { Pressable, Text, View } from "@/tw";
 import { GradientView } from "./GradientView";
 import { Icon } from "./Icon";
 
@@ -115,6 +117,16 @@ export function Button({
 
   return (
     <Pressable
+      onPressIn={() => {
+        if (variant === "locked") {
+          playLocked();
+          haptics.warning();
+          return;
+        }
+        if (isDisabled) return;
+        playClick();
+        haptics.light();
+      }}
       onPress={isDisabled ? undefined : onPress}
       accessibilityRole="button"
       accessibilityState={{ disabled: isDisabled }}
@@ -137,11 +149,21 @@ export function Button({
             <Icon name="lock" size={GLYPH_SIZE[size]} color={glyphColor} />
           ) : null}
           {left ? <View>{left}</View> : null}
-          <Text className={cn("font-body font-semibold", TEXT_SIZE[size], LABEL[variant])}>
+          <Text
+            className={cn(
+              "font-body font-semibold",
+              TEXT_SIZE[size],
+              LABEL[variant],
+            )}
+          >
             {trimmed}
           </Text>
           {hasArrow ? (
-            <Icon name="arrow-right" size={GLYPH_SIZE[size]} color={glyphColor} />
+            <Icon
+              name="arrow-right"
+              size={GLYPH_SIZE[size]}
+              color={glyphColor}
+            />
           ) : null}
         </>
       )}

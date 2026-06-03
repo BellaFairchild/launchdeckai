@@ -21,8 +21,12 @@ export type IconName =
   | "chevron-right"
   | "check"
   | "bolt"
+  | "clock"
+  | "download"
+  | "chevron-down"
   | "plus"
   | "close"
+  | "alert" // warning triangle — risk / critical
   // Drawer / command menu
   | "user"
   | "box" // cargo
@@ -121,10 +125,27 @@ function glyph(name: IconName, c: string, sw: number): React.ReactNode {
       );
     case "chevron-right":
       return <Path d="M9 5 L16 12 L9 19" {...stroke} />;
+    case "chevron-down":
+      return <Path d="M5 9 L12 16 L19 9" {...stroke} />;
+    case "clock":
+      return (
+        <>
+          <Circle cx={12} cy={12} r={8.5} {...stroke} />
+          <Path d="M12 7 V12 L15.5 14" {...stroke} />
+        </>
+      );
     case "check":
       return <Path d="M5 12.5 L10 17.5 L19 6.5" {...stroke} />;
     case "bolt":
       return <Path d="M13 2 L5 13 H11 L10 22 L19 10 H12.6 L13 2 Z" fill={c} />;
+    case "download":
+      return (
+        <>
+          <Line x1={12} y1={3.5} x2={12} y2={14.5} {...stroke} />
+          <Path d="M7.5 10 L12 14.5 L16.5 10" {...stroke} />
+          <Path d="M4.5 16.5 V18.5 a1.6 1.6 0 0 0 1.6 1.6 H17.9 A1.6 1.6 0 0 0 19.5 18.5 V16.5" {...stroke} />
+        </>
+      );
     case "plus":
       return (
         <>
@@ -137,6 +158,18 @@ function glyph(name: IconName, c: string, sw: number): React.ReactNode {
         <>
           <Line x1={6} y1={6} x2={18} y2={18} {...stroke} />
           <Line x1={18} y1={6} x2={6} y2={18} {...stroke} />
+        </>
+      );
+    case "alert":
+      // Rounded warning triangle with an exclamation mark.
+      return (
+        <>
+          <Path
+            d="M12 3.6 L21 19 A1.4 1.4 0 0 1 19.8 21 H4.2 A1.4 1.4 0 0 1 3 19 Z"
+            {...stroke}
+          />
+          <Line x1={12} y1={9.5} x2={12} y2={14} {...stroke} />
+          <Circle cx={12} cy={17} r={1.1} fill={c} />
         </>
       );
     case "user":

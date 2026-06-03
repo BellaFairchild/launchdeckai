@@ -2,38 +2,22 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { DeckHeroCard } from "@/components/deck/DeckHeroCard";
+import { RiskAlert } from "@/components/deck/RiskAlert";
 import { TabScreen } from "@/components/layout/TabScreen";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { FuelBadge } from "@/components/ui/FuelBadge";
-import { NebulaBackdrop } from "@/components/ui/NebulaBackdrop";
 import { Icon, type IconName } from "@/components/ui/Icon";
-import { ProgressBar } from "@/components/ui/ProgressBar";
 import { ProgressRing } from "@/components/ui/ProgressRing";
 import { SignalBars, type SignalStatus } from "@/components/ui/SignalBars";
 import { colors } from "@/constants/colors";
 import { planMeets } from "@/constants/plans";
 import { TOTAL_SIGNALS } from "@/constants/signalTemplates";
-import { tMinus } from "@/lib/launch";
+import { deriveRisks } from "@/lib/risks";
 import { useMissionStore } from "@/store/mission";
 import { useUIStore } from "@/store/ui";
 import { Pressable, ScrollView, Text, View } from "@/tw";
-
-const STAGE_LABEL: Record<string, string> = {
-  building: "Building",
-  testing: "Testing",
-  store_prep: "Store Prep",
-  ready_to_submit: "Ready to Submit",
-};
-
-const HERO_GLOW = {
-  shadowColor: colors.rocketTeal,
-  shadowOpacity: 0.28,
-  shadowRadius: 24,
-  shadowOffset: { width: 0, height: 12 },
-  elevation: 12,
-};
 
 /** Micro section label — mono, spaced, dimmed. */
 function SectionLabel({ children }: { children: React.ReactNode }) {
@@ -87,15 +71,6 @@ export default function DeckScreen() {
   const { mission, milestones, blueprints, assets } = useMissionStore();
   const { plan } = useUIStore();
 
-  const t = tMinus(mission.launchDate);
-  const launched = t.hasDate && t.days < 0;
-  const bigCountdown = !t.hasDate ? "T-–" : launched ? "LIFTOFF" : t.label;
-  const countdownCaption = !t.hasDate
-    ? "Set a launch date"
-    : launched
-      ? "Mission launched"
-      : "Days to launch";
-
   const nextAction = milestones.find(
     (m) => !m.completed && planMeets(plan, m.requiredPlan),
   );
@@ -119,65 +94,51 @@ export default function DeckScreen() {
 
   const recentCargo = [...assets].sort((a, b) => b.updatedAt - a.updatedAt)[0];
 
+  const risks = deriveRisks(mission, milestones, assets);
+
   return (
     <TabScreen>
       <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
         <ScrollView contentContainerClassName="gap-5 px-5 py-4 pb-24">
-          {/* ── Launch hero: nebula · countdown · readiness ── */}
-          <View
-            style={HERO_GLOW}
-            className="relative overflow-hidden rounded-3xl border border-border-med"
-          >
-            <NebulaBackdrop />
-            <View className="justify-between p-5" style={{ minHeight: 300 }}>
-              {/* HUD top bar */}
-              <View className="flex-row items-center justify-between">
-                <Text
-                  numberOfLines={1}
-                  className="flex-1 font-mono text-[11px] uppercase tracking-[2px] text-text-secondary"
-                >
-                  {mission.appName}
-                </Text>
-                <Badge
-                  label={STAGE_LABEL[mission.stage] ?? mission.stage}
-                  variant="status"
-                />
-              </View>
+          <DeckHeroCard mission={mission} />
 
-              {/* centered countdown */}
-              <View className="items-center py-6">
-                <Text
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  className="w-full text-center font-mono font-bold leading-none text-brand-teal"
-                  style={{
-                    fontSize: 64,
-                    textShadowColor: "rgba(4,9,18,0.55)",
-                    textShadowOffset: { width: 0, height: 2 },
-                    textShadowRadius: 14,
-                  }}
-                >
-                  {bigCountdown}
-                </Text>
-                <Text className="mt-3 font-mono text-[11px] uppercase tracking-[4px] text-text-tertiary">
-                  {countdownCaption}
-                </Text>
-              </View>
+          <Button
+            label="Continue Mission 🚀"
+            variant="primary"
+            fullWidth
+            size="lg"
+            onPress={() => router.push("/(tabs)/missions")}
+          />
 
-              {/* readiness meter */}
-              <View className="gap-2">
-                <View className="flex-row items-end justify-between">
-                  <Text className="font-display text-base font-bold text-text-primary">
-                    Mission Readiness
-                  </Text>
-                  <Text className="font-mono text-base font-bold text-brand-teal">
-                    {Math.round(mission.readinessScore)}%
-                  </Text>
-                </View>
-                <ProgressBar value={mission.readinessScore} height={10} />
+          {/* ── Signal Deck — directly under hero ── */}
+          <Card variant="premium">
+            <View className="flex-row items-center gap-3">
+              <View className="h-11 w-11 items-center justify-center rounded-2xl border border-brand-gold/40 bg-brand-gold/10">
+                <Icon name="signal" size={22} color={colors.brandGold} />
               </View>
+              <View className="flex-1">
+                <Text className="font-display text-base font-bold text-text-primary">
+                  Signal Deck
+                </Text>
+                <Text className="font-mono text-xs text-brand-gold">
+                  {signalsReady}/{TOTAL_SIGNALS} signals ready
+                </Text>
+              </View>
+              <SignalBars status={signalStatus} />
             </View>
-          </View>
+            <Text className="mt-3 font-body text-sm text-text-secondary">
+              Know exactly what to post, when, and where.
+            </Text>
+            <Button
+              label="Stage Your Launch Sequence →"
+              variant="premium"
+              className="mt-4"
+              onPress={() => router.push("/(modals)/signal-deck")}
+            />
+          </Card>
+
+          {/* ── Critical risks — only when the mission has open gaps ── */}
+          <RiskAlert risks={risks} />
 
           {/* ── Primary action: the one thing to do today ── */}
           <View className="gap-2">
@@ -206,44 +167,12 @@ export default function DeckScreen() {
                 </View>
               </View>
               {nextAction ? (
-                <View className="mt-4 flex-row items-center justify-between">
+                <View className="mt-4">
                   <FuelBadge amount={nextAction.fuelReward} size="sm" />
-                  <Button
-                    label="Go to Missions →"
-                    size="sm"
-                    onPress={() => router.push("/(tabs)/missions")}
-                  />
                 </View>
               ) : null}
             </Card>
           </View>
-
-          {/* ── Signal Deck (premium, visually distinct) ── */}
-          <Card variant="premium">
-            <View className="flex-row items-center gap-3">
-              <View className="h-11 w-11 items-center justify-center rounded-2xl border border-brand-gold/40 bg-brand-gold/10">
-                <Icon name="signal" size={22} color={colors.brandGold} />
-              </View>
-              <View className="flex-1">
-                <Text className="font-display text-base font-bold text-text-primary">
-                  Signal Deck
-                </Text>
-                <Text className="font-mono text-xs text-brand-gold">
-                  {signalsReady}/{TOTAL_SIGNALS} signals ready
-                </Text>
-              </View>
-              <SignalBars status={signalStatus} />
-            </View>
-            <Text className="mt-3 font-body text-sm text-text-secondary">
-              Know exactly what to post, when, and where.
-            </Text>
-            <Button
-              label="Stage Your Launch Sequence →"
-              variant="premium"
-              className="mt-4"
-              onPress={() => router.push("/(modals)/signal-deck")}
-            />
-          </Card>
 
           {/* ── Mission systems: lightweight grouped rows ── */}
           <View className="gap-2">

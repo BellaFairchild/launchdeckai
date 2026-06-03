@@ -1,8 +1,10 @@
 "use node";
 
 import Anthropic from "@anthropic-ai/sdk";
-import { action } from "./_generated/server";
 import { v } from "convex/values";
+import { action } from "./_generated/server";
+
+import { mockCopilotReply, mockGenerateAsset } from "./aiMock";
 
 /**
  * Shared AI generation pipeline (Docs/03 §AI). All Foundry/Copilot AI runs through
@@ -46,13 +48,17 @@ export const generateAsset = action({
     /** Optional Signal Deck context when forging for a specific signal. */
     signalLabel: v.optional(v.string()),
   },
-  returns: v.object({ content: v.string() }),
+  returns: v.object({
+    content: v.string(),
+    mock: v.boolean(),
+  }),
   handler: async (_ctx, args) => {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      throw new Error(
-        "AI is not configured yet. Set ANTHROPIC_API_KEY in the Convex environment (npx convex env set ANTHROPIC_API_KEY ...).",
-      );
+      return {
+        content: mockGenerateAsset(args),
+        mock: true,
+      };
     }
 
     const client = new Anthropic({ apiKey });
@@ -61,7 +67,9 @@ export const generateAsset = action({
     const m = args.mission;
     const userPrompt = [
       `Asset to create: ${args.toolLabel} (tool id: ${args.tool}).`,
-      args.signalLabel ? `This is for the Signal Deck step: "${args.signalLabel}".` : "",
+      args.signalLabel
+        ? `This is for the Signal Deck step: "${args.signalLabel}".`
+        : "",
       "",
       "Mission context:",
       `- App name: ${m.appName}`,
@@ -97,7 +105,7 @@ export const generateAsset = action({
       .join("\n")
       .trim();
 
-    return { content: content || "(No content generated.)" };
+    return { content: content || "(No content generated.)", mock: false };
   },
 });
 
@@ -129,13 +137,17 @@ export const copilotReply = action({
       }),
     ),
   },
-  returns: v.object({ content: v.string() }),
+  returns: v.object({
+    content: v.string(),
+    mock: v.boolean(),
+  }),
   handler: async (_ctx, args) => {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      throw new Error(
-        "AI is not configured yet. Set ANTHROPIC_API_KEY in the Convex environment (npx convex env set ANTHROPIC_API_KEY ...).",
-      );
+      return {
+        content: mockCopilotReply(args),
+        mock: true,
+      };
     }
 
     const client = new Anthropic({ apiKey });
@@ -161,7 +173,11 @@ export const copilotReply = action({
       model,
       max_tokens: 1024,
       system: [
-        { type: "text", text: COPILOT_SYSTEM, cache_control: { type: "ephemeral" } },
+        {
+          type: "text",
+          text: COPILOT_SYSTEM,
+          cache_control: { type: "ephemeral" },
+        },
         { type: "text", text: contextBlock },
       ],
       messages: args.messages.map((msg) => ({
@@ -176,6 +192,6 @@ export const copilotReply = action({
       .join("\n")
       .trim();
 
-    return { content: content || "(No reply generated.)" };
+    return { content: content || "(No reply generated.)", mock: false };
   },
 });

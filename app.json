@@ -32,7 +32,8 @@
           "backgroundColor": "#0B0A0F"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true,

@@ -1,10 +1,10 @@
 /**
  * Slice the nav-icons sheet (assets/branding/nav-icons.png) into per-tab icons.
  * Sheet = 5 columns (deck, missions, astro, blueprints, foundry) x 2 rows
- * (top = active/colored, bottom = inactive/grey). White background is removed
- * via an edge-connected flood fill (interior whites like the helmet highlights
- * and the blueprint scroll are preserved). Output: 96x96 transparent PNGs in
- * assets/images/nav/.   Run: node scripts/gen-nav-icons.js
+ * (top = active/colored, bottom = inactive/grey). The solid black background is
+ * removed via an edge-connected flood fill, so interior dark tones (the navy
+ * helmet, the dark blueprint lines, the anvil body) are preserved. Output:
+ * 96x96 transparent PNGs in assets/images/nav/.  Run: node scripts/gen-nav-icons.js
  */
 const sharp = require("sharp");
 const path = require("path");
@@ -18,8 +18,9 @@ const COLS = ["deck", "missions", "astro", "blueprints", "foundry"];
 // Icon bands as fractions of the full sheet height (exclude the label text row).
 const ACTIVE = { top: 0.05, bottom: 0.45 };
 const INACTIVE = { top: 0.58, bottom: 0.98 };
-// A pixel is "background" if it's near-pure-white (cream/grey icons are darker).
-const isWhite = (r, g, b) => r >= 246 && g >= 246 && b >= 246;
+// A pixel is "background" if it's near-pure-black (the colored/grey icons are
+// all much brighter than this, so only the surrounding black gets knocked out).
+const isBackground = (r, g, b, a) => a <= 12 || Math.max(r, g, b) <= 26;
 
 function knockoutBackground(data, w, h) {
   const visited = new Uint8Array(w * h);
@@ -29,7 +30,7 @@ function knockoutBackground(data, w, h) {
     const p = y * w + x;
     if (visited[p]) return;
     const i = p * 4;
-    if (!isWhite(data[i], data[i + 1], data[i + 2])) return;
+    if (!isBackground(data[i], data[i + 1], data[i + 2], data[i + 3])) return;
     visited[p] = 1;
     stack.push(p);
   };

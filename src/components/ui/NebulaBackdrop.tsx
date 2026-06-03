@@ -1,7 +1,8 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, View, type ImageStyle } from "react-native";
 
 import { Image } from "@/tw/image";
+import { absoluteFillStyle } from "@/lib/sizeStyle";
 import { GradientView } from "./GradientView";
 
 // Teal nebula hero art. Swap this file (assets/images/nebula-hero.jpg) to change
@@ -18,7 +19,7 @@ export function NebulaBackdrop() {
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
       <Image
         source={NEBULA}
-        style={StyleSheet.absoluteFill}
+        style={absoluteFillStyle() as ImageStyle}
         className="object-cover"
         contentPosition="center"
       />

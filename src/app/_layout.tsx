@@ -6,6 +6,7 @@ import { StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import { AudioController } from "@/components/AudioController";
 import { DataSync } from "@/components/DataSync";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DrawerOverlay } from "@/components/navigation/DrawerOverlay";
@@ -19,6 +20,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <ConvexClientProvider>
           <DataSync />
+          <AudioController />
           <ErrorBoundary>
             <View style={styles.shell}>
               <StatusBar style="light" />

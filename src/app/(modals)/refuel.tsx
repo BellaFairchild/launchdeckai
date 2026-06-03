@@ -1,23 +1,24 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { Pressable, ScrollView, View, Text } from "@/tw";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { AstroAvatar } from "@/components/astro/AstroAvatar";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { FuelGauge } from "@/components/ui/FuelGauge";
 import { GradientView } from "@/components/ui/GradientView";
-import { AstroAvatar } from "@/components/astro/AstroAvatar";
 import { PLANS, PLAN_ORDER, type Plan } from "@/constants/plans";
-import { useUIStore } from "@/store/ui";
-import { haptics } from "@/lib/haptics";
 import { track } from "@/lib/analytics";
+import { playConfirm, playSignature } from "@/lib/audio";
+import { haptics } from "@/lib/haptics";
 import {
-  revenueCatEnabled,
-  getPlanPackages,
-  purchasePlan,
-  restorePurchases,
-  type PlanPackage,
+    getPlanPackages,
+    purchasePlan,
+    restorePurchases,
+    revenueCatEnabled,
+    type PlanPackage,
 } from "@/lib/purchases";
+import { useUIStore } from "@/store/ui";
+import { Pressable, ScrollView, Text, View } from "@/tw";
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
@@ -35,7 +36,10 @@ export default function RefuelModal() {
   const [note, setNote] = useState<string | null>(null);
 
   useEffect(() => {
-    if (revenueCatEnabled) getPlanPackages().then(setPackages).catch(() => {});
+    if (revenueCatEnabled)
+      getPlanPackages()
+        .then(setPackages)
+        .catch(() => {});
   }, []);
 
   const pkgFor = (id: Plan) => packages.find((p) => p.plan === id);
@@ -46,20 +50,26 @@ export default function RefuelModal() {
       // Demo / dev: switch plan directly (mock, or the dev Convex setPlan).
       setPlan(id);
       haptics.success();
+      playSignature("fuel_earned");
       track("plan_upgraded", { plan: id, via: "demo" });
       return;
     }
     const pkg = pkgFor(id);
     if (!pkg) {
-      setNote(`${PLANS[id].name} isn't available in the current store offering.`);
+      setNote(
+        `${PLANS[id].name} isn't available in the current store offering.`,
+      );
       return;
     }
     setBusyPlan(id);
     try {
       const ok = await purchasePlan(pkg);
       if (ok) {
-        setNote("Purchase complete — your plan updates once RevenueCat confirms it.");
+        setNote(
+          "Purchase complete — your plan updates once RevenueCat confirms it.",
+        );
         haptics.success();
+        playSignature("fuel_earned");
         track("plan_upgraded", { plan: id, via: "revenuecat" });
       }
     } catch {
@@ -84,6 +94,7 @@ export default function RefuelModal() {
       onCta(nextPlan);
     } else {
       haptics.success();
+      playConfirm();
       setNote("You're on the top tier — fully fueled, Commander.");
     }
   };
@@ -92,9 +103,12 @@ export default function RefuelModal() {
     <View className="flex-1 bg-bg-deep">
       <ScrollView contentContainerClassName="gap-4 px-5 py-4 pb-12">
         <View>
-          <Text className="font-display text-2xl font-bold text-text-primary">Refuel Station</Text>
+          <Text className="font-display text-2xl font-bold text-text-primary">
+            Refuel Station
+          </Text>
           <Text className="font-body text-sm text-text-secondary">
-            Upgrade your command tier. Downgrades lock features — they never delete your data.
+            Upgrade your command tier. Downgrades lock features — they never
+            delete your data.
           </Text>
         </View>
 
@@ -124,8 +138,8 @@ export default function RefuelModal() {
             {fuel.toLocaleString()} Fuel
           </Text>
           <Text className="mt-1 text-center font-body text-xs text-text-tertiary">
-            {fuel.toLocaleString()} / {cap.toLocaleString()} Fuel · {planName} Plan · Resets{" "}
-            {resetStr}
+            {fuel.toLocaleString()} / {cap.toLocaleString()} Fuel · {planName}{" "}
+            Plan · Resets {resetStr}
           </Text>
           <Pressable
             onPress={onRefuel}
@@ -140,8 +154,14 @@ export default function RefuelModal() {
             }}
             className="relative mt-5 min-h-[52px] items-center justify-center overflow-hidden rounded-full active:opacity-90"
           >
-            <GradientView colors={["#6BEFBE", "#3FD6A0"]} direction="horizontal" />
-            <Text className="font-body text-base font-bold" style={{ color: "#062018" }}>
+            <GradientView
+              colors={["#6BEFBE", "#3FD6A0"]}
+              direction="horizontal"
+            />
+            <Text
+              className="font-body text-base font-bold"
+              style={{ color: "#062018" }}
+            >
               Refuel Mission
             </Text>
           </Pressable>
@@ -167,14 +187,22 @@ export default function RefuelModal() {
                     <Text className="font-display text-lg font-bold text-text-primary">
                       {spec.name}
                     </Text>
-                    {isCurrent ? <Badge label="Current" variant="readiness" /> : null}
+                    {isCurrent ? (
+                      <Badge label="Current" variant="readiness" />
+                    ) : null}
                   </View>
-                  <Text className="font-body text-xs text-text-secondary">{spec.bestFor}</Text>
+                  <Text className="font-body text-xs text-text-secondary">
+                    {spec.bestFor}
+                  </Text>
                 </View>
                 <View className="items-end">
-                  <Text className="font-display text-base font-bold text-brand-gold">{price}</Text>
+                  <Text className="font-display text-base font-bold text-brand-gold">
+                    {price}
+                  </Text>
                   {spec.priceYearly ? (
-                    <Text className="font-mono text-[10px] text-text-tertiary">{spec.priceYearly}</Text>
+                    <Text className="font-mono text-[10px] text-text-tertiary">
+                      {spec.priceYearly}
+                    </Text>
                   ) : null}
                 </View>
               </View>
@@ -183,7 +211,10 @@ export default function RefuelModal() {
                 <Row label="Fuel" value={spec.fuel} />
                 <Row label="Missions" value={spec.activeMissions} />
                 <Row label="AI access" value={spec.aiAccess} />
-                <Row label="Signal export" value={spec.exportAccess ? "Yes" : "No"} />
+                <Row
+                  label="Signal export"
+                  value={spec.exportAccess ? "Yes" : "No"}
+                />
               </View>
 
               <View className="mt-3">
@@ -218,7 +249,11 @@ export default function RefuelModal() {
               return;
             }
             const ok = await restorePurchases();
-            setNote(ok ? "Restored — your plan will reflect any active subscription." : "Nothing to restore.");
+            setNote(
+              ok
+                ? "Restored — your plan will reflect any active subscription."
+                : "Nothing to restore.",
+            );
           }}
         />
         {!revenueCatEnabled ? (

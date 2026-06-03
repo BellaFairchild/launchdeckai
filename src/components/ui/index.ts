@@ -1,5 +1,6 @@
 export { Button, type ButtonVariant } from "./Button";
 export { Card, type CardVariant } from "./Card";
+export { Floating } from "./Floating";
 export { Icon, type IconName } from "./Icon";
 export { GradientView } from "./GradientView";
 export { GalaxyBackdrop } from "./GalaxyBackdrop";

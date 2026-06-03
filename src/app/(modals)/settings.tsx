@@ -1,19 +1,21 @@
-import React, { useState } from "react";
 import { useRouter } from "expo-router";
-import { Switch, Linking } from "react-native";
+import { useState } from "react";
+import { Linking, Switch } from "react-native";
 
-import { ScrollView, View, Text, Pressable } from "@/tw";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
 import { PLANS } from "@/constants/plans";
-import { useUIStore } from "@/store/ui";
-import { useMissionStore } from "@/store/mission";
+import { playToggle } from "@/lib/audio";
 import {
-  requestNotificationPermission,
-  scheduleLaunchReminders,
-  cancelReminders,
+    cancelReminders,
+    requestNotificationPermission,
+    scheduleLaunchReminders,
 } from "@/lib/notifications";
+import { useAudioPreferences } from "@/store/audioPreferences";
+import { useMissionStore } from "@/store/mission";
+import { useUIStore } from "@/store/ui";
+import { Pressable, ScrollView, Text, View } from "@/tw";
 
 function ToggleRow({
   label,
@@ -39,7 +41,10 @@ function ToggleRow({
 
 function LinkRow({ label, onPress }: { label: string; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} className="min-h-[44px] flex-row items-center justify-between py-2">
+    <Pressable
+      onPress={onPress}
+      className="min-h-[44px] flex-row items-center justify-between py-2"
+    >
       <Text className="font-body text-base text-text-primary">{label}</Text>
       <Text className="text-text-tertiary">→</Text>
     </Pressable>
@@ -52,14 +57,22 @@ export default function SettingsModal() {
   const signOut = useUIStore((s) => s.signOut);
   const launchDate = useMissionStore((s) => s.mission.launchDate);
 
+  const soundEnabled = useAudioPreferences((s) => s.soundEnabled);
+  const hapticsEnabled = useAudioPreferences((s) => s.hapticsEnabled);
+  const ambientEnabled = useAudioPreferences((s) => s.ambientEnabled);
+  const playInSilentMode = useAudioPreferences((s) => s.playInSilentMode);
+  const setSoundEnabled = useAudioPreferences((s) => s.setSoundEnabled);
+  const setHapticsEnabled = useAudioPreferences((s) => s.setHapticsEnabled);
+  const setAmbientEnabled = useAudioPreferences((s) => s.setAmbientEnabled);
+  const setPlayInSilentMode = useAudioPreferences((s) => s.setPlayInSilentMode);
+
   const [notifications, setNotifications] = useState(false);
-  const [sound, setSound] = useState(true);
-  const [haptics, setHaptics] = useState(true);
 
   const onToggleNotifications = async (next: boolean) => {
+    playToggle(next);
     if (next) {
       const granted = await requestNotificationPermission();
-      if (!granted) return; // leave the toggle off if permission denied
+      if (!granted) return;
       await scheduleLaunchReminders(launchDate);
       setNotifications(true);
     } else {
@@ -68,14 +81,40 @@ export default function SettingsModal() {
     }
   };
 
+  const onToggleSound = async (next: boolean) => {
+    playToggle(next);
+    await setSoundEnabled(next);
+  };
+
+  const onToggleHaptics = async (next: boolean) => {
+    playToggle(next);
+    await setHapticsEnabled(next);
+  };
+
+  const onToggleAmbient = async (next: boolean) => {
+    playToggle(next);
+    await setAmbientEnabled(next);
+  };
+
+  const onToggleSilent = async (next: boolean) => {
+    playToggle(next);
+    await setPlayInSilentMode(next);
+    const { refreshAudioSessionMode } = await import("@/lib/audio");
+    await refreshAudioSessionMode();
+  };
+
   return (
     <View className="flex-1 bg-bg-deep">
       <ScrollView contentContainerClassName="gap-4 px-5 py-4 pb-12">
-        <Text className="font-display text-2xl font-bold text-text-primary">Settings</Text>
+        <Text className="font-display text-2xl font-bold text-text-primary">
+          Settings
+        </Text>
 
         <Card variant="glass">
           <View className="flex-row items-center justify-between">
-            <Text className="font-display text-base font-bold text-text-primary">Plan</Text>
+            <Text className="font-display text-base font-bold text-text-primary">
+              Plan
+            </Text>
             <Badge label={PLANS[plan].name} variant="plan" />
           </View>
           <Button
@@ -88,22 +127,62 @@ export default function SettingsModal() {
         </Card>
 
         <Card variant="glass">
-          <Text className="mb-1 font-display text-base font-bold text-text-primary">Preferences</Text>
-          <ToggleRow label="Launch reminders" value={notifications} onValueChange={onToggleNotifications} />
-          <ToggleRow label="Sound effects" value={sound} onValueChange={setSound} />
-          <ToggleRow label="Haptics" value={haptics} onValueChange={setHaptics} />
+          <Text className="mb-1 font-display text-base font-bold text-text-primary">
+            Preferences
+          </Text>
+          <ToggleRow
+            label="Launch reminders"
+            value={notifications}
+            onValueChange={onToggleNotifications}
+          />
+          <ToggleRow
+            label="Sound effects"
+            value={soundEnabled}
+            onValueChange={onToggleSound}
+          />
+          <ToggleRow
+            label="Haptics"
+            value={hapticsEnabled}
+            onValueChange={onToggleHaptics}
+          />
+          <ToggleRow
+            label="Ambient music"
+            value={ambientEnabled}
+            onValueChange={onToggleAmbient}
+          />
+          <ToggleRow
+            label="Play in silent mode"
+            value={playInSilentMode}
+            onValueChange={onToggleSilent}
+          />
         </Card>
 
         <Card variant="glass">
-          <Text className="mb-1 font-display text-base font-bold text-text-primary">Mission</Text>
-          <LinkRow label="Restart onboarding" onPress={() => router.push("/(auth)/onboarding")} />
-          <LinkRow label="Support" onPress={() => router.push("/(modals)/support")} />
+          <Text className="mb-1 font-display text-base font-bold text-text-primary">
+            Mission
+          </Text>
+          <LinkRow
+            label="Restart onboarding"
+            onPress={() => router.push("/(auth)/onboarding")}
+          />
+          <LinkRow
+            label="Support"
+            onPress={() => router.push("/(modals)/support")}
+          />
         </Card>
 
         <Card variant="glass">
-          <Text className="mb-1 font-display text-base font-bold text-text-primary">Legal</Text>
-          <LinkRow label="Privacy Policy" onPress={() => Linking.openURL("https://launchdeck.ai/privacy")} />
-          <LinkRow label="Terms of Service" onPress={() => Linking.openURL("https://launchdeck.ai/terms")} />
+          <Text className="mb-1 font-display text-base font-bold text-text-primary">
+            Legal
+          </Text>
+          <LinkRow
+            label="Privacy Policy"
+            onPress={() => Linking.openURL("https://launchdeck.ai/privacy")}
+          />
+          <LinkRow
+            label="Terms of Service"
+            onPress={() => Linking.openURL("https://launchdeck.ai/terms")}
+          />
         </Card>
 
         <Button
