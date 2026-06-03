@@ -6,11 +6,20 @@ import { Button } from "@/components/ui/Button";
 import type { SignalStatus } from "@/components/ui/SignalBars";
 import { track } from "@/lib/analytics";
 import { playSignature } from "@/lib/audio";
-import { Text, View } from "@/tw";
+import {
+  scheduleBroadcastReminder,
+  cancelBroadcastReminder,
+} from "@/lib/notifications";
+import { useMissionStore } from "@/store/mission";
+import { Pressable, Text, View } from "@/tw";
 
 type Props = {
   status: SignalStatus;
-  /** Label of the signal being scheduled, surfaced in the picker header. */
+  /** Template id, e.g. "pre_1" — keys the broadcast plan. */
+  signalId: string;
+  /** Channel, e.g. "X/Twitter" — shown in the reminder body. */
+  platform: string;
+  /** Label of the signal, surfaced in the picker + reminder. */
   label?: string;
   onForge: () => void;
   onViewCargo: () => void;
@@ -28,16 +37,46 @@ function formatWhen(when: Date): string {
   return `${date} · ${hh}:${mm}`;
 }
 
+/** The content action — depends on whether the asset exists / is ready. */
+function ContentAction({
+  status,
+  onForge,
+  onViewCargo,
+}: Pick<Props, "status" | "onForge" | "onViewCargo">) {
+  if (status === "not_loaded") {
+    return <Button label="Forge →" size="sm" variant="secondary" fullWidth onPress={onForge} />;
+  }
+  if (status === "in_prep") {
+    return (
+      <View className="gap-2">
+        <Text className="font-body text-sm text-status-warning">Needs finishing</Text>
+        <Button label="Finish in Cargo →" size="sm" variant="secondary" onPress={onViewCargo} />
+      </View>
+    );
+  }
+  return <Button label="View in Cargo" size="sm" variant="secondary" onPress={onViewCargo} />;
+}
+
 /**
- * Status-driven actions for a single signal — shared by the Signal Deck list
- * row and the calendar's inline expansion so both behave identically:
- *   not_loaded  → Broadcast (pick a date/time, then forge it)
- *   in_prep     → finish it (View in Cargo Bay)
- *   flight_ready→ View in Cargo Bay
+ * Two independent actions per signal:
+ *   Content  → Forge / Finish / View in Cargo Bay (depends on status)
+ *   Broadcast→ schedule a send (destination + date/time → calm reminder)
+ * Broadcast is always available, regardless of content status.
  */
-export function SignalActions({ status, label, onForge, onViewCargo }: Props) {
+export function SignalActions({
+  status,
+  signalId,
+  platform,
+  label,
+  onForge,
+  onViewCargo,
+}: Props) {
   const [schedulerOpen, setSchedulerOpen] = useState(false);
-  const [scheduledFor, setScheduledFor] = useState<Date | null>(null);
+  const broadcast = useMissionStore((s) =>
+    s.broadcasts.find((b) => b.signalId === signalId),
+  );
+  const scheduleBroadcast = useMissionStore((s) => s.scheduleBroadcast);
+  const cancelBroadcast = useMissionStore((s) => s.cancelBroadcast);
 
   const onShare = async () => {
     track("signal_shared", { label });
@@ -48,70 +87,94 @@ export function SignalActions({ status, label, onForge, onViewCargo }: Props) {
           : "Check out my launch signal on LaunchDeck",
       });
     } catch {
-      // User dismissed the share sheet, or sharing is unsupported (e.g. web) — no-op.
+      // dismissed / unsupported — no-op.
     }
   };
 
-  if (status === "not_loaded") {
-    return (
-      <>
-        {scheduledFor ? (
-          <Text className="mb-2 font-body text-sm text-brand-teal">
-            ✓ Broadcast set for {formatWhen(scheduledFor)}
-          </Text>
-        ) : null}
-        <View className="flex-row gap-2">
-          <Button
-            label="Share"
-            size="sm"
-            variant="secondary"
-            className="flex-1"
-            onPress={onShare}
-          />
-          <Button
-            label="Broadcast →"
-            size="sm"
-            className="flex-1"
-            onPress={() => {
-              track("broadcast_scheduler_opened");
-              setSchedulerOpen(true);
-            }}
-          />
+  const onConfirm = (when: Date, url: string) => {
+    setSchedulerOpen(false);
+    scheduleBroadcast({ signalId, destinationUrl: url, scheduledAt: when.getTime() });
+    void scheduleBroadcastReminder({
+      signalId,
+      signalLabel: label ?? "your signal",
+      platform,
+      destinationUrl: url,
+      scheduledAt: when.getTime(),
+    });
+    track("broadcast_scheduled", { at: when.toISOString() });
+    playSignature("signal_ready");
+  };
+
+  const onCancelBroadcast = () => {
+    cancelBroadcast(signalId);
+    void cancelBroadcastReminder(signalId);
+    track("broadcast_cancelled", { signalId });
+  };
+
+  const scheduledWhen = broadcast ? new Date(broadcast.scheduledAt) : null;
+
+  return (
+    <View className="gap-3">
+      <View className="flex-row gap-2">
+        <View className="flex-1">
+          <ContentAction status={status} onForge={onForge} onViewCargo={onViewCargo} />
         </View>
-        <BroadcastScheduler
-          visible={schedulerOpen}
-          title={label}
-          onClose={() => setSchedulerOpen(false)}
-          onConfirm={(when) => {
-            setScheduledFor(when);
-            setSchedulerOpen(false);
-            track("broadcast_scheduled", { at: when.toISOString() });
-            playSignature("signal_ready");
-            onForge();
+        <Button label="Share" size="sm" variant="secondary" className="flex-1" onPress={onShare} />
+      </View>
+
+      {scheduledWhen ? (
+        <View className="gap-1.5 rounded-2xl border border-brand-teal/40 bg-brand-teal/5 p-3">
+          <Text className="font-body text-sm text-brand-teal">
+            ✓ Broadcast set for {formatWhen(scheduledWhen)}
+          </Text>
+          <View className="flex-row gap-2">
+            <Button
+              label="Edit"
+              size="sm"
+              variant="secondary"
+              className="flex-1"
+              onPress={() => {
+                track("broadcast_scheduler_opened", { editing: true });
+                setSchedulerOpen(true);
+              }}
+            />
+            <Pressable
+              onPress={onCancelBroadcast}
+              accessibilityRole="button"
+              className="flex-1 items-center justify-center rounded-full py-2 active:opacity-70"
+            >
+              <Text className="font-body text-sm text-status-error">Cancel broadcast</Text>
+            </Pressable>
+          </View>
+        </View>
+      ) : (
+        <Button
+          label="Broadcast →"
+          size="sm"
+          onPress={() => {
+            track("broadcast_scheduler_opened");
+            setSchedulerOpen(true);
           }}
         />
-      </>
-    );
-  }
-  if (status === "in_prep") {
-    return (
-      <View className="gap-2">
-        <Text className="font-body text-sm text-status-warning">Needs finishing</Text>
-        <Button
-          label="View in Cargo Bay →"
-          size="sm"
-          variant="secondary"
-          onPress={onViewCargo}
-        />
-      </View>
-    );
-  }
-  return (
-    <Button
-      label="View in Cargo Bay"
-      size="sm"
-      variant="secondary"
-      onPress={onViewCargo}
-    />
+      )}
+
+      <BroadcastScheduler
+        visible={schedulerOpen}
+        title={label}
+        editing={!!broadcast}
+        initialWhen={scheduledWhen ?? undefined}
+        initialUrl={broadcast?.destinationUrl}
+        onClose={() => setSchedulerOpen(false)}
+        onConfirm={onConfirm}
+        onRemove={
+          broadcast
+            ? () => {
+                setSchedulerOpen(false);
+                onCancelBroadcast();
+              }
+            : undefined
+        }
+      />
+    </View>
   );
 }
