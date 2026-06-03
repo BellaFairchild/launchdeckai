@@ -9,7 +9,9 @@ import { configurePurchases } from "@/lib/purchases";
 import { setAnalyticsUser } from "@/lib/analytics";
 import { useUIStore } from "@/store/ui";
 import { useMissionStore } from "@/store/mission";
+import { reconcileBroadcastReminders } from "@/lib/notifications";
 import { BLUEPRINT_SECTIONS } from "@/constants/blueprintSections";
+import { SIGNAL_TEMPLATES } from "@/constants/signalTemplates";
 import type { Mission, Milestone, Blueprint, Asset, BlueprintSection, Broadcast } from "@/types";
 
 function mapMission(d: Doc<"missions">): Mission {
@@ -168,6 +170,13 @@ function DataSyncInner() {
         assets: data.assets.map(mapAsset),
         broadcasts: data.broadcasts.map(mapBroadcast),
       });
+      void reconcileBroadcastReminders(
+        data.broadcasts.map(mapBroadcast),
+        (signalId) => {
+          const t = SIGNAL_TEMPLATES.find((s) => s.id === signalId);
+          return t ? { label: t.label, platform: t.platform } : undefined;
+        },
+      );
     }
   }, [isAuthenticated, data, setPlan]);
 
