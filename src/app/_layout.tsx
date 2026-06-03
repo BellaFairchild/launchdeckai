@@ -1,5 +1,6 @@
 import "@/global.css";
 
+import { useEffect } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View } from "react-native";
@@ -11,10 +12,16 @@ import { DataSync } from "@/components/DataSync";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DrawerOverlay } from "@/components/navigation/DrawerOverlay";
 import { ConvexClientProvider } from "@/lib/convex";
+import { registerBroadcastResponseListener } from "@/lib/notifications";
 
 const DEEP = "#060B14";
 
 export default function RootLayout() {
+  useEffect(() => {
+    const sub = registerBroadcastResponseListener();
+    return () => sub.remove();
+  }, []);
+
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: DEEP }}>
       <SafeAreaProvider>
