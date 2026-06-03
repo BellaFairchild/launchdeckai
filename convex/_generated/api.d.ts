@@ -12,6 +12,7 @@ import type * as ai from "../ai.js";
 import type * as aiMock from "../aiMock.js";
 import type * as assets from "../assets.js";
 import type * as blueprints from "../blueprints.js";
+import type * as broadcasts from "../broadcasts.js";
 import type * as helpers from "../helpers.js";
 import type * as http from "../http.js";
 import type * as milestones from "../milestones.js";
@@ -31,6 +32,7 @@ declare const fullApi: ApiFromModules<{
   aiMock: typeof aiMock;
   assets: typeof assets;
   blueprints: typeof blueprints;
+  broadcasts: typeof broadcasts;
   helpers: typeof helpers;
   http: typeof http;
   milestones: typeof milestones;

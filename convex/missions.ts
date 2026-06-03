@@ -17,7 +17,7 @@ export const getLaunchData = query({
       .query("users")
       .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
       .unique();
-    if (!user) return { user: null, mission: null, milestones: [], blueprints: [], assets: [] };
+    if (!user) return { user: null, mission: null, milestones: [], blueprints: [], assets: [], broadcasts: [] };
 
     const mission = await ctx.db
       .query("missions")
@@ -26,10 +26,10 @@ export const getLaunchData = query({
       .first();
 
     if (!mission) {
-      return { user, mission: null, milestones: [], blueprints: [], assets: [] };
+      return { user, mission: null, milestones: [], blueprints: [], assets: [], broadcasts: [] };
     }
 
-    const [milestones, blueprints, assets] = await Promise.all([
+    const [milestones, blueprints, assets, broadcasts] = await Promise.all([
       ctx.db
         .query("milestones")
         .withIndex("by_missionId", (q) => q.eq("missionId", mission._id))
@@ -42,9 +42,13 @@ export const getLaunchData = query({
         .query("assets")
         .withIndex("by_missionId", (q) => q.eq("missionId", mission._id))
         .collect(),
+      ctx.db
+        .query("broadcasts")
+        .withIndex("by_missionId", (q) => q.eq("missionId", mission._id))
+        .collect(),
     ]);
 
-    return { user, mission, milestones, blueprints, assets };
+    return { user, mission, milestones, blueprints, assets, broadcasts };
   },
 });
 

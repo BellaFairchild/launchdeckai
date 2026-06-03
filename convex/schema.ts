@@ -135,4 +135,14 @@ export default defineSchema({
     revenueCatCustomerId: v.optional(v.string()),
     productId: v.optional(v.string()),
   }).index("by_userId", ["userId"]),
+
+  broadcasts: defineTable({
+    missionId: v.id("missions"),
+    userId: v.id("users"),
+    signalId: v.string(),
+    destinationUrl: v.string(),
+    scheduledAt: v.number(),
+  })
+    .index("by_missionId", ["missionId"])
+    .index("by_mission_signal", ["missionId", "signalId"]),
 });
