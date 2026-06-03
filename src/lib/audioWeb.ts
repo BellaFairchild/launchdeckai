@@ -150,7 +150,36 @@ export function webPlaySignature(id: SignatureId) {
     case "launch_day":
       playArpeggio([440, 554.37, 659.25, 880], 0.12, 0.35, 0.05);
       break;
+    case "launch_chime":
+      playArpeggio([523.25, 659.25, 783.99, 880, 1046.5], 0.08, 0.45, 0.045);
+      playSweep(0.6, 200, 1200, "sine", 0.03);
+      break;
+    case "blueprint_complete":
+      playArpeggio([587.33, 880], 0.1, 0.3, 0.045);
+      setTimeout(() => playArpeggio([392, 493.88, 587.33], 0.0, 0.6, 0.04), 280);
+      break;
+    case "cargo_saved":
+      playSweep(0.06, 320, 180, "triangle", 0.05);
+      setTimeout(() => playArpeggio([659.25, 880], 0.08, 0.16, 0.04), 80);
+      break;
+    case "plan_unlock":
+      playArpeggio([523.25, 659.25, 783.99], 0.0, 0.7, 0.045);
+      playArpeggio([1046.5, 1174.66, 1318.5, 1568, 1760, 2093, 2637], 0.03, 0.12, 0.03);
+      break;
   }
+}
+
+/** Signal Deck transmission — soft comms send / receive pair. */
+export function webPlaySignalTransmit() {
+  playSweep(0.18, 400, 1600, "sine", 0.05);
+  setTimeout(() => playSweep(0.03, 1200, 1200, "sine", 0.04), 20);
+  setTimeout(() => playSweep(0.03, 1500, 1500, "sine", 0.04), 120);
+}
+
+export function webPlaySignalReceive() {
+  setTimeout(() => playSweep(0.03, 1500, 1500, "sine", 0.04), 20);
+  setTimeout(() => playSweep(0.03, 1200, 1200, "sine", 0.04), 120);
+  setTimeout(() => playSweep(0.18, 659.25, 659.25, "sine", 0.05), 220);
 }
 
 export function webPlayBrandStinger() {

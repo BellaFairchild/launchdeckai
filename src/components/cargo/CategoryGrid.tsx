@@ -45,7 +45,7 @@ export function CategoryGrid({ assets }: { assets: Asset[] }) {
           onMarkReady={() => {
             updateAssetStatus(a.id, "flight_ready");
             haptics.success();
-            playSignature("signal_ready");
+            playSignature("cargo_saved");
           }}
         />
       ))}
