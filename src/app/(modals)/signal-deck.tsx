@@ -15,7 +15,7 @@ import {
     TOTAL_SIGNALS,
 } from "@/constants/signalTemplates";
 import { track } from "@/lib/analytics";
-import { playSignalTransmit } from "@/lib/audio";
+import { playSignalTransmit, playSignature } from "@/lib/audio";
 import { haptics } from "@/lib/haptics";
 import { formatLaunchDate, tMinus } from "@/lib/launch";
 import { useMissionStore } from "@/store/mission";
@@ -74,6 +74,9 @@ function SignalRow({
   );
 }
 
+/** Launch chime fires once per app session, on first Signal Deck entry. */
+let launchChimePlayed = false;
+
 export default function SignalDeckModal() {
   const router = useRouter();
   const { mission, assets } = useMissionStore();
@@ -83,6 +86,10 @@ export default function SignalDeckModal() {
 
   useEffect(() => {
     track("signal_deck_opened");
+    if (!launchChimePlayed) {
+      launchChimePlayed = true;
+      playSignature("launch_chime");
+    }
   }, []);
 
   const t = tMinus(mission.launchDate);
