@@ -62,6 +62,8 @@ function SignalRow({
         <View className="mt-3">
           <SignalActions
             status={status}
+            signalId={signal.id}
+            platform={signal.platform}
             label={signal.label}
             onForge={onForge}
             onViewCargo={onViewCargo}
