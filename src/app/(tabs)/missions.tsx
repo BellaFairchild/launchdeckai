@@ -4,6 +4,7 @@ import { Alert, Platform, ScrollView, type ViewStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { TabScreen } from "@/components/layout/TabScreen";
+import { LaunchFlightPath } from "@/components/mission/LaunchFlightPath";
 import { MissionHeroCard } from "@/components/mission/MissionHeroCard";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
@@ -30,6 +31,15 @@ const HIGHLIGHT_RING: ViewStyle = {
   elevation: 10,
 };
 
+/** Brand-gold outer glow shown when a milestone is tapped done. */
+const COMPLETED_GLOW: ViewStyle = {
+  shadowColor: colors.brandGold,
+  shadowOpacity: 0.35,
+  shadowRadius: 18,
+  shadowOffset: { width: 0, height: 0 },
+  elevation: 10,
+};
+
 function MilestoneRow({
   milestone,
   locked,
@@ -46,7 +56,10 @@ function MilestoneRow({
   const { completed } = milestone;
   return (
     <View style={highlighted ? HIGHLIGHT_RING : undefined}>
-      <Card variant={completed ? "success" : locked ? "glass" : "elevated"}>
+      <Card
+        variant={completed ? "success" : locked ? "glass" : "elevated"}
+        style={completed ? COMPLETED_GLOW : undefined}
+      >
         <View className="flex-row items-start gap-3">
           <Pressable
             onPress={locked ? onUnlock : completed ? undefined : onComplete}
@@ -175,6 +188,8 @@ export default function MissionsScreen() {
             onContinue={onContinue}
             onNewMission={onNewMission}
           />
+
+          <LaunchFlightPath />
 
           {MILESTONE_CATEGORIES.map((cat) => {
             const group = milestones.filter((m) => m.category === cat.id);

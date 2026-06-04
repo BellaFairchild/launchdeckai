@@ -2,9 +2,9 @@ import React from "react";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
-import * as SecureStore from "expo-secure-store";
 
 import { authEnabled, CLERK_PUBLISHABLE_KEY } from "./auth";
+import { getStorageItem, setStorageItem } from "./secureStorage";
 
 /**
  * Convex client. EXPO_PUBLIC_CONVEX_URL is written to .env.local by `npx convex dev`.
@@ -19,19 +19,11 @@ const convex = new ConvexReactClient(url, {
 
 /** Persist the Clerk session token in the device secure store. */
 const tokenCache = {
-  async getToken(key: string) {
-    try {
-      return await SecureStore.getItemAsync(key);
-    } catch {
-      return null;
-    }
+  getToken(key: string) {
+    return getStorageItem(key);
   },
-  async saveToken(key: string, value: string) {
-    try {
-      await SecureStore.setItemAsync(key, value);
-    } catch {
-      // ignore
-    }
+  saveToken(key: string, value: string) {
+    return setStorageItem(key, value);
   },
 };
 

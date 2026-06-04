@@ -24,9 +24,9 @@
  */
 @layer theme {
   @theme {
-    /* Type families — custom fonts loaded via expo-font in Phase 2 */
-    --font-display: "SpaceGrotesk", system-ui, sans-serif;
-    --font-body: "Inter", system-ui, sans-serif;
+    /* Type families — custom fonts loaded via expo-font in src/app/_layout.tsx */
+    --font-display: "Arvo", Georgia, serif;
+    --font-body: "Ledger", Georgia, serif;
     --font-mono: "JetBrainsMono", ui-monospace, monospace;
 
     /* Backgrounds / surfaces */

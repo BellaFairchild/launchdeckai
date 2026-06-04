@@ -8,6 +8,8 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",
     "@clerk/clerk-expo": "^2.19.31",
+    "@expo-google-fonts/arvo": "^0.4.1",
+    "@expo-google-fonts/ledger": "^0.4.1",
     "@expo/ui": "~56.0.15",
     "@tailwindcss/postcss": "^4.3.0",
     "clsx": "^2.1.1",

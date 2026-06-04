@@ -66,10 +66,15 @@ export default function BlueprintsScreen() {
 
                   {/* Text column, kept clear of the corner ring */}
                   <View className="pr-12">
-                    <Text className="font-display text-base font-bold text-text-primary">
-                      {section.title}
-                    </Text>
-                    <Text className="mt-0.5 font-body text-sm text-text-secondary">
+                    <View className="flex-row items-center gap-2">
+                      <View className="h-9 w-9 items-center justify-center rounded-2xl border bg-bg-surface">
+                        <Text className="text-xl">{section.glyph}</Text>
+                      </View>
+                      <Text className="flex-1 font-display text-base font-bold text-text-primary">
+                        {section.title}
+                      </Text>
+                    </View>
+                    <Text className="mt-1 font-body text-sm text-text-secondary">
                       {section.description}
                     </Text>
                     <Text className="mt-1 font-mono text-[11px] uppercase tracking-wider text-text-tertiary">

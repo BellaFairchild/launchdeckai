@@ -1,4 +1,3 @@
-import React from "react";
 
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -39,7 +38,10 @@ function lerpHex(a: string, b: string, t: number): string {
  */
 function readinessFill(score: number): readonly [string, string] {
   const reward = Math.max(0, Math.min(1, (score - 40) / 60));
-  return [colors.rocketTeal, lerpHex(colors.rocketTeal, colors.brandGold, reward)];
+  return [
+    colors.rocketTeal,
+    lerpHex(colors.rocketTeal, colors.brandGold, reward),
+  ];
 }
 
 type Props = {
@@ -103,9 +105,9 @@ export function MissionHeroCard({
               <Text
                 numberOfLines={1}
                 adjustsFontSizeToFit
-                className="font-display text-4xl font-black leading-none text-brand-flame"
+                className="font-display text-4xl font-black leading-none text-rocket-teal"
                 style={{
-                  textShadowColor: "rgba(255, 214, 90, 0.4)",
+                  textShadowColor: "rgba(16, 183, 214, 0.4)",
                   textShadowOffset: { width: 0, height: 2 },
                   textShadowRadius: 10,
                 }}
@@ -128,7 +130,11 @@ export function MissionHeroCard({
                 {score}%
               </Text>
             </View>
-            <ProgressBar value={score} height={10} fill={readinessFill(score)} />
+            <ProgressBar
+              value={score}
+              height={10}
+              fill={readinessFill(score)}
+            />
             <Text className="font-mono text-[10px] uppercase tracking-wider text-text-tertiary">
               {completedCount}/{totalCount} milestones cleared
             </Text>

@@ -1,28 +1,35 @@
-import { mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { mutation } from "./_generated/server";
 
-import { requireUser, recalcReadiness, adjustFuel } from "./helpers";
+import { adjustFuel, recalcReadiness, requireUser } from "./helpers";
 
 export const complete = mutation({
   args: { milestoneId: v.id("milestones") },
   handler: async (ctx, args) => {
     const user = await requireUser(ctx);
-    const milestone = await ctx.db.get(args.milestoneId);
+    const milestone = await ctx.db.get("milestones", args.milestoneId);
     if (!milestone) throw new Error("Milestone not found");
 
-    const mission = await ctx.db.get(milestone.missionId);
-    if (!mission || mission.userId !== user._id) throw new Error("Unauthorized");
-    if (milestone.isLocked) throw new Error("Milestone is locked for this plan");
+    const mission = await ctx.db.get("missions", milestone.missionId);
+    if (!mission || mission.userId !== user._id)
+      throw new Error("Unauthorized");
+    if (milestone.isLocked)
+      throw new Error("Milestone is locked for this plan");
     if (milestone.completed) return;
 
-    await ctx.db.patch(milestone._id, { completed: true, completedAt: Date.now() });
+    await ctx.db.patch("milestones", milestone._id, {
+      completed: true,
+      completedAt: Date.now(),
+    });
     await adjustFuel(ctx, {
       user,
       amount: milestone.fuelReward,
       reason: "milestone_completed",
       missionId: mission._id,
     });
-    await ctx.db.patch(user._id, { currentStreak: user.currentStreak + 1 });
+    await ctx.db.patch("users", user._id, {
+      currentStreak: user.currentStreak + 1,
+    });
     await recalcReadiness(ctx, mission._id);
   },
 });

@@ -31,7 +31,11 @@ export default defineSchema({
     appDescription: v.string(),
     oneLiner: v.string(),
     targetAudience: v.string(),
-    platform: v.union(v.literal("ios"), v.literal("android"), v.literal("both")),
+    platform: v.union(
+      v.literal("ios"),
+      v.literal("android"),
+      v.literal("both"),
+    ),
     launchDate: v.optional(v.number()),
     stage: v.union(
       v.literal("building"),
@@ -45,7 +49,9 @@ export default defineSchema({
       v.literal("archived"),
     ),
     readinessScore: v.number(),
-  }).index("by_userId", ["userId"]),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_userId_status", ["userId", "status"]),
 
   milestones: defineTable({
     missionId: v.id("missions"),
@@ -144,5 +150,6 @@ export default defineSchema({
     scheduledAt: v.number(),
   })
     .index("by_missionId", ["missionId"])
-    .index("by_mission_signal", ["missionId", "signalId"]),
+    .index("by_missionId_and_signalId", ["missionId", "signalId"])
+    .index("by_userId_and_signalId", ["userId", "signalId"]),
 });

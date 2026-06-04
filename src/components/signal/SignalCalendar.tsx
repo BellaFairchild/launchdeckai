@@ -98,7 +98,9 @@ function DayCell({
         </Text>
         <View className="flex-row items-center gap-1.5">
           {scheduled ? (
-            <Icon name="signal" size={14} color={colors.brandTeal} />
+            <View className="h-5 w-5 items-center justify-center rounded-full border border-brand-teal/40 bg-brand-teal/15">
+              <Icon name="signal" size={12} color={colors.brandTeal} />
+            </View>
           ) : null}
           <SignalBars status={status} size="sm" />
         </View>
@@ -155,8 +157,8 @@ function DayDetail({
                       {s.platform}
                     </Text>
                     {scheduledIds.has(s.id) ? (
-                      <View className="flex-row items-center gap-1">
-                        <Icon name="signal" size={12} color={colors.brandTeal} />
+                      <View className="flex-row items-center gap-1 rounded-full border border-brand-teal/30 bg-brand-teal/10 px-2 py-0.5">
+                        <Icon name="signal" size={11} color={colors.brandTeal} />
                         <Text className="font-mono text-[10px] uppercase tracking-wider text-brand-teal">
                           Scheduled
                         </Text>
@@ -187,6 +189,7 @@ function TimelineRow({
   signal,
   status,
   expanded,
+  scheduled,
   onToggle,
   onForge,
   onViewCargo,
@@ -194,6 +197,7 @@ function TimelineRow({
   signal: SignalTemplate;
   status: SignalStatus;
   expanded: boolean;
+  scheduled: boolean;
   onToggle: () => void;
   onForge: () => void;
   onViewCargo: () => void;
@@ -215,9 +219,19 @@ function TimelineRow({
                 <Text className="font-body text-base font-semibold text-text-primary">
                   {signal.label}
                 </Text>
-                <Text className="font-mono text-[11px] uppercase tracking-wider text-text-tertiary">
-                  {signal.platform}
-                </Text>
+                <View className="flex-row items-center gap-1.5">
+                  <Text className="font-mono text-[11px] uppercase tracking-wider text-text-tertiary">
+                    {signal.platform}
+                  </Text>
+                  {scheduled ? (
+                    <View className="flex-row items-center gap-1 rounded-full border border-brand-teal/30 bg-brand-teal/10 px-2 py-0.5">
+                      <Icon name="signal" size={11} color={colors.brandTeal} />
+                      <Text className="font-mono text-[10px] uppercase tracking-wider text-brand-teal">
+                        Scheduled
+                      </Text>
+                    </View>
+                  ) : null}
+                </View>
               </View>
               <SignalBars status={status} />
             </View>
@@ -311,6 +325,7 @@ export function SignalCalendar({
                 signal={s}
                 status={status}
                 expanded={expandedSignal === s.id}
+                scheduled={scheduledIds.has(s.id)}
                 onToggle={() =>
                   setExpandedSignal((cur) => (cur === s.id ? null : s.id))
                 }

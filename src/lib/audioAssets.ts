@@ -1,5 +1,8 @@
 /**
- * Bundled audio masters (WAV placeholders until composer AAC ships).
+ * Bundled
+ *  audio masters (WAV placeholders until composer AAC ships).
+ *
+ *
  * Naming: {category}_{name}.wav — see assets/audio/README.md
  */
 
@@ -30,9 +33,9 @@ export const SOUND_SOURCES = {
 
   brand_stinger_launchdeck: require("../../assets/audio/brand/brand_stinger_launchdeck.wav"),
 
-  ambient_deck_loop: require("../../assets/audio/ambient/ambient_deck_loop.wav"),
-  ambient_foundry_loop: require("../../assets/audio/ambient/ambient_foundry_loop.wav"),
-  ambient_launch_eve: require("../../assets/audio/ambient/ambient_launch_eve.wav"),
+  ambient_deck_loop: require("../../assets/audio/ambient/ambient_deck_loop.m4a"),
+  ambient_foundry_loop: require("../../assets/audio/ambient/ambient_foundry_loop.m4a"),
+  ambient_launch_eve: require("../../assets/audio/ambient/ambient_launch_eve.m4a"),
 } as const;
 
 export type SoundId = keyof typeof SOUND_SOURCES;

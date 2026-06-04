@@ -1,7 +1,7 @@
-import { mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { mutation } from "./_generated/server";
 
-import { requireUser } from "./helpers";
+import { getActiveMission, requireUser } from "./helpers";
 
 export const save = mutation({
   args: {
@@ -11,11 +11,7 @@ export const save = mutation({
   },
   handler: async (ctx, args) => {
     const user = await requireUser(ctx);
-    const mission = await ctx.db
-      .query("missions")
-      .withIndex("by_userId", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("status"), "active"))
-      .first();
+    const mission = await getActiveMission(ctx, user._id);
     if (!mission) throw new Error("No active mission");
 
     const blueprint = await ctx.db
@@ -25,7 +21,7 @@ export const save = mutation({
       .first();
     if (!blueprint) throw new Error("Blueprint section not found");
 
-    await ctx.db.patch(blueprint._id, {
+    await ctx.db.patch("blueprints", blueprint._id, {
       fields: args.fields,
       completionStatus: Math.max(0, Math.min(100, args.completionStatus)),
     });

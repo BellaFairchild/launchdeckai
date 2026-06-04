@@ -1,5 +1,5 @@
-import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
+import { internalMutation } from "./_generated/server";
 
 const plan = v.union(
   v.literal("cadet"),
@@ -33,7 +33,7 @@ export const applyEntitlement = internalMutation({
       .unique();
     if (!user) return;
 
-    await ctx.db.patch(user._id, { plan: args.plan });
+    await ctx.db.patch("users", user._id, { plan: args.plan });
 
     const existing = await ctx.db
       .query("subscriptions")
@@ -46,7 +46,7 @@ export const applyEntitlement = internalMutation({
       revenueCatCustomerId: args.revenueCatCustomerId,
       productId: args.productId,
     };
-    if (existing) await ctx.db.patch(existing._id, data);
+    if (existing) await ctx.db.patch("subscriptions", existing._id, data);
     else await ctx.db.insert("subscriptions", data);
   },
 });

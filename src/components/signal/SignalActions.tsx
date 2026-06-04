@@ -3,7 +3,10 @@ import { Share } from "react-native";
 
 import { BroadcastScheduler } from "@/components/signal/BroadcastScheduler";
 import { Button } from "@/components/ui/Button";
+import { GradientView } from "@/components/ui/GradientView";
+import { Icon } from "@/components/ui/Icon";
 import type { SignalStatus } from "@/components/ui/SignalBars";
+import { colors } from "@/constants/colors";
 import { track } from "@/lib/analytics";
 import { playSignature } from "@/lib/audio";
 import {
@@ -35,6 +38,14 @@ function formatWhen(when: Date): string {
   const hh = String(when.getHours()).padStart(2, "0");
   const mm = String(when.getMinutes()).padStart(2, "0");
   return `${date} · ${hh}:${mm}`;
+}
+
+/** Bare host for a destination URL, e.g. "x.com" from "https://x.com/compose". */
+function hostOf(url: string): string {
+  return url
+    .replace(/^https?:\/\//i, "")
+    .replace(/^www\./i, "")
+    .split(/[/?#]/)[0];
 }
 
 /** The content action — depends on whether the asset exists / is ready. */
@@ -123,28 +134,52 @@ export function SignalActions({
       </View>
 
       {scheduledWhen ? (
-        <View className="gap-1.5 rounded-2xl border border-brand-teal/40 bg-brand-teal/5 p-3">
-          <Text className="font-body text-sm text-brand-teal">
-            ✓ Broadcast set for {formatWhen(scheduledWhen)}
-          </Text>
-          <View className="flex-row gap-2">
-            <Button
-              label="Edit"
-              size="sm"
-              variant="secondary"
-              className="flex-1"
-              onPress={() => {
-                track("broadcast_scheduler_opened", { editing: true });
-                setSchedulerOpen(true);
-              }}
+        <View className="overflow-hidden rounded-2xl border border-brand-teal/40">
+          {/* ambient teal wash */}
+          <View pointerEvents="none" className="absolute inset-0">
+            <GradientView
+              colors={["rgba(77,200,192,0.10)", "rgba(77,200,192,0.02)"]}
+              direction="diagonal"
             />
-            <Pressable
-              onPress={onCancelBroadcast}
-              accessibilityRole="button"
-              className="flex-1 items-center justify-center rounded-full py-2 active:opacity-70"
-            >
-              <Text className="font-body text-sm text-status-error">Cancel broadcast</Text>
-            </Pressable>
+          </View>
+          <View className="p-3">
+            <View className="flex-row items-center gap-3">
+              <View className="h-9 w-9 items-center justify-center rounded-xl border border-brand-teal/30 bg-brand-teal/10">
+                <Icon name="signal" size={18} color={colors.brandTeal} />
+              </View>
+              <View className="flex-1">
+                <Text className="font-body text-sm font-semibold text-brand-teal">
+                  ✓ Broadcast set for {formatWhen(scheduledWhen)}
+                </Text>
+                {broadcast?.destinationUrl ? (
+                  <Text
+                    className="mt-0.5 font-mono text-[11px] text-text-tertiary"
+                    numberOfLines={1}
+                  >
+                    → {hostOf(broadcast.destinationUrl)}
+                  </Text>
+                ) : null}
+              </View>
+            </View>
+            <View className="mt-3 flex-row gap-2">
+              <Button
+                label="Edit"
+                size="sm"
+                variant="secondary"
+                className="flex-1"
+                onPress={() => {
+                  track("broadcast_scheduler_opened", { editing: true });
+                  setSchedulerOpen(true);
+                }}
+              />
+              <Pressable
+                onPress={onCancelBroadcast}
+                accessibilityRole="button"
+                className="flex-1 items-center justify-center rounded-full py-2 active:opacity-70"
+              >
+                <Text className="font-body text-sm text-status-error">Cancel broadcast</Text>
+              </Pressable>
+            </View>
           </View>
         </View>
       ) : (

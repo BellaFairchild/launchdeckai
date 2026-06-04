@@ -35,6 +35,15 @@ yarn-error.*
 .env*.local
 !.env.example
 
+# IDE / agent tooling (machine-specific; project skills stay under .claude/skills/)
+.claude/settings.json
+
+# Playwright MCP test artifacts (ephemeral logs/snapshots)
+.playwright-mcp/
+
+# Superpowers brainstorm session state (PID, idle timeout, temp HTML)
+.superpowers/
+
 # typescript
 *.tsbuildinfo
 

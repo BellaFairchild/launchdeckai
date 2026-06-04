@@ -77,7 +77,7 @@ function NavTabIcon({
         squareSize(TAB_ICON_SIZE),
         focused
           ? {
-              shadowColor: colors.brandTeal,
+              shadowColor: colors.rocketTeal,
               shadowOpacity: 0.65,
               shadowRadius: 10,
               shadowOffset: { width: 0, height: 0 },
@@ -122,7 +122,7 @@ function TabButton({
         className={cn(
           "text-[11px]",
           focused
-            ? "font-body font-semibold text-brand-teal"
+            ? "font-body font-semibold text-rocket-teal"
             : `font-body ${INACTIVE_LABEL}`,
         )}
       >

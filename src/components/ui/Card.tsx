@@ -17,6 +17,8 @@ type Props = {
   variant?: CardVariant;
   onPress?: () => void;
   className?: string;
+  /** Overrides/extends the variant's outer glow (e.g. a gold completion glow). */
+  style?: ViewStyle;
 };
 
 /** Subtle top→bottom surface gradients: a lit top edge fading into the deep. */
@@ -61,7 +63,13 @@ function shadow(
   };
 }
 
-export function Card({ children, variant = "glass", onPress, className }: Props) {
+export function Card({
+  children,
+  variant = "glass",
+  onPress,
+  className,
+  style,
+}: Props) {
   const inner = (
     <>
       <GradientView colors={SURFACE[variant]} />
@@ -91,7 +99,7 @@ export function Card({ children, variant = "glass", onPress, className }: Props)
     return (
       <Pressable
         onPress={onPress}
-        style={SHADOW[variant]}
+        style={[SHADOW[variant], style]}
         className={cn(classes, "active:opacity-90")}
       >
         {inner}
@@ -99,7 +107,7 @@ export function Card({ children, variant = "glass", onPress, className }: Props)
     );
   }
   return (
-    <View style={SHADOW[variant]} className={classes}>
+    <View style={[SHADOW[variant], style]} className={classes}>
       {inner}
     </View>
   );
