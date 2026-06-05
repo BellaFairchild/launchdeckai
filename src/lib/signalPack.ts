@@ -57,7 +57,7 @@ export function buildSignalPackRows(assets: Asset[], launchDate?: number): Signa
 }
 
 function csvCell(value: string): string {
-  return /[",\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+  return /[",\n\r]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
 }
 
 export function buildSignalScheduleCsv(rows: SignalPackRow[]): string {
