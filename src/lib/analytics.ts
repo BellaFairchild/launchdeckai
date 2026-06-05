@@ -10,6 +10,9 @@ export const analyticsEnabled = KEY.length > 0;
 
 /** Canonical event names (Docs/11). */
 export type AnalyticsEvent =
+  | "landing_viewed"
+  | "landing_get_started"
+  | "landing_have_account"
   | "user_signed_up"
   | "onboarding_completed"
   | "mission_created"
