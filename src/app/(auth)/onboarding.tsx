@@ -1,6 +1,6 @@
-import { useMutation } from "convex/react";
-import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useConvexAuth, useMutation } from "convex/react";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -11,12 +11,18 @@ import { playSignature } from "@/lib/audio";
 import { authEnabled } from "@/lib/auth";
 import { cn } from "@/lib/cn";
 import { haptics } from "@/lib/haptics";
+import {
+  getOnboardingDraft,
+  saveOnboardingDraft,
+} from "@/lib/onboardingDraft";
 import { useMissionStore } from "@/store/mission";
 import { Pressable, ScrollView, Text, TextInput, View } from "@/tw";
 import type { Platform as AppPlatform, MissionStage } from "@/types";
 import { api } from "@cvx/_generated/api";
 
 const DAY = 24 * 60 * 60 * 1000;
+
+type OnboardingPhase = "intent" | "mission" | "full";
 
 const PLATFORMS: { id: AppPlatform; label: string }[] = [
   { id: "ios", label: "iOS" },
@@ -37,6 +43,18 @@ const DATE_OPTIONS: { label: string; offset: number | null }[] = [
   { label: "~3 months", offset: 90 * DAY },
   { label: "Not sure yet", offset: null },
 ];
+
+function resolvePhase(
+  phaseParam: string | string[] | undefined,
+  isAuthenticated: boolean,
+): OnboardingPhase {
+  const raw = Array.isArray(phaseParam) ? phaseParam[0] : phaseParam;
+  if (raw === "intent") return "intent";
+  if (raw === "mission") return "mission";
+  if (authEnabled && !isAuthenticated) return "intent";
+  if (isAuthenticated) return "mission";
+  return "full";
+}
 
 function Chip({
   label,
@@ -74,11 +92,20 @@ function Chip({
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams<{ phase?: string }>();
+  const { isAuthenticated } = useConvexAuth();
   const updateMission = useMissionStore((s) => s.updateMission);
   const createMission = useMutation(api.missions.createMission);
   const [submitting, setSubmitting] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
 
-  const [step, setStep] = useState(0);
+  const phase = resolvePhase(params.phase, isAuthenticated);
+
+  const minStep = phase === "mission" ? 3 : 0;
+  const maxStep = phase === "intent" ? 2 : 6;
+  const totalSteps = phase === "intent" ? 3 : phase === "mission" ? 4 : 7;
+
+  const [step, setStep] = useState(minStep);
   const [appName, setAppName] = useState("");
   const [oneLiner, setOneLiner] = useState("");
   const [audience, setAudience] = useState("");
@@ -86,12 +113,82 @@ export default function OnboardingScreen() {
   const [stage, setStage] = useState<MissionStage>("building");
   const [dateOffset, setDateOffset] = useState<number | null>(14 * DAY);
 
-  const TOTAL = 7; // 6 inputs + confirmation
+  useEffect(() => {
+    let cancelled = false;
+    void getOnboardingDraft().then((draft) => {
+      if (cancelled || !draft) {
+        if (!cancelled) setHydrated(true);
+        return;
+      }
+      setAppName(draft.appName);
+      setOneLiner(draft.oneLiner);
+      setAudience(draft.audience);
+      if (phase === "intent") {
+        setStep(Math.min(Math.max(draft.step, 0), 2));
+      } else if (phase === "full") {
+        setStep(Math.min(Math.max(draft.step, 0), 6));
+      } else {
+        setStep(3);
+      }
+      if (!cancelled) setHydrated(true);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [phase]);
+
+  const progressIndex = phase === "mission" ? step - 3 : step;
+  const progressLabel = `${progressIndex + 1}/${totalSteps}`;
+
   const canNext =
     (step === 0 && appName.trim().length > 0) ||
     (step === 1 && oneLiner.trim().length > 0) ||
     (step === 2 && audience.trim().length > 0) ||
     step >= 3;
+
+  const persistIntentDraft = useCallback(
+    async (nextStep: number) => {
+      await saveOnboardingDraft({
+        appName: appName.trim(),
+        oneLiner: oneLiner.trim(),
+        audience: audience.trim(),
+        step: nextStep,
+      });
+    },
+    [appName, oneLiner, audience],
+  );
+
+  const handleContinue = useCallback(async () => {
+    if (step <= 2) {
+      const nextStep = step + 1;
+      await persistIntentDraft(Math.min(nextStep, 2));
+
+      if (step === 2) {
+        if (authEnabled && !isAuthenticated) {
+          router.replace("/(auth)/save-plan");
+          return;
+        }
+        if (phase === "intent") {
+          router.replace("/(auth)/onboarding?phase=mission");
+          return;
+        }
+      }
+
+      setStep(nextStep);
+      return;
+    }
+
+    if (step < maxStep) {
+      setStep((s) => s + 1);
+    }
+  }, [
+    step,
+    persistIntentDraft,
+    isAuthenticated,
+    phase,
+    maxStep,
+    router,
+  ]);
 
   const finish = async () => {
     if (submitting) return;
@@ -124,11 +221,25 @@ export default function OnboardingScreen() {
       return;
     }
 
-    // Demo mode — update the mock mission.
     updateMission({ ...payload, status: "active" });
     celebrate();
     router.replace("/(tabs)/deck");
   };
+
+  const showBack = step > minStep;
+  const isConfirmStep = step === 6;
+  const headerLabel = useMemo(() => {
+    if (phase === "intent") return "Intent capture";
+    return "Mission setup";
+  }, [phase]);
+
+  if (!hydrated) {
+    return (
+      <ScreenBackground>
+        <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]} />
+      </ScreenBackground>
+    );
+  }
 
   return (
     <ScreenBackground>
@@ -137,14 +248,13 @@ export default function OnboardingScreen() {
           style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-          {/* Progress */}
           <View className="flex-row gap-1.5 px-5 pt-3">
-            {Array.from({ length: TOTAL }).map((_, i) => (
+            {Array.from({ length: totalSteps }).map((_, i) => (
               <View
                 key={i}
                 className={cn(
                   "h-1.5 flex-1 rounded-full",
-                  i <= step ? "bg-brand-teal" : "bg-border-default",
+                  i <= progressIndex ? "bg-brand-teal" : "bg-border-default",
                 )}
               />
             ))}
@@ -152,7 +262,7 @@ export default function OnboardingScreen() {
 
           <ScrollView contentContainerClassName="flex-1 gap-4 px-6 py-6">
             <Text className="font-mono text-xs uppercase tracking-[2px] text-brand-teal">
-              Mission setup · {step + 1}/{TOTAL}
+              {headerLabel} · {progressLabel}
             </Text>
 
             {step === 0 && (
@@ -280,22 +390,21 @@ export default function OnboardingScreen() {
             )}
           </ScrollView>
 
-          {/* Footer nav */}
           <View className="flex-row gap-2 px-6 pb-4">
-            {step > 0 ? (
+            {showBack ? (
               <Button
                 label="Back"
                 variant="ghost"
-                onPress={() => setStep((s) => s - 1)}
+                onPress={() => setStep((s) => Math.max(minStep, s - 1))}
               />
             ) : null}
             <View className="flex-1">
-              {step < TOTAL - 1 ? (
+              {!isConfirmStep ? (
                 <Button
                   label="Continue"
                   fullWidth
                   disabled={!canNext}
-                  onPress={() => setStep((s) => s + 1)}
+                  onPress={() => void handleContinue()}
                 />
               ) : (
                 <Button
