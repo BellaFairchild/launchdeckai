@@ -12,4 +12,6 @@ module.exports = {
   transformIgnorePatterns: [
     "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|nativewind|react-native-css|react-native-svg|react-native-reanimated|react-native-worklets|react-native-gesture-handler|zustand))",
   ],
+  // Exclude convex tests — those are run by vitest (npm run test:convex).
+  testPathIgnorePatterns: ["/node_modules/", "/convex/"],
 };
