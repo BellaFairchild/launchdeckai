@@ -15,6 +15,8 @@ export type AnalyticsEvent =
   | "landing_have_account"
   | "save_plan_viewed"
   | "save_plan_sign_in_started"
+  | "welcome_back_viewed"
+  | "welcome_back_continue"
   | "user_signed_up"
   | "onboarding_completed"
   | "mission_created"

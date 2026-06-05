@@ -2,8 +2,11 @@ import {
   clearOnboardingDraft,
   DRAFT_KEY,
   getOnboardingDraft,
+  getSkipWelcomeBack,
   hasIntentDraft,
   saveOnboardingDraft,
+  setSkipWelcomeBack,
+  SKIP_WELCOME_KEY,
 } from "./onboardingDraft";
 import * as secureStorage from "./secureStorage";
 
@@ -54,4 +57,20 @@ it("saveOnboardingDraft persists JSON", async () => {
   };
   await saveOnboardingDraft(draft);
   expect(mockSet).toHaveBeenCalledWith(DRAFT_KEY, JSON.stringify(draft));
+});
+
+it("getSkipWelcomeBack is false when pref not set", async () => {
+  mockGet.mockResolvedValue(null);
+  expect(await getSkipWelcomeBack()).toBe(false);
+});
+
+it("getSkipWelcomeBack is true when pref is set", async () => {
+  mockGet.mockResolvedValue("1");
+  expect(await getSkipWelcomeBack()).toBe(true);
+  expect(mockGet).toHaveBeenCalledWith(SKIP_WELCOME_KEY);
+});
+
+it("setSkipWelcomeBack persists skip flag", async () => {
+  await setSkipWelcomeBack();
+  expect(mockSet).toHaveBeenCalledWith(SKIP_WELCOME_KEY, "1");
 });
