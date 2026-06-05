@@ -9,6 +9,7 @@ import { MissionHeroCard } from "@/components/mission/MissionHeroCard";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { FuelBadge } from "@/components/ui/FuelBadge";
+import { SuccessBurst } from "@/components/ui/SuccessBurst";
 import { colors } from "@/constants/colors";
 import { MILESTONE_CATEGORIES } from "@/constants/milestoneTemplates";
 import { planMeets, PLANS } from "@/constants/plans";
@@ -44,12 +45,14 @@ function MilestoneRow({
   milestone,
   locked,
   highlighted,
+  justCompleted,
   onComplete,
   onUnlock,
 }: {
   milestone: Milestone;
   locked: boolean;
   highlighted: boolean;
+  justCompleted: boolean;
   onComplete: () => void;
   onUnlock: () => void;
 }) {
@@ -60,6 +63,7 @@ function MilestoneRow({
         variant={completed ? "success" : locked ? "glass" : "elevated"}
         style={completed ? COMPLETED_GLOW : undefined}
       >
+        <SuccessBurst active={justCompleted} />
         <View className="flex-row items-start gap-3">
           <Pressable
             onPress={locked ? onUnlock : completed ? undefined : onComplete}
@@ -127,6 +131,17 @@ export default function MissionsScreen() {
   const catY = useRef<Record<string, number>>({});
   const highlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [justCompletedId, setJustCompletedId] = useState<string | null>(null);
+
+  const handleComplete = (id: string, category: string, fuelReward: number) => {
+    completeMilestone(id);
+    haptics.success();
+    playSignature("milestone");
+    track("milestone_completed", { category });
+    track("fuel_earned", { amount: fuelReward, reason: "milestone" });
+    setJustCompletedId(id);
+    setTimeout(() => setJustCompletedId(null), 900);
+  };
 
   const completedCount = milestones.filter((m) => m.completed).length;
   const nextMilestone = milestones.find(
@@ -213,16 +228,8 @@ export default function MissionsScreen() {
                       milestone={m}
                       locked={locked}
                       highlighted={highlightId === m.id}
-                      onComplete={() => {
-                        completeMilestone(m.id);
-                        haptics.success();
-                        playSignature("milestone");
-                        track("milestone_completed", { category: m.category });
-                        track("fuel_earned", {
-                          amount: m.fuelReward,
-                          reason: "milestone",
-                        });
-                      }}
+                      justCompleted={justCompletedId === m.id}
+                      onComplete={() => handleComplete(m.id, m.category, m.fuelReward)}
                       onUnlock={() => router.push("/(modals)/refuel")}
                     />
                   );
