@@ -39,7 +39,8 @@ jest.mock("react-native-safe-area-context", () => {
 });
 
 const mockReplace = jest.fn();
-let mockSearchParams: { phase?: string } = { phase: "intent" };
+const mockPush = jest.fn();
+let mockSearchParams: { phase?: string } = { phase: "mission" };
 
 jest.mock("expo-router", () => {
   const { View } = require("react-native");
@@ -51,7 +52,7 @@ jest.mock("expo-router", () => {
   RouterLink.MenuAction = () => null;
   RouterLink.Preview = () => null;
   return {
-    useRouter: () => ({ replace: mockReplace, push: mockReplace }),
+    useRouter: () => ({ replace: mockReplace, push: mockPush }),
     useLocalSearchParams: () => mockSearchParams,
     Link: RouterLink,
   };
@@ -78,107 +79,109 @@ jest.mock("@/lib/auth", () => ({
 
 const mockSaveOnboardingDraft = jest.fn(async () => undefined);
 const mockGetOnboardingDraft = jest.fn(async () => null);
+const mockClearOnboardingDraft = jest.fn(async () => undefined);
+const mockCreateMission = jest.fn(async () => undefined);
 
 jest.mock("@/lib/onboardingDraft", () => ({
   getOnboardingDraft: (...args: unknown[]) => mockGetOnboardingDraft(...args),
   saveOnboardingDraft: (...args: unknown[]) =>
     mockSaveOnboardingDraft(...args),
-  clearOnboardingDraft: jest.fn(async () => undefined),
+  clearOnboardingDraft: (...args: unknown[]) =>
+    mockClearOnboardingDraft(...args),
 }));
 
 jest.mock("convex/react", () => ({
-  useConvexAuth: () => ({ isAuthenticated: false, isLoading: false }),
-  useMutation: () => jest.fn(),
+  useConvexAuth: () => ({ isAuthenticated: true, isLoading: false }),
+  useMutation: () => mockCreateMission,
 }));
 
 import OnboardingScreen from "./onboarding";
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockSearchParams = { phase: "intent" };
+  mockSearchParams = { phase: "mission" };
   mockGetOnboardingDraft.mockResolvedValue(null);
   mockSaveOnboardingDraft.mockResolvedValue(undefined);
+  mockClearOnboardingDraft.mockResolvedValue(undefined);
+  mockCreateMission.mockResolvedValue(undefined);
 });
 
-async function advanceIntentSteps() {
-  fireEvent.changeText(screen.getByLabelText("App name"), "FocusFlow");
-  fireEvent.press(screen.getByText("Continue"));
-
-  await waitFor(() => {
-    expect(screen.getByLabelText("One-liner description")).toBeOnTheScreen();
-  });
-
-  fireEvent.changeText(
-    screen.getByLabelText("One-liner description"),
-    "Mindful tasks for builders",
-  );
-  fireEvent.press(screen.getByText("Continue"));
-
-  await waitFor(() => {
-    expect(screen.getByLabelText("Target audience")).toBeOnTheScreen();
-  });
-
-  fireEvent.changeText(
-    screen.getByLabelText("Target audience"),
-    "Solo founders",
-  );
-  fireEvent.press(screen.getByText("Continue"));
-}
-
-it("hydrates intent fields from draft on mount", async () => {
+it("hydrates mission fields from draft on mount", async () => {
   mockGetOnboardingDraft.mockResolvedValue({
     appName: "DraftApp",
     oneLiner: "Saved pitch",
     audience: "Indie hackers",
-    step: 1,
+    step: 5,
   });
 
   render(<OnboardingScreen />);
 
   await waitFor(() => {
-    expect(screen.getByDisplayValue("Saved pitch")).toBeOnTheScreen();
+    expect(screen.getByText(/Mission setup · 3\/4/)).toBeOnTheScreen();
   });
 
-  expect(screen.getByText(/Intent capture · 2\/3/)).toBeOnTheScreen();
+  expect(screen.getByText("Target launch")).toBeOnTheScreen();
 });
 
-it("persists draft after completing audience step", async () => {
+it("shows confirm summary with hydrated draft values", async () => {
+  mockGetOnboardingDraft.mockResolvedValue({
+    appName: "DraftApp",
+    oneLiner: "Saved pitch",
+    audience: "Indie hackers",
+    step: 6,
+  });
+
   render(<OnboardingScreen />);
 
   await waitFor(() => {
-    expect(screen.getByLabelText("App name")).toBeOnTheScreen();
+    expect(screen.getByText(/DraftApp/)).toBeOnTheScreen();
   });
 
-  await advanceIntentSteps();
+  expect(screen.getByText(/Saved pitch/)).toBeOnTheScreen();
+  expect(screen.getByText(/Indie hackers/)).toBeOnTheScreen();
+});
+
+it("clears onboarding draft after createMission succeeds", async () => {
+  mockGetOnboardingDraft.mockResolvedValue({
+    appName: "DraftApp",
+    oneLiner: "Saved pitch",
+    audience: "Indie hackers",
+    step: 6,
+  });
+
+  render(<OnboardingScreen />);
 
   await waitFor(() => {
-    expect(mockSaveOnboardingDraft).toHaveBeenCalledWith({
-      appName: "FocusFlow",
-      oneLiner: "Mindful tasks for builders",
-      audience: "Solo founders",
-      step: 2,
-    });
+    expect(screen.getByText("Create my Mission")).toBeOnTheScreen();
+  });
+
+  fireEvent.press(screen.getByText("Create my Mission"));
+
+  await waitFor(() => {
+    expect(mockCreateMission).toHaveBeenCalled();
+    expect(mockClearOnboardingDraft).toHaveBeenCalled();
+    expect(mockReplace).toHaveBeenCalledWith("/(tabs)/deck");
   });
 });
 
-it("navigates to save-plan after step 2 when auth enabled and not authenticated", async () => {
+it("navigates to refuel when Commander link is pressed", async () => {
+  mockGetOnboardingDraft.mockResolvedValue({
+    appName: "DraftApp",
+    oneLiner: "Saved pitch",
+    audience: "Indie hackers",
+    step: 6,
+  });
+
   render(<OnboardingScreen />);
 
   await waitFor(() => {
-    expect(screen.getByLabelText("App name")).toBeOnTheScreen();
+    expect(
+      screen.getByLabelText("See what Commander unlocks"),
+    ).toBeOnTheScreen();
   });
 
-  await advanceIntentSteps();
+  fireEvent.press(screen.getByLabelText("See what Commander unlocks"));
 
-  await waitFor(() => {
-    expect(mockReplace).toHaveBeenCalledWith("/(auth)/save-plan");
-  });
-});
-
-it("shows three progress segments in intent phase", async () => {
-  render(<OnboardingScreen />);
-
-  await waitFor(() => {
-    expect(screen.getByText("Intent capture · 1/3")).toBeOnTheScreen();
-  });
+  expect(mockPush).toHaveBeenCalledWith("/(modals)/refuel");
+  expect(mockCreateMission).not.toHaveBeenCalled();
 });

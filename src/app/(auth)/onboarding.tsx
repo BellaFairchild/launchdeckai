@@ -12,6 +12,7 @@ import { authEnabled } from "@/lib/auth";
 import { cn } from "@/lib/cn";
 import { haptics } from "@/lib/haptics";
 import {
+  clearOnboardingDraft,
   getOnboardingDraft,
   saveOnboardingDraft,
 } from "@/lib/onboardingDraft";
@@ -128,7 +129,7 @@ export default function OnboardingScreen() {
       } else if (phase === "full") {
         setStep(Math.min(Math.max(draft.step, 0), 6));
       } else {
-        setStep(3);
+        setStep(Math.min(Math.max(draft.step, 3), 6));
       }
       if (!cancelled) setHydrated(true);
     });
@@ -213,6 +214,7 @@ export default function OnboardingScreen() {
       setSubmitting(true);
       try {
         await createMission(payload);
+        await clearOnboardingDraft();
         celebrate();
         router.replace("/(tabs)/deck");
       } catch {
@@ -390,31 +392,45 @@ export default function OnboardingScreen() {
             )}
           </ScrollView>
 
-          <View className="flex-row gap-2 px-6 pb-4">
-            {showBack ? (
-              <Button
-                label="Back"
-                variant="ghost"
-                onPress={() => setStep((s) => Math.max(minStep, s - 1))}
-              />
-            ) : null}
-            <View className="flex-1">
-              {!isConfirmStep ? (
+          <View className="gap-2 px-6 pb-4">
+            <View className="flex-row gap-2">
+              {showBack ? (
                 <Button
-                  label="Continue"
-                  fullWidth
-                  disabled={!canNext}
-                  onPress={() => void handleContinue()}
+                  label="Back"
+                  variant="ghost"
+                  onPress={() => setStep((s) => Math.max(minStep, s - 1))}
                 />
-              ) : (
-                <Button
-                  label="Create my Mission"
-                  fullWidth
-                  loading={submitting}
-                  onPress={finish}
-                />
-              )}
+              ) : null}
+              <View className="flex-1">
+                {!isConfirmStep ? (
+                  <Button
+                    label="Continue"
+                    fullWidth
+                    disabled={!canNext}
+                    onPress={() => void handleContinue()}
+                  />
+                ) : (
+                  <Button
+                    label="Create my Mission"
+                    fullWidth
+                    loading={submitting}
+                    onPress={finish}
+                  />
+                )}
+              </View>
             </View>
+            {isConfirmStep ? (
+              <Pressable
+                onPress={() => router.push("/(modals)/refuel")}
+                accessibilityRole="link"
+                accessibilityLabel="See what Commander unlocks"
+                className="items-center py-2"
+              >
+                <Text className="text-center font-body text-xs text-text-tertiary">
+                  See what Commander unlocks
+                </Text>
+              </Pressable>
+            ) : null}
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>
