@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { TabScreen } from "@/components/layout/TabScreen";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { FoundryToolCard } from "@/components/ui/FoundryToolCard";
 import { Icon } from "@/components/ui/Icon";
 import { FOUNDRY_TOOLS, type FoundryTool } from "@/constants/foundryTools";
@@ -38,6 +39,7 @@ export default function FoundryScreen() {
   // instead of appearing off-screen above (looks like "nothing happened").
   const scrollRef = useRef<RNScrollView>(null);
   const [busyTool, setBusyTool] = useState<string | null>(null);
+  const [forgeError, setForgeError] = useState<string | null>(null);
   // A freshly forged draft awaiting preview / upload. Not yet persisted — Fuel
   // is spent only when the user uploads it to the Cargo Bay.
   const [forged, setForged] = useState<{
@@ -66,6 +68,7 @@ export default function FoundryScreen() {
     }
 
     setUploadedTitle(null);
+    setForgeError(null);
     setBusyTool(tool.id);
     let content = "";
     let viaAI = false;
@@ -87,7 +90,10 @@ export default function FoundryScreen() {
       content = res.content;
       viaAI = !res.mock;
     } catch {
-      content = `Draft ${tool.name} for ${mission.appName} (offline — check Convex connection).`;
+      setBusyTool(null);
+      setForgeError(tool.id);
+      haptics.warning();
+      return;
     }
 
     setForged({ tool, title: params.signalLabel ?? tool.name, content, viaAI });
@@ -164,6 +170,17 @@ export default function FoundryScreen() {
                 {params.signalLabel}
               </Text>
             </Card>
+          ) : null}
+
+          {forgeError ? (
+            <ErrorState
+              title="Generation failed"
+              message="Couldn't reach the Forge. Check your connection and try again — no Fuel was spent."
+              onRetry={() => {
+                const tool = FOUNDRY_TOOLS.find((t) => t.id === forgeError);
+                if (tool) void onForge(tool);
+              }}
+            />
           ) : null}
 
           {forged ? (
