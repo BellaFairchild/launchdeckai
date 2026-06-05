@@ -160,6 +160,8 @@ export function BroadcastScheduler({
     >
       <Pressable
         onPress={onClose}
+        accessibilityRole="button"
+        accessibilityLabel="Close scheduler"
         className="flex-1 items-center justify-center bg-black/70 px-5"
       >
         {/* Stop the backdrop press from closing when tapping the card. */}
@@ -254,6 +256,7 @@ export function BroadcastScheduler({
                   setPicker((p) => (p === "month" ? null : "month"));
                 }}
                 accessibilityRole="button"
+                accessibilityLabel={`Select month, currently ${MONTHS[month]}`}
                 className={cn(
                   "flex-row items-center gap-2 rounded-xl border bg-bg-card px-3 py-2 active:opacity-80",
                   picker === "month"
@@ -272,6 +275,7 @@ export function BroadcastScheduler({
                   setPicker((p) => (p === "year" ? null : "year"));
                 }}
                 accessibilityRole="button"
+                accessibilityLabel={`Select year, currently ${year}`}
                 className={cn(
                   "flex-row items-center gap-2 rounded-xl border bg-bg-card px-3 py-2 active:opacity-80",
                   picker === "year"
@@ -451,6 +455,7 @@ export function BroadcastScheduler({
                 placeholderTextColor={colors.textTertiary}
                 keyboardType="numbers-and-punctuation"
                 maxLength={5}
+                accessibilityLabel="Broadcast time (hh:mm)"
                 className="min-h-[48px] flex-1 font-body text-base text-text-primary"
               />
               {timeValid ? (

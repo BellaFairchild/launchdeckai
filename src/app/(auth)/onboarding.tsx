@@ -50,6 +50,9 @@ function Chip({
   return (
     <Pressable
       onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected: active }}
       className={cn(
         "rounded-full border px-4 py-2.5",
         active
@@ -163,6 +166,7 @@ export default function OnboardingScreen() {
                   placeholder="FocusFlow"
                   placeholderTextColor="#64748B"
                   autoFocus
+                  accessibilityLabel="App name"
                   className="rounded-2xl border border-border-med bg-bg-card px-4 py-3 font-body text-base text-text-primary"
                 />
               </View>
@@ -182,6 +186,7 @@ export default function OnboardingScreen() {
                   placeholder="Mindful task tracking for overwhelmed builders."
                   placeholderTextColor="#64748B"
                   multiline
+                  accessibilityLabel="One-liner description"
                   className="min-h-[88px] rounded-2xl border border-border-med bg-bg-card px-4 py-3 font-body text-base text-text-primary"
                   style={{ textAlignVertical: "top" }}
                 />
@@ -198,6 +203,7 @@ export default function OnboardingScreen() {
                   onChangeText={setAudience}
                   placeholder="Solo founders, indie hackers, freelancers"
                   placeholderTextColor="#64748B"
+                  accessibilityLabel="Target audience"
                   className="rounded-2xl border border-border-med bg-bg-card px-4 py-3 font-body text-base text-text-primary"
                 />
               </View>

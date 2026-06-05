@@ -72,6 +72,7 @@ export default function BlueprintDetail() {
         <View className="flex-row items-center gap-2 border-b border-border-default px-3 py-2">
           <Pressable
             onPress={() => router.back()}
+            accessibilityRole="button"
             accessibilityLabel="Back"
             className="h-11 w-11 items-center justify-center"
           >
@@ -127,6 +128,7 @@ export default function BlueprintDetail() {
                     placeholder={f.example}
                     placeholderTextColor="#64748B"
                     multiline={f.multiline}
+                    accessibilityLabel={f.label}
                     className={
                       "rounded-2xl border border-border-med bg-bg-card px-4 py-3 font-body text-base text-text-primary " +
                       (f.multiline ? "min-h-[88px]" : "")

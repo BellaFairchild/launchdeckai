@@ -175,6 +175,7 @@ export function SignalActions({
               <Pressable
                 onPress={onCancelBroadcast}
                 accessibilityRole="button"
+                accessibilityLabel="Cancel broadcast"
                 className="flex-1 items-center justify-center rounded-full py-2 active:opacity-70"
               >
                 <Text className="font-body text-sm text-status-error">Cancel broadcast</Text>
