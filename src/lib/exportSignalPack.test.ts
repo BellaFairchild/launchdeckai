@@ -10,7 +10,7 @@ jest.mock("expo-file-system/legacy", () => ({
   EncodingType: { Base64: "base64" },
   writeAsStringAsync: jest.fn(async () => undefined),
 }));
-const mockShareAsync = jest.fn(async () => undefined);
+const mockShareAsync = jest.fn((..._a: unknown[]) => Promise.resolve(undefined));
 jest.mock("expo-sharing", () => ({
   isAvailableAsync: jest.fn(async () => true),
   shareAsync: (...a: unknown[]) => mockShareAsync(...a),
