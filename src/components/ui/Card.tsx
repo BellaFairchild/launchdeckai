@@ -19,6 +19,8 @@ type Props = {
   className?: string;
   /** Overrides/extends the variant's outer glow (e.g. a gold completion glow). */
   style?: ViewStyle;
+  testID?: string;
+  accessibilityLabel?: string;
 };
 
 /** Subtle top→bottom surface gradients: a lit top edge fading into the deep. */
@@ -69,6 +71,8 @@ export function Card({
   onPress,
   className,
   style,
+  testID,
+  accessibilityLabel,
 }: Props) {
   const inner = (
     <>
@@ -98,6 +102,9 @@ export function Card({
   if (onPress) {
     return (
       <Pressable
+        testID={testID}
+        accessibilityLabel={accessibilityLabel}
+        accessibilityRole="button"
         onPress={onPress}
         style={[SHADOW[variant], style]}
         className={cn(classes, "active:opacity-90")}
@@ -107,7 +114,12 @@ export function Card({
     );
   }
   return (
-    <View style={[SHADOW[variant], style]} className={classes}>
+    <View
+      testID={testID}
+      accessibilityLabel={accessibilityLabel}
+      style={[SHADOW[variant], style]}
+      className={classes}
+    >
       {inner}
     </View>
   );
