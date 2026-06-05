@@ -98,10 +98,24 @@ test("rejects completion from a different user (ownership)", async () => {
     }),
   );
 
+  // Insert a second user so requireUser succeeds for clerk_other;
+  // execution will reach the ownership guard (mission.userId !== user._id).
+  await t.run((ctx) =>
+    ctx.db.insert("users", {
+      clerkId: "clerk_other",
+      email: "other@test.com",
+      displayName: "Other User",
+      plan: "cadet",
+      fuelBalance: 25,
+      currentStreak: 0,
+      level: 1,
+    }),
+  );
+
   // A second user tries to complete a milestone belonging to clerk_test's mission.
   await expect(
     t
       .withIdentity({ subject: "clerk_other" })
       .mutation(api.milestones.complete, { milestoneId }),
-  ).rejects.toThrow();
+  ).rejects.toThrow("Unauthorized");
 });
