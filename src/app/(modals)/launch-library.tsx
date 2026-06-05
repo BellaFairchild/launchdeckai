@@ -13,7 +13,6 @@ export default function LaunchLibraryModal() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>("All");
 
-  const isSaved = useSavedResourcesStore((s) => s.isSaved);
   const toggleSaved = useSavedResourcesStore((s) => s.toggle);
   const savedIds = useSavedResourcesStore((s) => s.saved);
 
@@ -68,29 +67,32 @@ export default function LaunchLibraryModal() {
             }
           />
         ) : (
-          filtered.map((r) => (
-            <Card key={r.id} variant="glass">
-              <Text className="font-display text-base font-bold text-text-primary">{r.title}</Text>
-              <Text className="mt-0.5 font-body text-sm text-text-secondary">{r.description}</Text>
-              <View className="mt-2 flex-row items-center justify-between">
-                <Text className="font-mono text-[11px] uppercase tracking-wider text-text-tertiary">
-                  {r.category}
-                </Text>
-                <View className="flex-row items-center gap-2">
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel={isSaved(r.id) ? `Unsave ${r.title}` : `Save ${r.title}`}
-                    hitSlop={8}
-                    onPress={() => toggleSaved(r.id)}
-                    className="px-2 py-1"
-                  >
-                    <Text className="text-lg">{isSaved(r.id) ? "★" : "☆"}</Text>
-                  </Pressable>
-                  <Button label="Open →" size="sm" variant="ghost" onPress={() => Linking.openURL(r.url)} />
+          filtered.map((r) => {
+            const starred = savedIds.includes(r.id);
+            return (
+              <Card key={r.id} variant="glass">
+                <Text className="font-display text-base font-bold text-text-primary">{r.title}</Text>
+                <Text className="mt-0.5 font-body text-sm text-text-secondary">{r.description}</Text>
+                <View className="mt-2 flex-row items-center justify-between">
+                  <Text className="font-mono text-[11px] uppercase tracking-wider text-text-tertiary">
+                    {r.category}
+                  </Text>
+                  <View className="flex-row items-center gap-2">
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={starred ? `Unsave ${r.title}` : `Save ${r.title}`}
+                      hitSlop={8}
+                      onPress={() => toggleSaved(r.id)}
+                      className="px-2 py-1"
+                    >
+                      <Text className="text-lg">{starred ? "★" : "☆"}</Text>
+                    </Pressable>
+                    <Button label="Open →" size="sm" variant="ghost" onPress={() => Linking.openURL(r.url)} />
+                  </View>
                 </View>
-              </View>
-            </Card>
-          ))
+              </Card>
+            );
+          })
         )}
       </ScrollView>
     </View>

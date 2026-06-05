@@ -188,13 +188,17 @@ function DataSyncInner() {
     if (savedIds) useSavedResourcesStore.getState().hydrate(savedIds);
   }, [savedIds]);
 
-  // Wire the Convex toggle into the saved resources store.
+  // Wire / clear the Convex toggle into the saved resources store.
   React.useEffect(() => {
+    if (!isAuthenticated) {
+      useSavedResourcesStore.getState().setConvexToggle(null);
+      return;
+    }
     useSavedResourcesStore.getState().setConvexToggle((id) => {
       void toggleSavedResource({ resourceId: id });
     });
     return () => useSavedResourcesStore.getState().setConvexToggle(null);
-  }, [toggleSavedResource]);
+  }, [isAuthenticated, toggleSavedResource]);
 
   return null;
 }

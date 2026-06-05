@@ -18,6 +18,10 @@ it("delegates to the Convex adapter when signed in", () => {
   useSavedResourcesStore.getState().toggle("r2");
   expect(convexToggle).toHaveBeenCalledWith("r2");
   expect(useSavedResourcesStore.getState().isSaved("r2")).toBe(true);
+
+  useSavedResourcesStore.getState().toggle("r2");
+  expect(convexToggle).toHaveBeenCalledTimes(2);
+  expect(useSavedResourcesStore.getState().isSaved("r2")).toBe(false);
 });
 
 it("hydrate replaces the saved set from the server", () => {
