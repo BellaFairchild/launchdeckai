@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { Alert } from "react-native";
 
 import { SignalActions } from "@/components/signal/SignalActions";
 import { SignalCalendar } from "@/components/signal/SignalCalendar";
@@ -103,11 +104,16 @@ export default function SignalDeckModal() {
   const canExport = planMeets(plan, "commander");
 
   const runExport = async () => {
-    const ids = await exportSignalPack(assets, mission.launchDate, mission.appName);
-    ids.forEach((id) => updateAssetStatus(id, "exported"));
-    setExported(true);
-    haptics.success();
-    playSignalTransmit();
+    try {
+      const ids = await exportSignalPack(assets, mission.launchDate, mission.appName);
+      ids.forEach((id) => updateAssetStatus(id, "exported"));
+      setExported(true);
+      haptics.success();
+      playSignalTransmit();
+    } catch (e) {
+      haptics.warning();
+      Alert.alert("Export failed", "We couldn't package your signal pack. Please try again.");
+    }
   };
 
   const onTransmit = () => {

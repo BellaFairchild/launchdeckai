@@ -18,6 +18,7 @@ export function TransmitPaywallSheet({
       <Pressable
         className="flex-1 justify-end bg-black/60"
         accessibilityLabel="Dismiss paywall"
+        accessibilityRole="button"
         onPress={onDismiss}
       >
         <Pressable className="gap-3 rounded-t-3xl bg-bg-card px-6 pb-10 pt-6">

@@ -33,3 +33,10 @@ it("renders nothing when not visible", () => {
   render(<TransmitPaywallSheet visible={false} onUpgrade={jest.fn()} onDismiss={jest.fn()} />);
   expect(screen.queryByText("Export needs Commander.")).toBeNull();
 });
+
+it("dismisses when the backdrop is pressed", () => {
+  const onDismiss = jest.fn();
+  render(<TransmitPaywallSheet visible onUpgrade={jest.fn()} onDismiss={onDismiss} />);
+  fireEvent.press(screen.getByLabelText("Dismiss paywall"));
+  expect(onDismiss).toHaveBeenCalled();
+});
