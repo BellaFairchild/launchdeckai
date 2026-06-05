@@ -111,6 +111,7 @@ jest.mock("react-native-svg", () => {
 // expo-router: stub useLocalSearchParams + useRouter.
 const mockPush = jest.fn();
 const mockBack = jest.fn();
+const mockParams = { current: { section: "app_store" } as { section: string } };
 jest.mock("expo-router", () => {
   const { View } = require("react-native");
   const RouterLink = (props: { children?: React.ReactNode }) => (
@@ -121,7 +122,7 @@ jest.mock("expo-router", () => {
   RouterLink.MenuAction = () => null;
   RouterLink.Preview = () => null;
   return {
-    useLocalSearchParams: () => ({ section: "app_store" }),
+    useLocalSearchParams: () => mockParams.current,
     useRouter: () => ({ push: mockPush, back: mockBack }),
     useIsFocused: () => true,
     Link: RouterLink,
@@ -148,6 +149,7 @@ function makeBlueprints(): Record<BlueprintSection, Blueprint> {
 // ── Reset state before each test ─────────────────────────────────────────────
 
 beforeEach(() => {
+  mockParams.current = { section: "app_store" };
   mockPush.mockClear();
   mockBack.mockClear();
   useMissionStore.setState({
@@ -221,19 +223,12 @@ describe("BlueprintDetail — app_store section", () => {
 });
 
 describe("BlueprintDetail — app_info section (no foundryTool)", () => {
-  // Override the expo-router mock for this describe block
-  beforeEach(() => {
-    // Re-mock useLocalSearchParams to return app_info
-    jest.resetModules();
-  });
-
-  it("does NOT render 'Generate in Foundry' for app_info (no foundryTool)", () => {
-    // Directly test via the store: foundryTool is undefined for app_info.
-    // Since the expo-router mock is fixed to "app_store" in this file, we verify
-    // the conditional by inspecting the section meta directly.
-    const appInfoMeta = BLUEPRINT_SECTIONS.find((s) => s.id === "app_info");
-    expect(appInfoMeta?.foundryTool).toBeUndefined();
-    // The screen only renders Generate in Foundry when `tool` is defined.
-    // Sections without foundryTool will NOT show the button (verified by meta check).
+  it("does not render Generate in Foundry for a section without a foundry tool", () => {
+    mockParams.current = { section: "app_info" };
+    render(<BlueprintDetail />);
+    // app_info section actually rendered — "App Info" title is present:
+    expect(screen.getByText("App Info")).toBeTruthy();
+    // but no Generate-in-Foundry button (app_info has no foundryTool):
+    expect(screen.queryByText("Generate in Foundry")).toBeNull();
   });
 });
