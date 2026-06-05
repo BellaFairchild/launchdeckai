@@ -35,6 +35,12 @@ it("zips every pack file and shares the archive", async () => {
   expect(mockFile).toHaveBeenCalledTimes(4);
   expect(mockGenerateAsync).toHaveBeenCalledWith({ type: "base64" });
   expect(mockShareAsync).toHaveBeenCalledTimes(1);
+  const FileSystem = require("expo-file-system/legacy");
+  expect(FileSystem.writeAsStringAsync).toHaveBeenCalledWith(
+    expect.stringContaining("FocusFlow-signal-pack.zip"),
+    "BASE64ZIP",
+    { encoding: "base64" },
+  );
 });
 
 it("returns the ids of flight-ready assets to flip to exported", async () => {

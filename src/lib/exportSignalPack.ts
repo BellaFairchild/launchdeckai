@@ -27,19 +27,24 @@ export async function exportSignalPack(
     const link = document.createElement("a");
     link.href = `data:application/zip;base64,${base64}`;
     link.download = fileName;
+    document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   } else {
-    const uri = `${FileSystem.cacheDirectory}${fileName}`;
+    const dir = FileSystem.cacheDirectory;
+    if (!dir) throw new Error("Cache directory unavailable");
+    const uri = `${dir}${fileName}`;
     await FileSystem.writeAsStringAsync(uri, base64, {
       encoding: FileSystem.EncodingType.Base64,
     });
-    if (await Sharing.isAvailableAsync()) {
-      await Sharing.shareAsync(uri, {
-        mimeType: "application/zip",
-        dialogTitle: "Signal Pack",
-        UTI: "public.zip-archive",
-      });
+    if (!(await Sharing.isAvailableAsync())) {
+      throw new Error("Sharing is not available on this device");
     }
+    await Sharing.shareAsync(uri, {
+      mimeType: "application/zip",
+      dialogTitle: "Signal Pack",
+      UTI: "public.zip-archive",
+    });
   }
 
   return assets.filter((a) => a.status === "flight_ready").map((a) => a.id);
