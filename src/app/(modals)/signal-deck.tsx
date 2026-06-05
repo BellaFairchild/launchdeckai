@@ -16,6 +16,8 @@ import {
 } from "@/constants/signalTemplates";
 import { track } from "@/lib/analytics";
 import { playSignalTransmit, playSignature } from "@/lib/audio";
+import { exportSignalPack } from "@/lib/exportSignalPack";
+import { TransmitPaywallSheet } from "@/components/signal/TransmitPaywallSheet";
 import { haptics } from "@/lib/haptics";
 import { formatLaunchDate, tMinus } from "@/lib/launch";
 import { useMissionStore } from "@/store/mission";
@@ -79,9 +81,10 @@ let launchChimePlayed = false;
 
 export default function SignalDeckModal() {
   const router = useRouter();
-  const { mission, assets } = useMissionStore();
+  const { mission, assets, updateAssetStatus } = useMissionStore();
   const plan = useUIStore((s) => s.plan);
   const [exported, setExported] = useState(false);
+  const [paywall, setPaywall] = useState(false);
   const [view, setView] = useState<DeckView>("list");
 
   useEffect(() => {
@@ -99,15 +102,21 @@ export default function SignalDeckModal() {
 
   const canExport = planMeets(plan, "commander");
 
-  const onTransmit = () => {
-    track("transmit_sequence_tapped", { canExport });
-    if (!canExport) {
-      router.push("/(modals)/refuel");
-      return;
-    }
+  const runExport = async () => {
+    const ids = await exportSignalPack(assets, mission.launchDate, mission.appName);
+    ids.forEach((id) => updateAssetStatus(id, "exported"));
     setExported(true);
     haptics.success();
     playSignalTransmit();
+  };
+
+  const onTransmit = () => {
+    track("transmit_sequence_tapped", { canExport });
+    if (!canExport) {
+      setPaywall(true);
+      return;
+    }
+    void runExport();
   };
 
   const onForge = (signal: SignalTemplate) => {
@@ -148,8 +157,7 @@ export default function SignalDeckModal() {
           />
           {exported ? (
             <Text className="mt-2 font-body text-sm text-status-success">
-              ✓ signal-pack.zip exported (mock) — schedule, JSON, and
-              flight-ready content.
+              ✓ signal-pack.zip exported — schedule, JSON, and flight-ready content.
             </Text>
           ) : null}
           {!canExport ? (
@@ -211,6 +219,14 @@ export default function SignalDeckModal() {
           })
         )}
       </ScrollView>
+      <TransmitPaywallSheet
+        visible={paywall}
+        onUpgrade={() => {
+          setPaywall(false);
+          router.push("/(modals)/refuel");
+        }}
+        onDismiss={() => setPaywall(false)}
+      />
     </View>
   );
 }
