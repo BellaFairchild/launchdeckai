@@ -7,13 +7,20 @@ import { Button } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { cn } from "@/lib/cn";
 import { LAUNCH_RESOURCES, RESOURCE_CATEGORIES } from "@/constants/launchResources";
+import { useSavedResourcesStore } from "@/store/savedResources";
 
 export default function LaunchLibraryModal() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>("All");
 
+  const isSaved = useSavedResourcesStore((s) => s.isSaved);
+  const toggleSaved = useSavedResourcesStore((s) => s.toggle);
+  const savedIds = useSavedResourcesStore((s) => s.saved);
+
   const filtered = LAUNCH_RESOURCES.filter((r) => {
-    const matchesCat = category === "All" || r.category === category;
+    const matchesCat =
+      category === "All" ||
+      (category === "Saved" ? savedIds.includes(r.id) : r.category === category);
     const q = query.trim().toLowerCase();
     const matchesQuery =
       !q || r.title.toLowerCase().includes(q) || r.description.toLowerCase().includes(q);
@@ -51,7 +58,15 @@ export default function LaunchLibraryModal() {
 
       <ScrollView contentContainerClassName="gap-3 px-5 py-4 pb-12">
         {filtered.length === 0 ? (
-          <EmptyState icon="🔭" title="No resources found" message="Try a different search or category." />
+          <EmptyState
+            icon="🔭"
+            title={category === "Saved" ? "No saved resources yet" : "No resources found"}
+            message={
+              category === "Saved"
+                ? "Tap the ☆ on any resource to save it here."
+                : "Try a different search or category."
+            }
+          />
         ) : (
           filtered.map((r) => (
             <Card key={r.id} variant="glass">
@@ -61,7 +76,18 @@ export default function LaunchLibraryModal() {
                 <Text className="font-mono text-[11px] uppercase tracking-wider text-text-tertiary">
                   {r.category}
                 </Text>
-                <Button label="Open →" size="sm" variant="ghost" onPress={() => Linking.openURL(r.url)} />
+                <View className="flex-row items-center gap-2">
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={isSaved(r.id) ? `Unsave ${r.title}` : `Save ${r.title}`}
+                    hitSlop={8}
+                    onPress={() => toggleSaved(r.id)}
+                    className="px-2 py-1"
+                  >
+                    <Text className="text-lg">{isSaved(r.id) ? "★" : "☆"}</Text>
+                  </Pressable>
+                  <Button label="Open →" size="sm" variant="ghost" onPress={() => Linking.openURL(r.url)} />
+                </View>
               </View>
             </Card>
           ))

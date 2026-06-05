@@ -152,4 +152,11 @@ export default defineSchema({
     .index("by_missionId", ["missionId"])
     .index("by_missionId_and_signalId", ["missionId", "signalId"])
     .index("by_userId_and_signalId", ["userId", "signalId"]),
+
+  savedResources: defineTable({
+    userId: v.id("users"),
+    resourceId: v.string(),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_user_resource", ["userId", "resourceId"]),
 });
