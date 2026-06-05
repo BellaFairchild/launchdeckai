@@ -8,6 +8,10 @@ import { AstroAvatar } from "@/components/astro/AstroAvatar";
 import { PLANS } from "@/constants/plans";
 import { useUIStore } from "@/store/ui";
 import { useMissionStore } from "@/store/mission";
+import { cn } from "@/lib/cn";
+import { deriveRibbons } from "@/lib/ribbons";
+import { signalStatus } from "@/components/signal/status";
+import { SIGNAL_TEMPLATES } from "@/constants/signalTemplates";
 
 function Stat({ value, label }: { value: string; label: string }) {
   return (
@@ -20,18 +24,19 @@ function Stat({ value, label }: { value: string; label: string }) {
   );
 }
 
-const RIBBONS = [
-  { glyph: "🚀", label: "First Launch" },
-  { glyph: "🔨", label: "Forge Master" },
-  { glyph: "📡", label: "Comms Online" },
-];
-
 export default function ProfileModal() {
   const { plan, fuel, streak } = useUIStore();
-  const { mission, milestones } = useMissionStore();
+  const { mission, milestones, assets } = useMissionStore();
 
   const cleared = milestones.filter((m) => m.completed).length;
   const level = Math.max(1, Math.floor(cleared / 2) + 1);
+
+  const ribbons = deriveRibbons({
+    completedMilestones: cleared,
+    forgedAssets: assets.length,
+    signalsReady: SIGNAL_TEMPLATES.filter((s) => signalStatus(s.id, assets) === "flight_ready").length,
+    streak,
+  });
 
   return (
     <View className="flex-1 bg-bg-deep">
@@ -67,10 +72,10 @@ export default function ProfileModal() {
             Service Ribbons
           </Text>
           <View className="mt-3 flex-row flex-wrap gap-3">
-            {RIBBONS.map((r) => (
-              <View key={r.label} className="items-center gap-1">
+            {ribbons.map((r) => (
+              <View key={r.id} className={cn("items-center gap-1", !r.earned && "opacity-40")}>
                 <View className="h-12 w-12 items-center justify-center rounded-2xl border border-border-med bg-bg-surface">
-                  <Text className="text-xl">{r.glyph}</Text>
+                  <Text className="text-xl">{r.earned ? r.icon : "🔒"}</Text>
                 </View>
                 <Text className="font-mono text-[10px] uppercase tracking-wider text-text-tertiary">
                   {r.label}
