@@ -33,7 +33,8 @@ export type AnalyticsEvent =
   | "broadcast_reminder_tapped"
   | "transmit_sequence_tapped"
   | "copilot_message_sent"
-  | "plan_upgraded";
+  | "plan_upgraded"
+  | "upsell_soft_shown";
 
 let distinctId = "anonymous";
 

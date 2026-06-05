@@ -12,7 +12,7 @@
  */
 
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react-native";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react-native";
 
 // ── Stubs ────────────────────────────────────────────────────────────────────
 
@@ -99,6 +99,15 @@ jest.mock("@/lib/analytics", () => ({
   track: jest.fn(),
 }));
 
+const mockGetHasSeenCommanderSpotlight = jest.fn();
+const mockSetHasSeenCommanderSpotlight = jest.fn();
+jest.mock("@/lib/onboardingDraft", () => ({
+  getHasSeenCommanderSpotlight: (...args: unknown[]) =>
+    mockGetHasSeenCommanderSpotlight(...args),
+  setHasSeenCommanderSpotlight: (...args: unknown[]) =>
+    mockSetHasSeenCommanderSpotlight(...args),
+}));
+
 // ── Subject under test ───────────────────────────────────────────────────────
 
 import MissionsScreen from "./missions";
@@ -157,6 +166,10 @@ const COMMANDER_MILESTONE: Milestone = {
 
 beforeEach(() => {
   mockPush.mockClear();
+  mockGetHasSeenCommanderSpotlight.mockReset();
+  mockSetHasSeenCommanderSpotlight.mockReset();
+  mockGetHasSeenCommanderSpotlight.mockResolvedValue(false);
+  mockSetHasSeenCommanderSpotlight.mockResolvedValue(undefined);
 
   useMissionStore.setState({
     convex: null,
@@ -223,5 +236,56 @@ describe("MissionsScreen — locked milestone visibility and routing", () => {
       .getState()
       .milestones.find((m) => m.id === "ms_render_cadet");
     expect(ms?.completed).toBe(true);
+  });
+});
+
+describe("MissionsScreen — Commander spotlight (cadet, first milestone)", () => {
+  it("shows the spotlight after the first cadet milestone completion", async () => {
+    render(<MissionsScreen />);
+    const unlockedCheckbox = screen.getByRole("checkbox", { disabled: false, checked: false });
+    fireEvent.press(unlockedCheckbox);
+
+    expect(await screen.findByText("Upgrade to Commander")).toBeTruthy();
+    expect(mockGetHasSeenCommanderSpotlight).toHaveBeenCalled();
+  });
+
+  it("does not show the spotlight when the user has already seen it", async () => {
+    mockGetHasSeenCommanderSpotlight.mockResolvedValue(true);
+    render(<MissionsScreen />);
+    const unlockedCheckbox = screen.getByRole("checkbox", { disabled: false, checked: false });
+    fireEvent.press(unlockedCheckbox);
+
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.queryByText("Upgrade to Commander")).toBeNull();
+  });
+
+  it("does not show the spotlight for commander plan users", async () => {
+    useUIStore.setState({ plan: "commander" });
+    render(<MissionsScreen />);
+    fireEvent.press(screen.getByLabelText("Complete Name your app"));
+
+    await new Promise((r) => setTimeout(r, 50));
+    expect(screen.queryByText("Upgrade to Commander")).toBeNull();
+    expect(mockGetHasSeenCommanderSpotlight).not.toHaveBeenCalled();
+  });
+
+  it("marks spotlight seen and navigates to refuel on upgrade", async () => {
+    render(<MissionsScreen />);
+    fireEvent.press(screen.getByLabelText("Complete Name your app"));
+    fireEvent.press(await screen.findByText("Upgrade to Commander"));
+
+    expect(mockSetHasSeenCommanderSpotlight).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith("/(modals)/refuel");
+    });
+  });
+
+  it("marks spotlight seen on Not now", async () => {
+    render(<MissionsScreen />);
+    fireEvent.press(screen.getByRole("checkbox", { disabled: false, checked: false }));
+    fireEvent.press(await screen.findByText("Not now"));
+
+    expect(mockSetHasSeenCommanderSpotlight).toHaveBeenCalled();
+    expect(mockPush).not.toHaveBeenCalled();
   });
 });

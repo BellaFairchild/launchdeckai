@@ -7,6 +7,9 @@ import {
   saveOnboardingDraft,
   setSkipWelcomeBack,
   SKIP_WELCOME_KEY,
+  SPOTLIGHT_KEY,
+  getHasSeenCommanderSpotlight,
+  setHasSeenCommanderSpotlight,
 } from "./onboardingDraft";
 import * as secureStorage from "./secureStorage";
 
@@ -73,4 +76,20 @@ it("getSkipWelcomeBack is true when pref is set", async () => {
 it("setSkipWelcomeBack persists skip flag", async () => {
   await setSkipWelcomeBack();
   expect(mockSet).toHaveBeenCalledWith(SKIP_WELCOME_KEY, "1");
+});
+
+it("getHasSeenCommanderSpotlight is false when pref not set", async () => {
+  mockGet.mockResolvedValue(null);
+  expect(await getHasSeenCommanderSpotlight()).toBe(false);
+});
+
+it("getHasSeenCommanderSpotlight is true when pref is set", async () => {
+  mockGet.mockResolvedValue("1");
+  expect(await getHasSeenCommanderSpotlight()).toBe(true);
+  expect(mockGet).toHaveBeenCalledWith(SPOTLIGHT_KEY);
+});
+
+it("setHasSeenCommanderSpotlight persists seen flag", async () => {
+  await setHasSeenCommanderSpotlight();
+  expect(mockSet).toHaveBeenCalledWith(SPOTLIGHT_KEY, "1");
 });

@@ -2,6 +2,7 @@ import { getStorageItem, setStorageItem } from "./secureStorage";
 
 export const DRAFT_KEY = "launchdeck_onboarding_draft_v1";
 export const SKIP_WELCOME_KEY = "launchdeck_skip_welcome_back";
+export const SPOTLIGHT_KEY = "launchdeck_commander_spotlight_seen";
 
 export type OnboardingDraft = {
   appName: string;
@@ -40,4 +41,13 @@ export async function getSkipWelcomeBack(): Promise<boolean> {
 
 export async function setSkipWelcomeBack(): Promise<void> {
   await setStorageItem(SKIP_WELCOME_KEY, "1");
+}
+
+export async function getHasSeenCommanderSpotlight(): Promise<boolean> {
+  const raw = await getStorageItem(SPOTLIGHT_KEY);
+  return raw === "1" || raw === "true";
+}
+
+export async function setHasSeenCommanderSpotlight(): Promise<void> {
+  await setStorageItem(SPOTLIGHT_KEY, "1");
 }

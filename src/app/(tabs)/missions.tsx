@@ -6,6 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { TabScreen } from "@/components/layout/TabScreen";
 import { LaunchFlightPath } from "@/components/mission/LaunchFlightPath";
 import { MissionHeroCard } from "@/components/mission/MissionHeroCard";
+import { CommanderSpotlightSheet } from "@/components/onboarding/CommanderSpotlightSheet";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { FuelBadge } from "@/components/ui/FuelBadge";
@@ -16,6 +17,10 @@ import { planMeets, PLANS } from "@/constants/plans";
 import { track } from "@/lib/analytics";
 import { playSignature } from "@/lib/audio";
 import { haptics } from "@/lib/haptics";
+import {
+  getHasSeenCommanderSpotlight,
+  setHasSeenCommanderSpotlight,
+} from "@/lib/onboardingDraft";
 import { useMissionStore } from "@/store/mission";
 import { useUIStore } from "@/store/ui";
 import { Pressable, Text, View } from "@/tw";
@@ -65,33 +70,6 @@ function MilestoneRow({
       >
         <SuccessBurst active={justCompleted} />
         <View className="flex-row items-start gap-3">
-          <Pressable
-            onPress={locked ? onUnlock : completed ? undefined : onComplete}
-            accessibilityRole="checkbox"
-            accessibilityState={{ checked: completed, disabled: locked }}
-            accessibilityLabel={
-              completed
-                ? `${milestone.title} complete`
-                : `Complete ${milestone.title}`
-            }
-            className={
-              "mt-0.5 h-7 w-7 items-center justify-center rounded-full border " +
-              (completed
-                ? "border-status-success bg-status-success/20"
-                : locked
-                  ? "border-border-default bg-bg-depleted"
-                  : "border-brand-teal")
-            }
-          >
-            <Text
-              className={
-                completed ? "text-status-success" : "text-text-tertiary"
-              }
-            >
-              {completed ? "✓" : locked ? "🔒" : ""}
-            </Text>
-          </Pressable>
-
           <View className="flex-1">
             <Text
               className={
@@ -116,6 +94,33 @@ function MilestoneRow({
               ) : null}
             </View>
           </View>
+
+          <Pressable
+            onPress={locked ? onUnlock : completed ? undefined : onComplete}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: completed, disabled: locked }}
+            accessibilityLabel={
+              completed
+                ? `${milestone.title} complete`
+                : `Complete ${milestone.title}`
+            }
+            className={
+              "mt-0.5 h-7 w-7 shrink-0 items-center justify-center rounded-full border " +
+              (completed
+                ? "border-status-success bg-status-success/20"
+                : locked
+                  ? "border-border-default bg-bg-depleted"
+                  : "border-brand-teal")
+            }
+          >
+            <Text
+              className={
+                completed ? "text-status-success" : "text-text-tertiary"
+              }
+            >
+              {completed ? "✓" : locked ? "🔒" : ""}
+            </Text>
+          </Pressable>
         </View>
       </Card>
     </View>
@@ -133,8 +138,10 @@ export default function MissionsScreen() {
   const burstTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const [justCompletedId, setJustCompletedId] = useState<string | null>(null);
+  const [spotlightVisible, setSpotlightVisible] = useState(false);
 
   const handleComplete = (id: string, category: string, fuelReward: number) => {
+    const completedBefore = milestones.filter((m) => m.completed).length;
     completeMilestone(id);
     haptics.success();
     playSignature("milestone");
@@ -143,6 +150,26 @@ export default function MissionsScreen() {
     setJustCompletedId(id);
     if (burstTimer.current) clearTimeout(burstTimer.current);
     burstTimer.current = setTimeout(() => setJustCompletedId(null), 900);
+
+    if (plan === "cadet" && completedBefore === 0) {
+      void (async () => {
+        const seen = await getHasSeenCommanderSpotlight();
+        if (!seen) {
+          setSpotlightVisible(true);
+        }
+      })();
+    }
+  };
+
+  const dismissSpotlight = () => {
+    void setHasSeenCommanderSpotlight().then(() => setSpotlightVisible(false));
+  };
+
+  const handleSpotlightUpgrade = () => {
+    void setHasSeenCommanderSpotlight().then(() => {
+      setSpotlightVisible(false);
+      router.push("/(modals)/refuel");
+    });
   };
 
   useEffect(
@@ -248,6 +275,11 @@ export default function MissionsScreen() {
             );
           })}
         </ScrollView>
+        <CommanderSpotlightSheet
+          visible={spotlightVisible}
+          onUpgrade={handleSpotlightUpgrade}
+          onDismiss={dismissSpotlight}
+        />
       </SafeAreaView>
     </TabScreen>
   );
