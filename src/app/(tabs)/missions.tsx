@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, Platform, ScrollView, type ViewStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -130,6 +130,7 @@ export default function MissionsScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const catY = useRef<Record<string, number>>({});
   const highlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const burstTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
   const [justCompletedId, setJustCompletedId] = useState<string | null>(null);
 
@@ -140,8 +141,17 @@ export default function MissionsScreen() {
     track("milestone_completed", { category });
     track("fuel_earned", { amount: fuelReward, reason: "milestone" });
     setJustCompletedId(id);
-    setTimeout(() => setJustCompletedId(null), 900);
+    if (burstTimer.current) clearTimeout(burstTimer.current);
+    burstTimer.current = setTimeout(() => setJustCompletedId(null), 900);
   };
+
+  useEffect(
+    () => () => {
+      if (highlightTimer.current) clearTimeout(highlightTimer.current);
+      if (burstTimer.current) clearTimeout(burstTimer.current);
+    },
+    [],
+  );
 
   const completedCount = milestones.filter((m) => m.completed).length;
   const nextMilestone = milestones.find(
