@@ -6,15 +6,20 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ScreenBackground } from "@/components/layout/ScreenBackground";
 import { Button } from "@/components/ui/Button";
+import {
+  AstroVoiceDock,
+  type DictationTarget,
+  type VoiceField,
+} from "@/components/onboarding/AstroVoiceDock";
 import { track } from "@/lib/analytics";
 import { playSignature } from "@/lib/audio";
 import { authEnabled } from "@/lib/auth";
 import { cn } from "@/lib/cn";
 import { haptics } from "@/lib/haptics";
 import {
-  clearOnboardingDraft,
-  getOnboardingDraft,
-  saveOnboardingDraft,
+    clearOnboardingDraft,
+    getOnboardingDraft,
+    saveOnboardingDraft,
 } from "@/lib/onboardingDraft";
 import { useMissionStore } from "@/store/mission";
 import { Pressable, ScrollView, Text, TextInput, View } from "@/tw";
@@ -92,11 +97,43 @@ function Chip({
 }
 
 export default function OnboardingScreen() {
+  if (!authEnabled) {
+    return <OnboardingScreenContent isAuthenticated={false} />;
+  }
+  return <AuthenticatedOnboardingScreen />;
+}
+
+function AuthenticatedOnboardingScreen() {
+  const { isAuthenticated } = useConvexAuth();
+  const createMission = useMutation(api.missions.createMission);
+  return (
+    <OnboardingScreenContent
+      isAuthenticated={isAuthenticated}
+      createMission={createMission}
+    />
+  );
+}
+
+type OnboardingScreenContentProps = {
+  isAuthenticated: boolean;
+  createMission?: (payload: {
+    appName: string;
+    oneLiner: string;
+    appDescription: string;
+    targetAudience: string;
+    platform: AppPlatform;
+    stage: MissionStage;
+    launchDate?: number;
+  }) => Promise<unknown>;
+};
+
+function OnboardingScreenContent({
+  isAuthenticated,
+  createMission,
+}: OnboardingScreenContentProps) {
   const router = useRouter();
   const params = useLocalSearchParams<{ phase?: string }>();
-  const { isAuthenticated } = useConvexAuth();
   const updateMission = useMissionStore((s) => s.updateMission);
-  const createMission = useMutation(api.missions.createMission);
   const [submitting, setSubmitting] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
@@ -147,6 +184,18 @@ export default function OnboardingScreen() {
     (step === 2 && audience.trim().length > 0) ||
     step >= 3;
 
+  const voiceField: VoiceField | undefined =
+    step === 0 ? "app_name" : step === 1 ? "one_liner" : step === 2 ? "audience" : undefined;
+
+  const dictationTarget: DictationTarget | undefined =
+    step === 0
+      ? { value: appName, onChange: setAppName }
+      : step === 1
+        ? { value: oneLiner, onChange: setOneLiner }
+        : step === 2
+          ? { value: audience, onChange: setAudience }
+          : undefined;
+
   const persistIntentDraft = useCallback(
     async (nextStep: number) => {
       await saveOnboardingDraft({
@@ -182,14 +231,7 @@ export default function OnboardingScreen() {
     if (step < maxStep) {
       setStep((s) => s + 1);
     }
-  }, [
-    step,
-    persistIntentDraft,
-    isAuthenticated,
-    phase,
-    maxStep,
-    router,
-  ]);
+  }, [step, persistIntentDraft, isAuthenticated, phase, maxStep, router]);
 
   const finish = async () => {
     if (submitting) return;
@@ -210,7 +252,7 @@ export default function OnboardingScreen() {
       track("mission_created", { platform, stage });
     };
 
-    if (authEnabled) {
+    if (authEnabled && createMission) {
       setSubmitting(true);
       try {
         await createMission(payload);
@@ -432,6 +474,11 @@ export default function OnboardingScreen() {
               </Pressable>
             ) : null}
           </View>
+          <AstroVoiceDock
+            step={step}
+            field={voiceField}
+            dictationTarget={dictationTarget}
+          />
         </KeyboardAvoidingView>
       </SafeAreaView>
     </ScreenBackground>
