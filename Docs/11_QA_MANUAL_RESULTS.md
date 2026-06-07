@@ -22,3 +22,16 @@ Track results for device and third-party test cases that cannot be automated.
 | 7 | First milestone (cadet): optional Commander spotlight once | PENDING | |
 | 8 | Foundry lock / Signal export: existing Refuel modal unchanged | PENDING | |
 | 9 | Reduced motion: no auto-advance on welcome back | PENDING | |
+
+## Astro voice dock (2026-06-06)
+
+- [ ] Dev-client rebuilt (`npx expo run:ios` / `run:android`) — module loads, no red screen.
+- [ ] Onboarding step 0: Astro orb + bubble visible bottom-right; bubble shows the step-0 line.
+- [ ] First mic tap prompts for mic + speech permission; granting starts dictation (orb mic turns teal, bubble shows "Listening…").
+- [ ] Dictation **appends** to typed text (type "Habit app", then dictate "for indie devs" → field reads "Habit app for indie devs").
+- [ ] **Keyboard coexistence:** with the keyboard open on steps 0–2, the orb stays visible and tappable above the keyboard.
+- [ ] Steps 3–6 (platform/stage/date/confirm): orb shows coaching, **no** mic badge.
+- [ ] Permission denied: a hint is acceptable; typing still works; no crash.
+- [ ] Web (Chrome, `npm run web`): mic appears and dictation works via Web Speech API.
+- [ ] Reduced motion ON (OS setting): orb does not animate; "Listening…" shown as a static label.
+- [ ] VoiceOver/TalkBack: mic button announces "Dictate" / "Stop dictating".
