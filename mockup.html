@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LaunchDeckAI — UI Design Mockup</title>
+<style>
+  /* ── Design Tokens ─────────────────────────────────────── */
+  :root {
+    --bg-app:          #060B14;
+    --bg-surface:      #0A1220;
+    --bg-card:         #111D2E;
+    --bg-card-hover:   #162535;
+    --bg-input:        #162535;
+    --bg-mission-start:#1A2D4A;
+    --bg-mission-end:  #0F1E35;
+    --border-subtle:   #253850;
+    --border-default:  #3A5070;
+    --border-strong:   #4A6080;
+    --blue:            #3B82F6;
+    --blue-light:      #60A5FA;
+    --purple:          #A78BFA;
+    --purple-strong:   #7C3AED;
+    --success:         #4ADE80;
+    --warning:         #F4A261;
+    --error:           #FF4D6D;
+    --xp-yellow:       #FACC15;
+    --text-primary:    #F1F5F9;
+    --text-secondary:  #94A3B8;
+    --text-tertiary:   #8A9AB5;
+    --text-disabled:   #4A5E78;
+    --radius-sm: 8px; --radius-md: 10px; --radius-lg: 12px;
+    --radius-xl: 14px; --radius-2xl: 16px; --radius-3xl: 20px;
+    --radius-full: 9999px;
+  }
+
+  /* ── Page ──────────────────────────────────────────────── */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #02050D;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', sans-serif;
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding: 40px 24px 80px;
+  }
+
+  h1.page-title {
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+  }
+  .page-subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-tertiary);
+    margin-bottom: 40px;
+  }
+
+  /* ── Layout ────────────────────────────────────────────── */
+  .frames {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  /* ── Phone Frame ───────────────────────────────────────── */
+  .phone {
+    width: 375px;
+    background: var(--bg-app);
+    border-radius: 44px;
+    border: 2px solid var(--border-subtle);
+    box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .phone-label {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    margin-bottom: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* status bar */
+  .status-bar {
+    height: 44px;
+    background: var(--bg-app);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+  .status-bar .time { font-weight: 700; color: var(--text-primary); }
+  .status-icons { display: flex; gap: 6px; align-items: center; }
+
+  /* ── TopHeader ─────────────────────────────────────────── */
+  .top-header {
+    height: 60px;
+    background: linear-gradient(to bottom, #0D1829 0%, transparent 100%);
+    border-bottom: 1px solid rgba(37,56,80,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+  }
+  .icon-btn {
+    width: 44px; height: 44px;
+    border-radius: var(--radius-md);
+    background: var(--bg-card-hover);
+    border: 1px solid var(--border-subtle);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 18px;
+    color: var(--text-secondary);
+  }
+  .hamburger { display: flex; flex-direction: column; gap: 4px; padding: 14px; }
+  .hamburger span {
+    display: block; height: 2px; border-radius: 1px;
+    background: var(--text-primary);
+  }
+  .hamburger span:nth-child(1) { width: 14px; }
+  .hamburger span:nth-child(2) { width: 10px; }
+  .hamburger span:nth-child(3) { width: 14px; }
+  .header-center { text-align: center; }
+  .brand-name { font-size: 13px; font-weight: 800; color: var(--text-primary); line-height: 16px; }
+  .screen-name { font-size: 11px; font-weight: 600; color: var(--text-tertiary); line-height: 14px; margin-top: 2px; }
+
+  /* ── Scroll Content ────────────────────────────────────── */
+  .scroll-content {
+    padding: 16px 16px 90px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    overflow-y: auto;
+    max-height: 680px;
+  }
+  .scroll-content::-webkit-scrollbar { display: none; }
+
+  /* ── Mission Hero Card ─────────────────────────────────── */
+  .mission-card {
+    background: linear-gradient(135deg, var(--bg-mission-start), var(--bg-mission-end));
+    border-radius: var(--radius-3xl);
+    border: 1px solid var(--border-default);
+    padding: 20px 16px;
+    box-shadow: 0 10px 28px rgba(96,165,250,0.28);
+  }
+  .mission-card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+  .app-name { font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+  .countdown {
+    font-size: 34px; font-weight: 800; letter-spacing: -0.5px; line-height: 1;
+    animation: countdownPulse 2.2s ease-in-out infinite alternate;
+  }
+  @keyframes countdownPulse {
+    from { color: var(--blue-light); text-shadow: 0 0 12px var(--blue-light); }
+    to   { color: var(--purple);     text-shadow: 0 0 12px var(--purple); }
+  }
+  .days-label { font-size: 11px; font-weight: 600; color: var(--text-tertiary); letter-spacing: 1.2px; margin-top: 4px; text-align: right; }
+  .readiness-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .readiness-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); line-height: 16px; }
+  .readiness-pct { font-size: 12px; font-weight: 700; color: var(--success); line-height: 16px; }
+  .progress-track {
+    height: 8px; border-radius: var(--radius-full);
+    background: #0D1829; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; border-radius: var(--radius-full);
+    background: linear-gradient(to right, var(--blue), var(--success));
+  }
+  .mission-btns { display: flex; gap: 6px; margin-top: 16px; }
+  .btn-primary {
+    flex: 1; padding: 12px; border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, var(--blue), var(--blue-light));
+    border: none; color: var(--text-primary);
+    font-size: 13px; font-weight: 700; cursor: pointer; text-align: center;
+  }
+  .btn-secondary {
+    flex: 1; padding: 12px; border-radius: var(--radius-lg);
+    background: var(--bg-card-hover); border: 1px solid var(--border-subtle);
+    color: var(--text-secondary); font-size: 13px; font-weight: 700;
+    cursor: pointer; text-align: center;
+  }
+
+  /* ── Tag ───────────────────────────────────────────────── */
+  .tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 8px; border-radius: var(--radius-full);
+    font-size: 10px; font-weight: 600; letter-spacing: 0.6px;
+    text-transform: uppercase; min-height: 26px;
+  }
+  .tag-success { background: rgba(74,222,128,0.12); border: 1px solid rgba(74,222,128,0.35); color: var(--success); }
+  .tag-warning { background: rgba(244,162,97,0.12); border: 1px solid rgba(244,162,97,0.35); color: var(--warning); }
+  .tag-error   { background: rgba(255,77,109,0.12);  border: 1px solid rgba(255,77,109,0.35); color: var(--error); }
+  .tag-info    { background: rgba(96,165,250,0.12);  border: 1px solid rgba(96,165,250,0.35); color: var(--blue-light); }
+  .tag-brand   { background: rgba(59,130,246,0.12);  border: 1px solid rgba(59,130,246,0.35); color: var(--blue); }
+  .tag-neutral { background: rgba(74,94,120,0.12);   border: 1px solid rgba(74,94,120,0.35);  color: var(--text-disabled); }
+  .tag-icon { font-size: 10px; }
+
+  /* ── Generic Card ──────────────────────────────────────── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-2xl);
+    padding: 20px 16px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+  }
+  .card-danger {
+    background: rgba(255,77,109,0.10);
+    border-color: rgba(255,77,109,0.45);
+    box-shadow: 0 6px 16px rgba(255,77,109,0.12);
+  }
+  .card-header {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: 12px;
+  }
+  .card-title { font-size: 16px; font-weight: 600; color: var(--text-primary); line-height: 22px; }
+  .view-all { font-size: 12px; font-weight: 600; color: var(--blue); line-height: 16px; }
+
+  /* ── Milestone rows ────────────────────────────────────── */
+  .milestone-list { display: flex; flex-direction: column; gap: 12px; }
+  .milestone-row { display: flex; align-items: flex-start; gap: 8px; }
+  .milestone-row.done { opacity: 0.5; }
+  .check-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+  .milestone-label { font-size: 15px; color: var(--text-primary); line-height: 22px; flex: 1; }
+  .milestone-row.done .milestone-label { text-decoration: line-through; }
+  .overflow-link { font-size: 12px; font-weight: 600; color: var(--blue); margin-top: 8px; display: block; }
+
+  /* ── Quick Wins ────────────────────────────────────────── */
+  .wins-list { display: flex; flex-direction: column; gap: 8px; }
+  .win-row {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 12px;
+    background: var(--bg-card-hover);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-lg);
+  }
+  .win-info { flex: 1; min-width: 0; }
+  .win-title { font-size: 15px; color: var(--text-primary); line-height: 22px; }
+  .win-time  { font-size: 11px; color: var(--text-tertiary); line-height: 14px; margin-top: 4px; }
+  .win-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .xp-badge { font-size: 13px; font-weight: 800; color: var(--warning); letter-spacing: 0.4px; }
+  .start-btn {
+    padding: 4px 12px; border-radius: var(--radius-md);
+    background: rgba(59,130,246,0.2); border: 1px solid var(--blue);
+    color: var(--blue); font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+
+  /* ── Critical Risk Card ────────────────────────────────── */
+  .risk-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .risk-msg { font-size: 15px; color: var(--text-primary); line-height: 22px; flex: 1; }
+  .open-cargo { font-size: 15px; font-weight: 600; color: var(--error); margin-top: 16px; display: block; }
+
+  /* ── Bottom Nav ────────────────────────────────────────── */
+  .bottom-nav {
+    position: sticky; bottom: 0;
+    background: linear-gradient(to bottom, transparent, var(--bg-app) 40%);
+    border-top: 1px solid rgba(37,56,80,0.3);
+    padding: 10px 4px 24px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    min-height: 80px;
+    overflow: visible;
+  }
+  .tab-item {
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; gap: 2px; min-height: 48px;
+    justify-content: flex-end; padding-bottom: 2px;
+    opacity: 0.65;
+  }
+  .tab-item.active { opacity: 1; }
+  .tab-icon { font-size: 20px; line-height: 24px; }
+  .tab-label { font-size: 11px; font-weight: 600; line-height: 14px; color: var(--text-secondary); }
+  .tab-item.active .tab-label { color: var(--blue); }
+  .tab-dot {
+    width: 5px; height: 5px; border-radius: 3px;
+    background: var(--blue); margin-top: 4px;
+    box-shadow: 0 0 6px var(--blue-light);
+  }
+  .tab-dot-spacer { height: 9px; }
+
+  /* Copilot FAB */
+  .copilot-wrap {
+    flex: 1; display: flex; justify-content: center;
+    align-items: flex-end; overflow: visible; padding-bottom: 2px;
+  }
+  .copilot-fab {
+    width: 54px; height: 54px; border-radius: 27px;
+    background: linear-gradient(135deg, var(--blue), var(--purple));
+    display: flex; align-items: center; justify-content: center;
+    transform: translateY(-20px);
+    animation: copilotPulse 1.5s ease-in-out infinite alternate;
+    cursor: pointer;
+  }
+  @keyframes copilotPulse {
+    from { box-shadow: 0 0 12px rgba(167,139,250,0.30); }
+    to   { box-shadow: 0 0 20px rgba(167,139,250,0.50); }
+  }
+  .copilot-fab span { font-size: 24px; line-height: 28px; }
+
+  /* ── Skeleton shimmer ──────────────────────────────────── */
+  .skeleton-row {
+    height: 14px; border-radius: var(--radius-sm);
+    background: var(--bg-card-hover);
+    animation: shimmer 1s ease-in-out infinite alternate;
+  }
+  @keyframes shimmer {
+    from { opacity: 0.40; }
+    to   { opacity: 0.75; }
+  }
+  .skeleton-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-2xl);
+    padding: 20px 16px;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  /* ═══════════════════════════════════════════════════════ */
+  /* ── COMPONENT SHOWCASE ─────────────────────────────── */
+  /* ═══════════════════════════════════════════════════════ */
+  .showcase {
+    width: 375px;
+    background: var(--bg-app);
+    border-radius: 44px;
+    border: 2px solid var(--border-subtle);
+    box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .showcase-scroll {
+    padding: 20px 16px 60px;
+    display: flex; flex-direction: column; gap: 28px;
+    max-height: 780px; overflow-y: auto;
+  }
+  .showcase-scroll::-webkit-scrollbar { display: none; }
+
+  .section-heading {
+    font-size: 10px; font-weight: 600; color: var(--text-disabled);
+    letter-spacing: 1.2px; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* Tags row */
+  .tags-row { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  /* Buttons column */
+  .btns-col { display: flex; flex-direction: column; gap: 8px; }
+  .btn-ghost {
+    padding: 12px; border-radius: var(--radius-lg);
+    background: rgba(59,130,246,0.12); border: 1px solid var(--blue);
+    color: var(--blue); font-size: 13px; font-weight: 700;
+    cursor: pointer; text-align: center;
+  }
+  .btn-danger {
+    padding: 12px; border-radius: var(--radius-lg);
+    background: rgba(255,77,109,0.15); border: 1px solid var(--error);
+    color: var(--error); font-size: 13px; font-weight: 700;
+    cursor: pointer; text-align: center;
+  }
+  .btn-ai {
+    padding: 12px; border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, #4ADE80, #22C55E);
+    border: none; color: var(--text-primary);
+    font-size: 13px; font-weight: 700; cursor: pointer; text-align: center;
+  }
+  .btn-purple {
+    padding: 12px; border-radius: var(--radius-lg);
+    background: linear-gradient(135deg, var(--purple), var(--purple-strong));
+    border: none; color: var(--text-primary);
+    font-size: 13px; font-weight: 700; cursor: pointer; text-align: center;
+  }
+
+  /* Input */
+  .input-field {
+    width: 100%; padding: 12px 16px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-lg);
+    color: var(--text-tertiary);
+    font-size: 15px; line-height: 22px;
+    min-height: 48px;
+    outline: none;
+  }
+  .input-focused {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    color: var(--text-primary);
+  }
+  .input-label { font-size: 11px; color: var(--text-tertiary); margin-bottom: 6px; display: block; }
+
+  /* Card variants showcase */
+  .card-selected {
+    background: var(--bg-card);
+    border: 1px solid var(--blue-light);
+    border-radius: var(--radius-2xl);
+    padding: 20px 16px;
+    box-shadow: 0 8px 22px rgba(96,165,250,0.28);
+  }
+
+  /* Typography scale */
+  .type-scale { display: flex; flex-direction: column; gap: 10px; }
+  .type-row { display: flex; align-items: baseline; justify-content: space-between; }
+  .type-token { font-size: 10px; color: var(--text-disabled); font-weight: 600; flex-shrink: 0; min-width: 80px; }
+
+  /* Color palette */
+  .palette { display: flex; flex-wrap: wrap; gap: 8px; }
+  .swatch { width: 56px; }
+  .swatch-dot { width: 56px; height: 36px; border-radius: var(--radius-md); border: 1px solid rgba(255,255,255,0.06); }
+  .swatch-label { font-size: 9px; color: var(--text-disabled); text-align: center; margin-top: 4px; line-height: 1.2; }
+
+  /* Divider */
+  .divider { height: 1px; background: var(--border-subtle); }
+
+  /* Skeleton showcase */
+  .skeleton-showcase { display: flex; flex-direction: column; gap: 12px; }
+</style>
+</head>
+<body>
+
+<h1 class="page-title">LaunchDeckAI — UI Design Mockup</h1>
+<p class="page-subtitle">All design tokens match <code>src/constants/</code> exactly &nbsp;·&nbsp; Scroll inside each phone frame</p>
+
+<div class="frames">
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- PHONE 1: Home Screen                        -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div>
+    <p class="phone-label">Home Screen</p>
+    <div class="phone">
+
+      <!-- Status Bar -->
+      <div class="status-bar">
+        <span class="time">9:41</span>
+        <div class="status-icons">
+          <span>●●●</span>
+          <span>WiFi</span>
+          <span>🔋</span>
+        </div>
+      </div>
+
+      <!-- TopHeader -->
+      <div class="top-header">
+        <div class="icon-btn">
+          <div class="hamburger">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
+        <div class="header-center">
+          <div class="brand-name">LaunchDeckAI</div>
+          <div class="screen-name">Home Deck</div>
+        </div>
+        <div class="icon-btn" style="font-size:16px;">🔔</div>
+      </div>
+
+      <!-- Scrollable Content -->
+      <div class="scroll-content">
+
+        <!-- Mission Hero Card -->
+        <div class="mission-card">
+          <div class="mission-card-top">
+            <div>
+              <div class="app-name">My Startup App</div>
+              <span class="tag tag-info">
+                <span class="tag-icon">ℹ</span> Pioneer
+              </span>
+            </div>
+            <div style="text-align:right">
+              <div class="countdown">T−42</div>
+              <div class="days-label">DAYS TO LAUNCH</div>
+            </div>
+          </div>
+          <div class="readiness-row">
+            <span class="readiness-label">Launch Readiness</span>
+            <span class="readiness-pct">68%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width:68%"></div>
+          </div>
+          <div class="mission-btns">
+            <div class="btn-primary">🚀 View Mission</div>
+            <div class="btn-secondary">+ New Mission</div>
+          </div>
+        </div>
+
+        <!-- Critical Risk Card -->
+        <div class="card card-danger">
+          <div class="card-title" style="color:var(--error);margin-bottom:12px;">⚠️ Critical Risks</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="risk-row">
+              <span class="risk-msg">App Store screenshots missing</span>
+              <span class="tag tag-error"><span class="tag-icon">✕</span> HIGH</span>
+            </div>
+            <div class="risk-row">
+              <span class="risk-msg">Privacy policy not linked</span>
+              <span class="tag tag-warning"><span class="tag-icon">⚠</span> MED</span>
+            </div>
+          </div>
+          <span class="open-cargo">Open Cargo Bay →</span>
+        </div>
+
+        <!-- Today's Milestones -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Today's Milestones</span>
+            <span class="view-all">View All</span>
+          </div>
+          <div class="milestone-list">
+            <div class="milestone-row done">
+              <span class="check-icon">✅</span>
+              <span class="milestone-label">Set up Stripe integration</span>
+              <span class="tag tag-neutral"><span class="tag-icon">○</span> Dev</span>
+            </div>
+            <div class="milestone-row">
+              <span class="check-icon" style="color:var(--border-default);font-size:20px;">○</span>
+              <span class="milestone-label">Write App Store description</span>
+              <span class="tag tag-neutral"><span class="tag-icon">○</span> Copy</span>
+            </div>
+            <div class="milestone-row">
+              <span class="check-icon" style="color:var(--border-default);font-size:20px;">○</span>
+              <span class="milestone-label">Create 6.5" iPhone screenshots</span>
+              <span class="tag tag-neutral"><span class="tag-icon">○</span> Asset</span>
+            </div>
+          </div>
+          <span class="overflow-link">+2 more — view all</span>
+        </div>
+
+        <!-- Quick Wins -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Quick Wins</span>
+            <span class="tag tag-warning"><span class="tag-icon">⚠</span> Boost XP</span>
+          </div>
+          <div class="wins-list">
+            <div class="win-row">
+              <div class="win-info">
+                <div class="win-title">Add app keywords</div>
+                <div class="win-time">~15 min</div>
+              </div>
+              <div class="win-actions">
+                <span class="xp-badge">+150 XP</span>
+                <div class="start-btn">Start</div>
+              </div>
+            </div>
+            <div class="win-row">
+              <div class="win-info">
+                <div class="win-title">Connect analytics</div>
+                <div class="win-time">~30 min</div>
+              </div>
+              <div class="win-actions">
+                <span class="xp-badge">+200 XP</span>
+                <div class="start-btn">Start</div>
+              </div>
+            </div>
+            <div class="win-row">
+              <div class="win-info">
+                <div class="win-title">Write FAQ page</div>
+                <div class="win-time">~20 min</div>
+              </div>
+              <div class="win-actions">
+                <span class="xp-badge">+100 XP</span>
+                <div class="start-btn">Start</div>
+              </div>
+            </div>
+          </div>
+          <span class="overflow-link">+1 more — view all</span>
+        </div>
+
+      </div><!-- /scroll-content -->
+
+      <!-- Bottom Nav -->
+      <div class="bottom-nav">
+        <div class="tab-item active">
+          <span class="tab-icon">⊞</span>
+          <span class="tab-label">Home</span>
+          <div class="tab-dot"></div>
+        </div>
+        <div class="tab-item">
+          <span class="tab-icon">🚀</span>
+          <span class="tab-label">Mission</span>
+          <div class="tab-dot-spacer"></div>
+        </div>
+        <div class="copilot-wrap">
+          <div class="copilot-fab"><span>⚡</span></div>
+        </div>
+        <div class="tab-item">
+          <span class="tab-icon">📦</span>
+          <span class="tab-label">Assets</span>
+          <div class="tab-dot-spacer"></div>
+        </div>
+        <div class="tab-item">
+          <span class="tab-icon">⚗️</span>
+          <span class="tab-label">Foundry</span>
+          <div class="tab-dot-spacer"></div>
+        </div>
+      </div>
+
+    </div><!-- /phone -->
+  </div>
+
+  <!-- ═══════════════════════════════════════════ -->
+  <!-- PHONE 2: Component Showcase                 -->
+  <!-- ═══════════════════════════════════════════ -->
+  <div>
+    <p class="phone-label">Component Showcase</p>
+    <div class="showcase">
+      <div class="status-bar">
+        <span class="time">9:41</span>
+        <div class="status-icons"><span>●●●</span><span>WiFi</span><span>🔋</span></div>
+      </div>
+
+      <div class="showcase-scroll">
+
+        <!-- Tags -->
+        <div>
+          <div class="section-heading">Status Tags — icon + label</div>
+          <div class="tags-row">
+            <span class="tag tag-success"><span class="tag-icon">✓</span> Ready</span>
+            <span class="tag tag-warning"><span class="tag-icon">⚠</span> In Progress</span>
+            <span class="tag tag-error"><span class="tag-icon">✕</span> Missing</span>
+            <span class="tag tag-info"><span class="tag-icon">ℹ</span> Info</span>
+            <span class="tag tag-brand"><span class="tag-icon">●</span> Brand</span>
+            <span class="tag tag-neutral"><span class="tag-icon">○</span> Neutral</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Buttons -->
+        <div>
+          <div class="section-heading">Buttons — all 6 variants</div>
+          <div class="btns-col">
+            <div class="btn-primary">Primary — View Mission</div>
+            <div class="btn-secondary">Secondary — New Mission</div>
+            <div class="btn-ghost">Ghost — Connect</div>
+            <div class="btn-danger">Danger — Delete Mission</div>
+            <div class="btn-ai">⚡ AI — Generate with AI</div>
+            <div class="btn-purple">Purple — Upgrade to Pro</div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Input -->
+        <div>
+          <div class="section-heading">Input Component</div>
+          <span class="input-label">Default (unfocused)</span>
+          <input class="input-field" placeholder="Enter promo code…" readonly>
+          <div style="height:10px"></div>
+          <span class="input-label">Focused — blue ring + glow</span>
+          <input class="input-field input-focused" value="LAUNCH2026" readonly>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Card variants -->
+        <div>
+          <div class="section-heading">Card Variants</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div class="card" style="padding:14px 16px;">
+              <div style="font-size:13px;font-weight:600;color:var(--text-primary);">Default card — elevation + border</div>
+              <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">bgCard #111D2E · borderSubtle #253850</div>
+            </div>
+            <div class="card-selected" style="padding:14px 16px;">
+              <div style="font-size:13px;font-weight:600;color:var(--text-primary);">Selected — blue glow border</div>
+              <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">borderColor blueLight · shadow 28%</div>
+            </div>
+            <div class="card card-danger" style="padding:14px 16px;">
+              <div style="font-size:13px;font-weight:600;color:var(--error);">Danger card — red tint</div>
+              <div style="font-size:12px;color:var(--text-tertiary);margin-top:4px;">border error 45% opacity</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Skeleton loading -->
+        <div>
+          <div class="section-heading">Skeleton Loading — shimmer animation</div>
+          <div class="skeleton-showcase">
+            <div class="skeleton-card">
+              <div class="skeleton-row" style="width:55%;height:18px;"></div>
+              <div class="skeleton-row" style="width:100%;"></div>
+              <div class="skeleton-row" style="width:80%;"></div>
+              <div class="skeleton-row" style="width:40%;margin-top:4px;"></div>
+            </div>
+            <div class="skeleton-card">
+              <div class="skeleton-row" style="width:45%;height:18px;"></div>
+              <div class="skeleton-row" style="width:90%;"></div>
+              <div class="skeleton-row" style="width:60%;"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Typography scale -->
+        <div>
+          <div class="section-heading">Typography Scale</div>
+          <div class="type-scale">
+            <div class="type-row">
+              <span class="type-token">hero</span>
+              <span style="font-size:28px;font-weight:800;color:var(--text-primary);line-height:1;">Aa</span>
+              <span style="font-size:10px;color:var(--text-disabled);">48/56/800</span>
+            </div>
+            <div class="type-row">
+              <span class="type-token">title</span>
+              <span style="font-size:22px;font-weight:800;color:var(--text-primary);line-height:1;">Aa</span>
+              <span style="font-size:10px;color:var(--text-disabled);">32/38/800</span>
+            </div>
+            <div class="type-row">
+              <span class="type-token">h2</span>
+              <span style="font-size:18px;font-weight:700;color:var(--text-primary);line-height:1;">Section Heading</span>
+              <span style="font-size:10px;color:var(--text-disabled);">18/24/700</span>
+            </div>
+            <div class="type-row">
+              <span class="type-token">h3</span>
+              <span style="font-size:16px;font-weight:600;color:var(--text-primary);line-height:1;">Card Title</span>
+              <span style="font-size:10px;color:var(--text-disabled);">16/22/600</span>
+            </div>
+            <div class="type-row">
+              <span class="type-token">body</span>
+              <span style="font-size:15px;font-weight:400;color:var(--text-primary);line-height:1;">Body text copy</span>
+              <span style="font-size:10px;color:var(--text-disabled);">15/22/400</span>
+            </div>
+            <div class="type-row">
+              <span class="type-token">bodySmall</span>
+              <span style="font-size:13px;font-weight:400;color:var(--text-secondary);line-height:1;">Smaller body</span>
+              <span style="font-size:10px;color:var(--text-disabled);">13/20/400</span>
+            </div>
+            <div class="type-row">
+              <span class="type-token">label</span>
+              <span style="font-size:12px;font-weight:600;color:var(--text-secondary);line-height:1;">LABEL TEXT</span>
+              <span style="font-size:10px;color:var(--text-disabled);">12/16/600</span>
+            </div>
+            <div class="type-row">
+              <span class="type-token">labelSmall</span>
+              <span style="font-size:11px;font-weight:600;color:var(--text-tertiary);line-height:1;">small label</span>
+              <span style="font-size:10px;color:var(--text-disabled);">11/14/600</span>
+            </div>
+            <div class="type-row">
+              <span class="type-token">micro</span>
+              <span style="font-size:10px;font-weight:600;color:var(--text-tertiary);line-height:1;">MICRO TEXT</span>
+              <span style="font-size:10px;color:var(--text-disabled);">10/14/600</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Color palette -->
+        <div>
+          <div class="section-heading">Color Tokens</div>
+          <div class="palette">
+            <div class="swatch"><div class="swatch-dot" style="background:#060B14"></div><div class="swatch-label">bgApp</div></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#111D2E"></div><div class="swatch-label">bgCard</div></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#162535"></div><div class="swatch-label">bgHover</div></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#253850"></div><div class="swatch-label">borderSubtle</div></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#3A5070"></div><div class="swatch-label">borderDefault</div></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#3B82F6"></div><div class="swatch-label">blue</div></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#60A5FA"></div><div class="swatch-label">blueLight</div></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#A78BFA"></div><div class="swatch-label">purple</div></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#4ADE80"></div><div class="swatch-label">success</div></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#F4A261"></div><div class="swatch-label">warning</div></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#FF4D6D"></div><div class="swatch-label">error</div></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#F1F5F9"></div><div class="swatch-label">textPrimary</div></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#94A3B8"></div><div class="swatch-label">textSecondary</div></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#8A9AB5"></div><div class="swatch-label">textTertiary</div></div>
+            <div class="swatch"><div class="swatch-dot" style="background:#4A5E78"></div><div class="swatch-label">textDisabled</div></div>
+          </div>
+        </div>
+
+      </div><!-- /showcase-scroll -->
+    </div><!-- /showcase -->
+  </div>
+
+</div><!-- /frames -->
+
+</body>
+</html>
