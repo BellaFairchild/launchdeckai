@@ -49,6 +49,8 @@ export function useSpeechToText(
     setIsListening(false);
     setPartialText("");
   });
+  // useSpeechRecognitionEvent stores the latest listener in an internal ref,
+  // so passing a fresh closure each render is safe — onResult is never stale.
   useSpeechRecognitionEvent("result", (event: unknown) => {
     const e = event as ResultEvent;
     const text = e.results[0]?.transcript ?? "";
@@ -62,6 +64,7 @@ export function useSpeechToText(
   });
 
   const start = useCallback(async () => {
+    setError(null);
     const perms = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
     if (!perms.granted) {
       setError("not-allowed");
