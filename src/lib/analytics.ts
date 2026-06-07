@@ -34,7 +34,8 @@ export type AnalyticsEvent =
   | "transmit_sequence_tapped"
   | "copilot_message_sent"
   | "plan_upgraded"
-  | "upsell_soft_shown";
+  | "upsell_soft_shown"
+  | "onboarding_voice_used";
 
 let distinctId = "anonymous";
 
