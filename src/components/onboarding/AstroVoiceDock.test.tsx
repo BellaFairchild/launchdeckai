@@ -32,10 +32,11 @@ const listeners: Record<string, (e: unknown) => void> = {};
 const mockStart = jest.fn();
 const mockStop = jest.fn();
 let mockAvailable = true;
+let mockGranted = true;
 jest.mock("expo-speech-recognition", () => ({
   ExpoSpeechRecognitionModule: {
     isRecognitionAvailable: () => mockAvailable,
-    requestPermissionsAsync: async () => ({ granted: true }),
+    requestPermissionsAsync: async () => ({ granted: mockGranted }),
     start: (...a: unknown[]) => mockStart(...a),
     stop: (...a: unknown[]) => mockStop(...a),
   },
@@ -49,6 +50,7 @@ import { AstroVoiceDock } from "./AstroVoiceDock";
 beforeEach(() => {
   jest.clearAllMocks();
   mockAvailable = true;
+  mockGranted = true;
 });
 
 it("renders the step's coach line", () => {
@@ -100,4 +102,25 @@ it("hides the mic when recognition is unavailable", () => {
     <AstroVoiceDock step={1} field="one_liner" dictationTarget={{ value: "", onChange: jest.fn() }} />,
   );
   expect(screen.queryByLabelText("Dictate")).toBeNull();
+});
+
+it("announces \"Stop dictating\" while listening", async () => {
+  render(
+    <AstroVoiceDock step={1} field="one_liner" dictationTarget={{ value: "", onChange: jest.fn() }} />,
+  );
+  fireEvent.press(screen.getByLabelText("Dictate"));
+  await waitFor(() => expect(mockStart).toHaveBeenCalled());
+  act(() => listeners.start?.(null));
+  expect(screen.getByLabelText("Stop dictating")).toBeOnTheScreen();
+});
+
+it("shows a hint in the bubble when mic permission is denied", async () => {
+  mockGranted = false;
+  render(
+    <AstroVoiceDock step={1} field="one_liner" dictationTarget={{ value: "", onChange: jest.fn() }} />,
+  );
+  fireEvent.press(screen.getByLabelText("Dictate"));
+  await waitFor(() =>
+    expect(screen.getByText(/enable it in settings/i)).toBeOnTheScreen(),
+  );
 });

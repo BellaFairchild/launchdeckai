@@ -37,7 +37,7 @@ export function AstroVoiceDock({
   const baseRef = useRef("");
   const reducedMotion = useReducedMotion();
 
-  const { isAvailable, isListening, start, stop } = useSpeechToText({
+  const { isAvailable, isListening, error, start, stop } = useSpeechToText({
     onResult: (text, isFinal) => {
       if (dictationTarget) {
         const sep = baseRef.current && text ? " " : "";
@@ -52,8 +52,16 @@ export function AstroVoiceDock({
 
   const showMic = Boolean(dictationTarget) && isAvailable;
 
+  const permissionDenied = error === "not-allowed";
+  const bubbleText = isListening
+    ? "Listening…"
+    : permissionDenied && dictationTarget
+      ? "Mic's off — enable it in Settings."
+      : coach.line;
+
   const handleMicPress = useCallback(() => {
     if (isListening) {
+      haptics.light();
       stop();
       return;
     }
@@ -77,7 +85,7 @@ export function AstroVoiceDock({
         style={{ maxWidth: 220 }}
       >
         <Text className="font-body text-xs text-text-secondary">
-          {isListening ? "Listening…" : coach.line}
+          {bubbleText}
         </Text>
       </View>
 
