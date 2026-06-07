@@ -62,6 +62,10 @@ export function AstroVoiceDock({
     void start();
   }, [isListening, stop, start, dictationTarget]);
 
+  const orb = (
+    <AstroAvatar plan="cadet" variant="orb" pose={coach.pose} size={52} />
+  );
+
   return (
     <View
       pointerEvents="box-none"
@@ -77,30 +81,27 @@ export function AstroVoiceDock({
         </Text>
       </View>
 
-      <Pressable
-        onPress={showMic ? handleMicPress : undefined}
-        disabled={!showMic}
-        accessibilityRole={showMic ? "button" : undefined}
-        accessibilityLabel={
-          showMic ? (isListening ? "Stop dictating" : "Dictate") : undefined
-        }
-        accessibilityState={showMic ? { busy: isListening } : undefined}
-      >
-        <AstroAvatar plan="cadet" variant="orb" pose={coach.pose} size={52} />
-        {showMic ? (
+      {showMic ? (
+        <Pressable
+          onPress={handleMicPress}
+          accessibilityRole="button"
+          accessibilityLabel={isListening ? "Stop dictating" : "Dictate"}
+          accessibilityState={{ busy: isListening }}
+        >
+          {orb}
           <View
             className={cn(
-              "absolute -bottom-1 -right-1 h-6 w-6 items-center justify-center rounded-full border border-bg-deep",
+              "absolute -bottom-1 -right-1 h-6 w-6 items-center justify-center rounded-full border border-border-default",
               isListening ? "bg-brand-teal" : "bg-bg-surface",
             )}
-            style={
-              isListening && !reducedMotion ? { opacity: 0.92 } : undefined
-            }
+            style={isListening && !reducedMotion ? { opacity: 0.92 } : undefined}
           >
             <Text style={{ fontSize: 11 }}>{isListening ? "■" : "🎤"}</Text>
           </View>
-        ) : null}
-      </Pressable>
+        </Pressable>
+      ) : (
+        <View accessible={false}>{orb}</View>
+      )}
     </View>
   );
 }

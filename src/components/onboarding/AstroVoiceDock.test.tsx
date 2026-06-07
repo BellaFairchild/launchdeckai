@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 
 // Same reanimated mock shape the existing onboarding tests use — the dock
 // renders through @/tw (react-native-css), so a bare mock can break className
@@ -86,7 +86,9 @@ it("appends a final transcript to the field and tracks the event", async () => {
   fireEvent.press(screen.getByLabelText("Dictate"));
   await waitFor(() => expect(mockStart).toHaveBeenCalled());
 
-  listeners.result?.({ results: [{ transcript: "for indie devs" }], isFinal: true });
+  act(() => {
+    listeners.result?.({ results: [{ transcript: "for indie devs" }], isFinal: true });
+  });
 
   expect(onChange).toHaveBeenLastCalledWith("Habit app for indie devs");
   expect(mockTrack).toHaveBeenCalledWith("onboarding_voice_used", { field: "one_liner" });
