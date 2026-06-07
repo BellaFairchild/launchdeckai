@@ -34,7 +34,15 @@
       ],
       "expo-secure-store",
       "expo-audio",
-      "expo-sharing"
+      "expo-sharing",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow LaunchDeckAI to use the microphone so you can dictate your answers.",
+          "speechRecognitionPermission": "Allow LaunchDeckAI to turn your speech into text while setting up your Mission.",
+          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
