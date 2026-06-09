@@ -137,20 +137,27 @@ All Foundry and Copilot AI features should use one shared backend pattern:
 /hooks
 /lib
 /store
-/convex
-  schema.ts
+/convex                # actual files on master
+  schema.ts            # all tables (source of truth)
+  helpers.ts           # requireUser, getActiveMission, recalcReadiness, adjustFuel
+  templates.ts         # MILESTONE_TEMPLATES / BLUEPRINT_SECTIONS (server-owned)
   users.ts
   missions.ts
   milestones.ts
   blueprints.ts
   assets.ts
-  signals.ts
-  fuel.ts
-  subscriptions.ts
-  ai.ts
-  http.ts
+  broadcasts.ts        # Signal Deck broadcast scheduling
+  subscriptions.ts     # applyEntitlement (RevenueCat webhook → internalMutation)
+  ai.ts                # "use node" Anthropic action (Foundry + Copilot)
+  aiMock.ts            # offline/demo drafts when ANTHROPIC_API_KEY is unset
+  auth.config.ts       # Clerk JWT issuer config
+  http.ts              # HTTP actions (webhooks)
+  _generated/          # Convex codegen — committed; do not edit by hand
 /assets
 ```
+
+> Signal status and Fuel economics are computed in `helpers.ts` + `templates.ts`
+> rather than dedicated `signals.ts` / `fuel.ts` files.
 
 ## Environment Variables
 
@@ -163,17 +170,21 @@ EXPO_PUBLIC_REVENUECAT_IOS_API_KEY=
 EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY=
 EXPO_PUBLIC_POSTHOG_KEY=
 EXPO_PUBLIC_POSTHOG_HOST=
-SENTRY_DSN=
+EXPO_PUBLIC_SENTRY_DSN=
 ```
 
-Convex:
+Convex (set via `npx convex env set`, never bundled into the app):
 
 ```text
 CLERK_JWT_ISSUER_DOMAIN=
 ANTHROPIC_API_KEY=
 REVENUECAT_WEBHOOK_SECRET=
 POSTHOG_PROJECT_API_KEY=
+ALLOW_DEV_PLAN_SWITCH=     # dev only: enables users.setPlan (paywall bypass) — unset in prod
 ```
+
+> `.env.example` is the canonical list. The `EXPO_PUBLIC_*` vars are bundled into
+> the client; everything under "Convex" is server-only.
 
 ## Security Rules
 
