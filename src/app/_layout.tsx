@@ -32,7 +32,6 @@ export default function RootLayout() {
             <View style={styles.shell}>
               <StatusBar style="light" />
               <Stack
-                style={styles.shell}
                 screenOptions={{
                   headerShown: false,
                   contentStyle: styles.stackContent,
