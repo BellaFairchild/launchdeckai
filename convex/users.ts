@@ -48,12 +48,25 @@ export const getOrCreateUser = mutation({
 /**
  * Dev-convenience plan switch (lets you exercise plan gates before RevenueCat
  * is wired in Phase 13 — replace with the entitlement webhook path then).
+ *
+ * SECURITY: this lets the signed-in user set their *own* plan, so on a
+ * production deployment it is a paywall bypass (any user could grant themselves
+ * Admiral). It is therefore gated off by default and only enabled when the
+ * Convex env explicitly opts in via `ALLOW_DEV_PLAN_SWITCH=true`
+ * (`npx convex env set ALLOW_DEV_PLAN_SWITCH true`). Plan is otherwise
+ * backend-owned and driven by the RevenueCat entitlement webhook (Docs/08+09).
  */
 export const setPlan = mutation({
   args: {
     plan: v.union(v.literal("cadet"), v.literal("commander"), v.literal("admiral")),
   },
   handler: async (ctx, args) => {
+    if (process.env.ALLOW_DEV_PLAN_SWITCH !== "true") {
+      throw new Error(
+        "setPlan is disabled. Plan changes flow from the RevenueCat entitlement " +
+          "webhook; enable the dev switch with ALLOW_DEV_PLAN_SWITCH=true.",
+      );
+    }
     const user = await requireUser(ctx);
     await ctx.db.patch(user._id, { plan: args.plan });
   },
