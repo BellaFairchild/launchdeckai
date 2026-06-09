@@ -18,6 +18,7 @@ Read these documents in this order:
 10. `10_CURSOR_VIBE_CODING_PROMPTS.md`
 11. `11_QA_TESTING_CHECKLIST.md`
 12. `12_WEB_APP_COMPANION_PLAN.md`
+13. `13_ENGINEERING_AND_TESTING.md`
 
 ## Product North Star
 
