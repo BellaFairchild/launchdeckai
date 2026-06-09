@@ -1,15 +1,16 @@
 import { Stack } from "expo-router";
-import { StyleSheet } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 export default function AuthLayout() {
   return (
-    <Stack
-      style={styles.root}
-      screenOptions={{
-        headerShown: false,
-        contentStyle: styles.content,
-      }}
-    />
+    <View style={styles.root}>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: styles.content,
+        }}
+      />
+    </View>
   );
 }
 

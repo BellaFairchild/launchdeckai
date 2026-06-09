@@ -11,12 +11,12 @@ export default function TabsLayout() {
   return (
     <ScreenBackground>
       <Tabs
-        style={styles.tabs}
-        sceneContainerStyle={styles.sceneContainer}
         tabBar={(props) => <TabBar {...props} />}
         screenOptions={{
           headerShown: true,
           header: () => <AppHeader />,
+          // sceneStyle (RN-Navigation v7) replaces the old navigator-level
+          // style / sceneContainerStyle props.
           sceneStyle: styles.scene,
           lazy: true,
           // freezeOnBlur is native-only; on web it does not detach ghost scenes.
@@ -33,11 +33,5 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
-  tabs: { flex: 1 },
-  sceneContainer: {
-    flex: 1,
-    backgroundColor: "transparent",
-    overflow: "hidden",
-  },
   scene: { flex: 1, backgroundColor: "transparent", overflow: "hidden" },
 });
