@@ -9,7 +9,8 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { FuelBadge } from "@/components/ui/FuelBadge";
-import { Icon } from "@/components/ui/Icon";
+import { Icon, type IconName } from "@/components/ui/Icon";
+import { colors } from "@/constants/colors";
 import { FOUNDRY_TOOLS, type FoundryTool } from "@/constants/foundryTools";
 import { planMeets, PLANS } from "@/constants/plans";
 import { track } from "@/lib/analytics";
@@ -20,6 +21,37 @@ import { useUIStore } from "@/store/ui";
 import { Pressable, ScrollView, Text, View } from "@/tw";
 import type { SignalPhase } from "@/types";
 import { api } from "@cvx/_generated/api";
+
+/**
+ * Branded tool glyph tile — a large-radius glass square with a teal structural
+ * tint and glow-as-elevation (never a gray drop shadow). Dimmed when locked.
+ */
+function ToolGlyph({ icon, locked }: { icon: IconName; locked?: boolean }) {
+  return (
+    <View
+      className="h-12 w-12 items-center justify-center rounded-2xl"
+      style={{
+        backgroundColor: locked
+          ? "rgba(148,163,184,0.08)"
+          : "rgba(77,200,192,0.12)",
+        borderWidth: 1,
+        borderColor: locked
+          ? "rgba(148,163,184,0.18)"
+          : "rgba(77,200,192,0.32)",
+        shadowColor: colors.brandTeal,
+        shadowOpacity: locked ? 0 : 0.4,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 0 },
+      }}
+    >
+      <Icon
+        name={icon}
+        size={24}
+        color={locked ? colors.textTertiary : colors.brandTeal}
+      />
+    </View>
+  );
+}
 
 export default function FoundryScreen() {
   const router = useRouter();
@@ -162,13 +194,14 @@ export default function FoundryScreen() {
           {forged ? (
             <Card variant="elevated">
               <View className="flex-row items-start gap-3">
-                <Text className="text-2xl">{forged.tool.glyph}</Text>
+                <ToolGlyph icon={forged.tool.icon} />
                 <View className="flex-1">
                   <Text className="font-display text-base font-bold text-text-primary">
                     {forged.title}
                   </Text>
                   <Text className="mt-0.5 font-mono text-[11px] uppercase tracking-wider text-brand-teal">
-                    {forged.viaAI ? "AI-forged" : "Mock draft"} · ready to upload
+                    {forged.viaAI ? "AI-forged" : "Mock draft"} · ready to
+                    upload
                   </Text>
                   <Text className="mt-1 font-body text-sm text-text-secondary">
                     Forged from your Mission context. Preview it, then upload to
@@ -228,7 +261,7 @@ export default function FoundryScreen() {
             return (
               <Card key={tool.id} variant={locked ? "glass" : "elevated"}>
                 <View className="flex-row items-start gap-3">
-                  <Text className="text-2xl">{tool.glyph}</Text>
+                  <ToolGlyph icon={tool.icon} locked={locked} />
                   <View className="flex-1">
                     <Text className="font-display text-base font-bold text-text-primary">
                       {tool.name}
@@ -265,19 +298,28 @@ export default function FoundryScreen() {
                   {busyTool === tool.id ? (
                     <ActivityIndicator size="small" color="#060B14" />
                   ) : (
-                    <Text
-                      className={
-                        locked
-                          ? "font-body font-semibold text-text-tertiary"
-                          : "font-body font-semibold text-bg-deep"
-                      }
-                    >
-                      {locked
-                        ? `🔒 Unlock with ${PLANS[tool.requiredPlan].name}`
-                        : affordable
-                          ? "Forge Content"
-                          : `Need ${tool.fuelCost} Fuel — Refuel`}
-                    </Text>
+                    <>
+                      {locked ? (
+                        <Icon
+                          name="lock"
+                          size={15}
+                          color={colors.textTertiary}
+                        />
+                      ) : null}
+                      <Text
+                        className={
+                          locked
+                            ? "font-body font-semibold text-text-tertiary"
+                            : "font-body font-semibold text-bg-deep"
+                        }
+                      >
+                        {locked
+                          ? `Unlock with ${PLANS[tool.requiredPlan].name}`
+                          : affordable
+                            ? "Forge Content"
+                            : `Need ${tool.fuelCost} Fuel — Refuel`}
+                      </Text>
+                    </>
                   )}
                 </Pressable>
               </Card>

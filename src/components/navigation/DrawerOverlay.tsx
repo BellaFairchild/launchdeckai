@@ -1,29 +1,39 @@
 import { useRouter, type Href } from "expo-router";
-import { StyleSheet } from "react-native";
+import { Image, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AstroAvatar } from "@/components/astro/AstroAvatar";
 import { Badge } from "@/components/ui/Badge";
 import { FuelBadge } from "@/components/ui/FuelBadge";
-import { Icon, type IconName } from "@/components/ui/Icon";
-import { cn } from "@/lib/cn";
-import { colors } from "@/constants/colors";
+import { drawerIcons, type DrawerIconName } from "@/constants/drawerIcons";
 import { PLANS } from "@/constants/plans";
+import { cn } from "@/lib/cn";
 import { useUIStore } from "@/store/ui";
 import { Pressable, ScrollView, Text, View } from "@/tw";
 
-type Item = { label: string; icon: IconName; href?: Href; action?: "logout" };
+type Item = {
+  label: string;
+  icon: DrawerIconName;
+  href?: Href;
+  action?: "logout";
+};
 
 const ITEMS: Item[] = [
-  { label: "Profile", icon: "user", href: "/(modals)/profile" },
-  { label: "Cargo Bay", icon: "box", href: "/(modals)/cargo" },
+  { label: "Profile", icon: "profile", href: "/(modals)/profile" },
+  { label: "Cargo Bay", icon: "cargo", href: "/(modals)/cargo" },
   { label: "Signal Deck", icon: "signal", href: "/(modals)/signal-deck" },
-  { label: "Launch Library", icon: "book", href: "/(modals)/launch-library" },
-  { label: "Refuel Station", icon: "flame", href: "/(modals)/refuel" },
+  {
+    label: "Launch Library",
+    icon: "launchLibrary",
+    href: "/(modals)/launch-library",
+  },
+  { label: "Refuel Station", icon: "refuel", href: "/(modals)/refuel" },
   { label: "Settings", icon: "settings", href: "/(modals)/settings" },
-  { label: "Support", icon: "help", href: "/(modals)/support" },
+  { label: "Support", icon: "support", href: "/(modals)/support" },
   { label: "Log Out", icon: "logout", action: "logout" },
 ];
+
+const DRAWER_ICON_SIZE = 38;
 
 /**
  * Slide-in command drawer (Docs/04). Rendered at the root so it overlays tabs
@@ -70,24 +80,24 @@ export function DrawerOverlay() {
         <ScrollView contentContainerClassName="px-3 gap-1">
           {ITEMS.map((item) => {
             const isLogout = item.action === "logout";
-            const tint = isLogout ? colors.statusError : colors.brandTeal;
             return (
               <Pressable
                 key={item.label}
                 onPress={() => onItem(item)}
                 accessibilityRole="button"
+                accessibilityLabel={item.label}
                 className="min-h-[44px] flex-row items-center gap-3 rounded-2xl px-2.5 py-2 active:bg-bg-card"
               >
-                <View
-                  className={cn(
-                    "h-9 w-9 items-center justify-center rounded-xl border",
-                    isLogout
-                      ? "border-status-error/30 bg-status-error/10"
-                      : "border-border-default bg-bg-card",
-                  )}
-                >
-                  <Icon name={item.icon} size={18} color={tint} />
-                </View>
+                <Image
+                  source={drawerIcons[item.icon]}
+                  style={{
+                    width: DRAWER_ICON_SIZE,
+                    height: DRAWER_ICON_SIZE,
+                    borderRadius: 11,
+                  }}
+                  resizeMode="contain"
+                  accessibilityIgnoresInvertColors
+                />
                 <Text
                   className={cn(
                     "font-body text-base",
@@ -113,7 +123,11 @@ export function DrawerOverlay() {
 
 const styles = StyleSheet.create({
   overlay: {
-    ...StyleSheet.absoluteFillObject,
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     zIndex: 50,
   },
 });

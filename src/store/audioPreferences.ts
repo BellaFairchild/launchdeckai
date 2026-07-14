@@ -1,5 +1,33 @@
 import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 import { create } from "zustand";
+
+/**
+ * Web has no SecureStore (native module). Fall back to localStorage on web so
+ * preference hydration doesn't crash the app; SecureStore on native.
+ */
+async function getItem(key: string): Promise<string | null> {
+  if (Platform.OS === "web") {
+    try {
+      return globalThis.localStorage?.getItem(key) ?? null;
+    } catch {
+      return null;
+    }
+  }
+  return SecureStore.getItemAsync(key);
+}
+
+async function setItem(key: string, value: string): Promise<void> {
+  if (Platform.OS === "web") {
+    try {
+      globalThis.localStorage?.setItem(key, value);
+    } catch {
+      // ignore quota / private-mode failures
+    }
+    return;
+  }
+  await SecureStore.setItemAsync(key, value);
+}
 
 const KEYS = {
   sound: "ld_sound_enabled",
@@ -12,13 +40,13 @@ const KEYS = {
 } as const;
 
 async function readBool(key: string, fallback: boolean): Promise<boolean> {
-  const raw = await SecureStore.getItemAsync(key);
+  const raw = await getItem(key);
   if (raw === null) return fallback;
   return raw === "true";
 }
 
 async function writeBool(key: string, value: boolean): Promise<void> {
-  await SecureStore.setItemAsync(key, value ? "true" : "false");
+  await setItem(key, value ? "true" : "false");
 }
 
 type AudioPreferencesState = {
@@ -58,7 +86,7 @@ export const useAudioPreferences = create<AudioPreferencesState>(
         readBool(KEYS.haptics, true),
         readBool(KEYS.ambient, false),
         readBool(KEYS.playInSilent, false),
-        SecureStore.getItemAsync(KEYS.ambientVolume),
+        getItem(KEYS.ambientVolume),
       ]);
       const ambientVolume =
         volRaw !== null ? Math.min(1, Math.max(0, parseFloat(volRaw) || 1)) : 1;
@@ -94,7 +122,7 @@ export const useAudioPreferences = create<AudioPreferencesState>(
 
     setAmbientVolume: async (value) => {
       const clamped = Math.min(1, Math.max(0, value));
-      await SecureStore.setItemAsync(KEYS.ambientVolume, String(clamped));
+      await setItem(KEYS.ambientVolume, String(clamped));
       set({ ambientVolume: clamped });
     },
   }),
@@ -105,11 +133,11 @@ export function getAudioPreferences() {
 }
 
 export async function markBrandStingerPlayedThisSession(): Promise<void> {
-  await SecureStore.setItemAsync(KEYS.brandStingerSession, String(Date.now()));
+  await setItem(KEYS.brandStingerSession, String(Date.now()));
 }
 
 export async function shouldPlayBrandStingerThisSession(): Promise<boolean> {
-  const raw = await SecureStore.getItemAsync(KEYS.brandStingerSession);
+  const raw = await getItem(KEYS.brandStingerSession);
   if (!raw) return true;
   const ts = parseInt(raw, 10);
   if (Number.isNaN(ts)) return true;
@@ -120,13 +148,13 @@ export async function markLaunchDayPlayedToday(
   launchDate: number,
 ): Promise<void> {
   const day = new Date(launchDate).toDateString();
-  await SecureStore.setItemAsync(KEYS.launchDayPlayed, day);
+  await setItem(KEYS.launchDayPlayed, day);
 }
 
 export async function shouldPlayLaunchDayToday(
   launchDate: number,
 ): Promise<boolean> {
   const day = new Date(launchDate).toDateString();
-  const played = await SecureStore.getItemAsync(KEYS.launchDayPlayed);
+  const played = await getItem(KEYS.launchDayPlayed);
   return played !== day;
 }

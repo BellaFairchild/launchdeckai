@@ -145,4 +145,19 @@ export default defineSchema({
   })
     .index("by_missionId", ["missionId"])
     .index("by_mission_signal", ["missionId", "signalId"]),
+
+  waitlistSignups: defineTable({
+    email: v.string(),
+    source: v.optional(v.string()),
+    referrer: v.optional(v.string()),
+    platformInterest: v.optional(
+      v.union(
+        v.literal("ios"),
+        v.literal("android"),
+        v.literal("both"),
+        v.literal("unsure"),
+      ),
+    ),
+    createdAt: v.number(),
+  }).index("by_email", ["email"]),
 });

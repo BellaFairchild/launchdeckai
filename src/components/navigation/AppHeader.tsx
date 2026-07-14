@@ -1,12 +1,11 @@
-import React from "react";
 import { useRouter } from "expo-router";
+import { Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { Pressable, Text, View } from "@/tw";
 import { FuelBadge } from "@/components/ui/FuelBadge";
-import { Icon } from "@/components/ui/Icon";
-import { colors } from "@/constants/colors";
+import { drawerIcons } from "@/constants/drawerIcons";
 import { useUIStore } from "@/store/ui";
+import { Pressable, Text, View } from "@/tw";
 
 /** Shared top bar on tab screens: drawer menu, wordmark, and Fuel pill. */
 export function AppHeader() {
@@ -27,7 +26,12 @@ export function AppHeader() {
           accessibilityLabel="Open menu"
           className="h-11 w-11 items-center justify-center -ml-2"
         >
-          <Icon name="menu" size={24} color={colors.textPrimary} />
+          <Image
+            source={drawerIcons.menu}
+            style={{ width: 30, height: 30, borderRadius: 9 }}
+            resizeMode="contain"
+            accessibilityIgnoresInvertColors
+          />
         </Pressable>
 
         <Text className="font-display text-base font-bold tracking-wide text-text-primary">

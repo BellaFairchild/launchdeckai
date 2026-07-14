@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/images/nebula-hero.jpg",
+        url: "/images/hero-bg.jpg",
         width: 1200,
         height: 630,
         alt: "LaunchDeckAI — calm mission control for app launches",

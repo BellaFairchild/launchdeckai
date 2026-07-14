@@ -5,6 +5,7 @@ import { KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AstroAvatar } from "@/components/astro/AstroAvatar";
+import { ClerkCaptcha } from "@/components/auth/ClerkCaptcha";
 import { ScreenBackground } from "@/components/layout/ScreenBackground";
 import { Button } from "@/components/ui/Button";
 import { track } from "@/lib/analytics";
@@ -104,6 +105,8 @@ export default function SignUpScreen() {
                     {error}
                   </Text>
                 ) : null}
+                {/* Clerk Smart CAPTCHA mount point (web-only DOM element). */}
+                <ClerkCaptcha />
                 <Button
                   label="Create Account"
                   fullWidth

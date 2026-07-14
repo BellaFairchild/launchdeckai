@@ -10,7 +10,7 @@ import { cn } from "@/lib/cn";
 type PlatformInterest = "ios" | "android" | "both" | "unsure";
 
 interface WaitlistFormProps {
-  source: "landing_hero" | "landing_footer";
+  source: string;
   className?: string;
 }
 

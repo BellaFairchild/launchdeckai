@@ -20,6 +20,7 @@ import type * as missions from "../missions.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as templates from "../templates.js";
 import type * as users from "../users.js";
+import type * as waitlist from "../waitlist.js";
 
 import type {
   ApiFromModules,
@@ -40,6 +41,7 @@ declare const fullApi: ApiFromModules<{
   subscriptions: typeof subscriptions;
   templates: typeof templates;
   users: typeof users;
+  waitlist: typeof waitlist;
 }>;
 
 /**

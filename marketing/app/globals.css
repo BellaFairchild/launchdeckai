@@ -68,6 +68,41 @@ body {
   font-family: var(--font-mono);
 }
 
+.premium-glow {
+  box-shadow:
+    0 0 0 1px rgba(243, 178, 51, 0.15),
+    0 10px 20px rgba(243, 178, 51, 0.22);
+}
+
+.gold-glow {
+  box-shadow: 0 8px 24px rgba(243, 178, 51, 0.18);
+}
+
+.launch-gradient {
+  background: linear-gradient(135deg, #1426a8 0%, #10b7d6 100%);
+}
+
+@keyframes timeline-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.timeline-reveal {
+  animation: timeline-reveal 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timeline-reveal {
+    animation: none;
+  }
+}
+
 .primary-glow {
   box-shadow:
     0 0 0 1px rgba(77, 200, 192, 0.2),

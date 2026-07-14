@@ -1,6 +1,7 @@
-import React from "react";
-import { View, Text } from "@/tw";
+import { colors } from "@/constants/colors";
+import { Text, View } from "@/tw";
 import { Button } from "./Button";
+import { Icon } from "./Icon";
 
 type Props = {
   title?: string;
@@ -15,7 +16,25 @@ export function ErrorState({
 }: Props) {
   return (
     <View className="items-center justify-center gap-3 px-8 py-12">
-      <Text className="text-4xl">📡</Text>
+      <View
+        className="h-16 w-16 items-center justify-center rounded-3xl"
+        style={{
+          backgroundColor: "rgba(255,155,66,0.10)",
+          borderWidth: 1,
+          borderColor: "rgba(255,155,66,0.28)",
+          shadowColor: colors.statusWarning,
+          shadowOpacity: 0.35,
+          shadowRadius: 14,
+          shadowOffset: { width: 0, height: 0 },
+        }}
+      >
+        <Icon
+          name="alert"
+          size={30}
+          color={colors.statusWarning}
+          strokeWidth={1.8}
+        />
+      </View>
       <Text className="text-center font-display text-lg font-bold text-text-primary">
         {title}
       </Text>
@@ -23,7 +42,13 @@ export function ErrorState({
         {message}
       </Text>
       {onRetry ? (
-        <Button label="Try again" onPress={onRetry} variant="secondary" size="sm" className="mt-2" />
+        <Button
+          label="Try again"
+          onPress={onRetry}
+          variant="secondary"
+          size="sm"
+          className="mt-2"
+        />
       ) : null}
     </View>
   );

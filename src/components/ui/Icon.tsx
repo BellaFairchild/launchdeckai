@@ -35,7 +35,17 @@ export type IconName =
   | "book" // launch library
   | "settings"
   | "help" // support life-ring
-  | "logout";
+  | "logout"
+  // Foundry tools + empty/error states
+  | "store" // app store copy
+  | "megaphone" // social blast
+  | "mail" // email sequence
+  | "press" // press kit
+  | "film" // video script
+  | "rocket" // product hunt / launch / achievement
+  | "hammer" // forge master
+  | "search" // library search / empty
+  | "satellite"; // comms / generic empty
 
 type Props = {
   name: IconName;
@@ -77,7 +87,14 @@ function glyph(name: IconName, c: string, sw: number): React.ReactNode {
           <Rect x={4} y={3.5} width={16} height={17} rx={2.2} {...stroke} />
           <Line x1={4.5} y1={9} x2={19.5} y2={9} {...stroke} opacity={0.5} />
           <Line x1={4.5} y1={15} x2={19.5} y2={15} {...stroke} opacity={0.5} />
-          <Line x1={9.6} y1={4.2} x2={9.6} y2={19.8} {...stroke} opacity={0.5} />
+          <Line
+            x1={9.6}
+            y1={4.2}
+            x2={9.6}
+            y2={19.8}
+            {...stroke}
+            opacity={0.5}
+          />
           <Line x1={15} y1={4.2} x2={15} y2={19.8} {...stroke} opacity={0.5} />
           <Circle cx={9.6} cy={9} r={1.5} fill={c} />
         </>
@@ -144,7 +161,10 @@ function glyph(name: IconName, c: string, sw: number): React.ReactNode {
         <>
           <Line x1={12} y1={3.5} x2={12} y2={14.5} {...stroke} />
           <Path d="M7.5 10 L12 14.5 L16.5 10" {...stroke} />
-          <Path d="M4.5 16.5 V18.5 a1.6 1.6 0 0 0 1.6 1.6 H17.9 A1.6 1.6 0 0 0 19.5 18.5 V16.5" {...stroke} />
+          <Path
+            d="M4.5 16.5 V18.5 a1.6 1.6 0 0 0 1.6 1.6 H17.9 A1.6 1.6 0 0 0 19.5 18.5 V16.5"
+            {...stroke}
+          />
         </>
       );
     case "plus":
@@ -204,8 +224,14 @@ function glyph(name: IconName, c: string, sw: number): React.ReactNode {
     case "link":
       return (
         <>
-          <Path d="M10.5 13.5 a3.5 3.5 0 0 1 0 -5 L13 6 a3.5 3.5 0 0 1 5 5 L16.6 12.4" {...stroke} />
-          <Path d="M13.5 10.5 a3.5 3.5 0 0 1 0 5 L11 18 a3.5 3.5 0 0 1 -5 -5 L7.4 11.6" {...stroke} />
+          <Path
+            d="M10.5 13.5 a3.5 3.5 0 0 1 0 -5 L13 6 a3.5 3.5 0 0 1 5 5 L16.6 12.4"
+            {...stroke}
+          />
+          <Path
+            d="M13.5 10.5 a3.5 3.5 0 0 1 0 5 L11 18 a3.5 3.5 0 0 1 -5 -5 L7.4 11.6"
+            {...stroke}
+          />
         </>
       );
     case "book":
@@ -247,6 +273,128 @@ function glyph(name: IconName, c: string, sw: number): React.ReactNode {
           />
           <Line x1={10} y1={12} x2={20.5} y2={12} {...stroke} />
           <Path d="M17 8.5 L20.5 12 L17 15.5" {...stroke} />
+        </>
+      );
+    case "store":
+      // Storefront: pitched awning over a shopfront with a central door.
+      return (
+        <>
+          <Path d="M4 8.2 L5.6 4.4 H18.4 L20 8.2" {...stroke} />
+          <Path
+            d="M4 8.2 H20 V18.4 A1.6 1.6 0 0 1 18.4 20 H5.6 A1.6 1.6 0 0 1 4 18.4 Z"
+            {...stroke}
+          />
+          <Path
+            d="M10 20 V14.4 A0.9 0.9 0 0 1 10.9 13.5 H13.1 A0.9 0.9 0 0 1 14 14.4 V20"
+            {...stroke}
+          />
+        </>
+      );
+    case "megaphone":
+      return (
+        <>
+          <Path d="M4.5 10 L13.5 6.4 V17.6 L4.5 14 Z" fill={c} />
+          <Path
+            d="M6.6 14.2 L7.8 18.4 A1.2 1.2 0 0 1 5.5 19 L4.6 15"
+            fill={c}
+          />
+          <Path d="M16.4 8.8 a4.4 4.4 0 0 1 0 6.4" {...stroke} />
+        </>
+      );
+    case "mail":
+      return (
+        <>
+          <Rect x={3.5} y={5.6} width={17} height={12.8} rx={2.2} {...stroke} />
+          <Path d="M4.4 7 L12 12.6 L19.6 7" {...stroke} />
+        </>
+      );
+    case "press":
+      return (
+        <>
+          <Path
+            d="M4 5.6 A1.4 1.4 0 0 1 5.4 4.2 H15.4 A1.4 1.4 0 0 1 16.8 5.6 V17.8 A2.2 2.2 0 0 0 19 20 H6.2 A2.2 2.2 0 0 1 4 17.8 Z"
+            {...stroke}
+          />
+          <Path
+            d="M16.8 8.6 H18.6 A1.4 1.4 0 0 1 20 10 V17.8 A2.2 2.2 0 0 1 17.8 20"
+            {...stroke}
+            opacity={0.55}
+          />
+          <Line x1={6.8} y1={8.4} x2={14} y2={8.4} {...stroke} />
+          <Line
+            x1={6.8}
+            y1={11.6}
+            x2={14}
+            y2={11.6}
+            {...stroke}
+            opacity={0.6}
+          />
+          <Line
+            x1={6.8}
+            y1={14.8}
+            x2={11.4}
+            y2={14.8}
+            {...stroke}
+            opacity={0.6}
+          />
+        </>
+      );
+    case "film":
+      // Video camera: body + protruding viewfinder wedge.
+      return (
+        <>
+          <Rect x={3.5} y={7} width={12.5} height={10} rx={2.2} {...stroke} />
+          <Path d="M16 10.4 L20.5 7.6 V16.4 L16 13.6 Z" {...stroke} />
+          <Circle cx={7.4} cy={12} r={1.3} fill={c} />
+        </>
+      );
+    case "rocket":
+      return (
+        <>
+          <Path
+            d="M12 2.8 C15.2 6 15.8 9.8 15.2 13 H8.8 C8.2 9.8 8.8 6 12 2.8 Z"
+            {...stroke}
+          />
+          <Circle cx={12} cy={8.4} r={1.7} fill={c} />
+          <Path d="M8.8 12.2 L6 15.2 L9 14.8" {...stroke} />
+          <Path d="M15.2 12.2 L18 15.2 L15 14.8" {...stroke} />
+          <Path d="M10.4 14.6 L12 19 L13.6 14.6" fill={c} />
+        </>
+      );
+    case "hammer":
+      return (
+        <>
+          <Path d="M5.5 6.4 L11 4.6 L12.4 8.8 L6.9 10.6 Z" fill={c} />
+          <Rect
+            x={11}
+            y={8.4}
+            width={2.4}
+            height={11.4}
+            rx={1.2}
+            fill={c}
+            transform="rotate(-18 12.2 14)"
+          />
+        </>
+      );
+    case "search":
+      return (
+        <>
+          <Circle cx={11} cy={11} r={6.2} {...stroke} />
+          <Line x1={15.6} y1={15.6} x2={20} y2={20} {...stroke} />
+        </>
+      );
+    case "satellite":
+      // A ringed planet — calm, cosmic default for empty states.
+      return (
+        <>
+          <Circle cx={12} cy={11} r={5} {...stroke} />
+          <Path
+            d="M4.6 13.2 C8 16 16 16 19.4 13.2"
+            {...stroke}
+            opacity={0.65}
+          />
+          <Path d="M19 11.6 C16 9 8 9 5 11.6" {...stroke} opacity={0.32} />
+          <Circle cx={9.6} cy={9.6} r={1} fill={c} opacity={0.7} />
         </>
       );
     default:

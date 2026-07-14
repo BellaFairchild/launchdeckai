@@ -1,18 +1,21 @@
-import React from "react";
 
-import { ScrollView, View, Text } from "@/tw";
-import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
-import { FuelBadge } from "@/components/ui/FuelBadge";
 import { AstroAvatar } from "@/components/astro/AstroAvatar";
+import { Badge } from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
+import { FuelBadge } from "@/components/ui/FuelBadge";
+import { Icon, type IconName } from "@/components/ui/Icon";
+import { colors } from "@/constants/colors";
 import { PLANS } from "@/constants/plans";
-import { useUIStore } from "@/store/ui";
 import { useMissionStore } from "@/store/mission";
+import { useUIStore } from "@/store/ui";
+import { ScrollView, Text, View } from "@/tw";
 
 function Stat({ value, label }: { value: string; label: string }) {
   return (
     <View className="flex-1 items-center rounded-2xl border border-border-default bg-bg-card py-3">
-      <Text className="font-display text-xl font-bold text-text-primary">{value}</Text>
+      <Text className="font-display text-xl font-bold text-text-primary">
+        {value}
+      </Text>
       <Text className="font-mono text-[10px] uppercase tracking-wider text-text-tertiary">
         {label}
       </Text>
@@ -20,10 +23,10 @@ function Stat({ value, label }: { value: string; label: string }) {
   );
 }
 
-const RIBBONS = [
-  { glyph: "🚀", label: "First Launch" },
-  { glyph: "🔨", label: "Forge Master" },
-  { glyph: "📡", label: "Comms Online" },
+const RIBBONS: { icon: IconName; label: string }[] = [
+  { icon: "rocket", label: "First Launch" },
+  { icon: "hammer", label: "Forge Master" },
+  { icon: "signal", label: "Comms Online" },
 ];
 
 export default function ProfileModal() {
@@ -41,7 +44,10 @@ export default function ProfileModal() {
           <Text className="font-display text-2xl font-bold text-text-primary">
             Commander
           </Text>
-          <Badge label={`${PLANS[plan].name} · ${PLANS[plan].belt} belt`} variant="plan" />
+          <Badge
+            label={`${PLANS[plan].name} · ${PLANS[plan].belt} belt`}
+            variant="plan"
+          />
         </View>
 
         <View className="flex-row gap-3">
@@ -69,8 +75,16 @@ export default function ProfileModal() {
           <View className="mt-3 flex-row flex-wrap gap-3">
             {RIBBONS.map((r) => (
               <View key={r.label} className="items-center gap-1">
-                <View className="h-12 w-12 items-center justify-center rounded-2xl border border-border-med bg-bg-surface">
-                  <Text className="text-xl">{r.glyph}</Text>
+                <View
+                  className="h-12 w-12 items-center justify-center rounded-2xl border border-border-med bg-bg-surface"
+                  style={{
+                    shadowColor: colors.brandGold,
+                    shadowOpacity: 0.3,
+                    shadowRadius: 9,
+                    shadowOffset: { width: 0, height: 0 },
+                  }}
+                >
+                  <Icon name={r.icon} size={22} color={colors.brandGold} />
                 </View>
                 <Text className="font-mono text-[10px] uppercase tracking-wider text-text-tertiary">
                   {r.label}
