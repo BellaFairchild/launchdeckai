@@ -84,7 +84,12 @@ jest.mock("@/lib/analytics", () => ({
 // foundry.tsx calls: const generateAsset = useAction(api.ai.generateAsset)
 // then: const res = await generateAsset({ tool, toolLabel, mode, mission, signalLabel })
 // and reads: res.content, res.mock
-const mockGenerateAsset = jest.fn(async () => ({
+// Typed with its single args object so `mock.calls[0][0]` is the real payload
+// rather than an element of an empty tuple.
+const mockGenerateAsset = jest.fn<
+  Promise<{ content: string; mock: boolean }>,
+  [Record<string, unknown>]
+>(async () => ({
   content: "AI generated copy for testing",
   mock: true,
 }));

@@ -1,4 +1,33 @@
 /* Global test environment: silence native-only modules our UI imports. */
+
+/**
+ * react-native-reanimated v4 initialises native Worklets at import time, which
+ * throws under jest. Our @/tw wrappers (animated.tsx, image.tsx) import it at
+ * module scope, so almost any screen pulls it in transitively. This baseline
+ * stub keeps suites loadable; individual tests may still jest.mock it locally
+ * when they need richer animation behaviour.
+ */
+jest.mock("react-native-reanimated", () => {
+  const { View, ScrollView } = require("react-native");
+  return {
+    __esModule: true,
+    default: {
+      View,
+      ScrollView,
+      createAnimatedComponent: (c) => c,
+    },
+    useSharedValue: (v) => ({ value: v }),
+    useAnimatedStyle: () => ({}),
+    useAnimatedRef: () => ({ current: null }),
+    withTiming: (to) => to,
+    withSpring: (to) => to,
+    withDelay: (_d, v) => v,
+    interpolate: () => 0,
+    interpolateColor: () => "#000000",
+    Easing: { linear: (t) => t, inOut: (e) => e, ease: (t) => t },
+  };
+});
+
 jest.mock("@/lib/haptics", () => ({
   haptics: {
     light: jest.fn(),

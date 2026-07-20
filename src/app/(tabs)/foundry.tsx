@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/Card";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { FoundryToolCard } from "@/components/ui/FoundryToolCard";
 import { Icon } from "@/components/ui/Icon";
+import { foundryIcons } from "@/constants/foundryIcons";
 import { FOUNDRY_TOOLS, type FoundryTool } from "@/constants/foundryTools";
 import { planMeets } from "@/constants/plans";
 import { track } from "@/lib/analytics";
@@ -18,6 +19,7 @@ import { haptics } from "@/lib/haptics";
 import { useMissionStore } from "@/store/mission";
 import { useUIStore } from "@/store/ui";
 import { Pressable, ScrollView, Text, View } from "@/tw";
+import { Image } from "@/tw/image";
 import type { SignalPhase } from "@/types";
 import { api } from "@cvx/_generated/api";
 
@@ -186,7 +188,12 @@ export default function FoundryScreen() {
           {forged ? (
             <Card variant="elevated">
               <View className="flex-row items-start gap-3">
-                <Text className="text-2xl">{forged.tool.glyph}</Text>
+                <Image
+                  source={foundryIcons[forged.tool.icon]}
+                  style={{ width: 48, height: 48, borderRadius: 14 }}
+                  contentFit="cover"
+                  accessibilityIgnoresInvertColors
+                />
                 <View className="flex-1">
                   <Text className="font-display text-base font-bold text-text-primary">
                     {forged.title}
