@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ClerkAuthGate } from "@/components/auth/ClerkAuthGate";
 import { ScreenBackground } from "@/components/layout/ScreenBackground";
 import { Button } from "@/components/ui/Button";
 import { track } from "@/lib/analytics";
@@ -13,6 +14,14 @@ import { Pressable, Text, TextInput, View } from "@/tw";
 const MISSION_ROUTE = "/(auth)/onboarding?phase=mission";
 
 export default function SavePlanScreen() {
+  return (
+    <ClerkAuthGate>
+      <SavePlanContent />
+    </ClerkAuthGate>
+  );
+}
+
+function SavePlanContent() {
   const router = useRouter();
   const { signIn, setActive, isLoaded } = useSignIn();
   const { startSSOFlow } = useSSO();

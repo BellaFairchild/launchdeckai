@@ -1,9 +1,10 @@
 import { useAction } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useRef, useState } from "react";
-import { Modal, type ScrollView as RNScrollView } from "react-native";
+import type { ScrollView as RNScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { FoundryPreviewModal } from "@/components/foundry/FoundryPreviewModal";
 import { TabScreen } from "@/components/layout/TabScreen";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -17,7 +18,7 @@ import { playSignature } from "@/lib/audio";
 import { haptics } from "@/lib/haptics";
 import { useMissionStore } from "@/store/mission";
 import { useUIStore } from "@/store/ui";
-import { Pressable, ScrollView, Text, View } from "@/tw";
+import { ScrollView, Text, View } from "@/tw";
 import type { SignalPhase } from "@/types";
 import { api } from "@cvx/_generated/api";
 
@@ -192,7 +193,8 @@ export default function FoundryScreen() {
                     {forged.title}
                   </Text>
                   <Text className="mt-0.5 font-mono text-[11px] uppercase tracking-wider text-brand-teal">
-                    {forged.viaAI ? "AI-forged" : "Mock draft"} · ready to upload
+                    {forged.viaAI ? "AI-forged" : "Mock draft"} · ready to
+                    upload
                   </Text>
                   <Text className="mt-1 font-body text-sm text-text-secondary">
                     Forged from your Mission context. Preview it, then upload to
@@ -259,56 +261,14 @@ export default function FoundryScreen() {
           ))}
         </ScrollView>
 
-        {/* Quick Preview — read the forged content before uploading it. */}
-        <Modal
-          visible={previewOpen && !!forged}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setPreviewOpen(false)}
-        >
-          <View className="flex-1 bg-bg-deep/95 px-5">
-            <SafeAreaView style={{ flex: 1 }} edges={["top", "bottom"]}>
-              <View className="flex-row items-center justify-between border-b border-border-med/40 py-3">
-                <View className="flex-1 pr-3">
-                  <Text
-                    className="font-display text-base font-bold text-text-primary"
-                    numberOfLines={1}
-                  >
-                    {forged?.title}
-                  </Text>
-                  <Text className="font-mono text-[10px] uppercase tracking-widest text-brand-teal">
-                    {forged?.tool.category} · preview
-                  </Text>
-                </View>
-                <Pressable
-                  onPress={() => setPreviewOpen(false)}
-                  accessibilityRole="button"
-                  accessibilityLabel="Close preview"
-                  className="h-10 w-10 items-center justify-center rounded-full border border-border-med active:opacity-80"
-                >
-                  <Icon name="close" size={20} color="#F5F7FA" />
-                </Pressable>
-              </View>
-
-              <ScrollView className="flex-1" contentContainerClassName="py-4">
-                <Text className="font-body text-sm leading-6 text-text-secondary">
-                  {forged?.content}
-                </Text>
-              </ScrollView>
-
-              <View className="pb-2 pt-2">
-                <Button
-                  label="Upload to Cargo Bay"
-                  variant="primary"
-                  fullWidth
-                  loading={uploading}
-                  left={<Icon name="box" size={18} color="#FFFFFF" />}
-                  onPress={onUpload}
-                />
-              </View>
-            </SafeAreaView>
-          </View>
-        </Modal>
+        {forged ? (
+          <FoundryPreviewModal
+            visible={previewOpen}
+            title={forged.title}
+            content={forged.content}
+            onClose={() => setPreviewOpen(false)}
+          />
+        ) : null}
       </SafeAreaView>
     </TabScreen>
   );

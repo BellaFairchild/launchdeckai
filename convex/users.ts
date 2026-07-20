@@ -1,7 +1,11 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
-import { requireUser } from "./helpers";
+import {
+    getActiveMission,
+    refreshMilestoneLocks,
+    requireUser,
+} from "./helpers";
 
 /** The current user record, or null when signed out / not yet created. */
 export const getCurrentUser = query({
@@ -41,6 +45,7 @@ export const getOrCreateUser = mutation({
       fuelBalance: 25,
       currentStreak: 0,
       level: 1,
+      createdAt: Date.now(),
     });
   },
 });
@@ -60,5 +65,9 @@ export const setPlan = mutation({
   handler: async (ctx, args) => {
     const user = await requireUser(ctx);
     await ctx.db.patch("users", user._id, { plan: args.plan });
+    const mission = await getActiveMission(ctx, user._id);
+    if (mission) {
+      await refreshMilestoneLocks(ctx, user, mission._id);
+    }
   },
 });

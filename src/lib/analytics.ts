@@ -19,6 +19,7 @@ export type AnalyticsEvent =
   | "welcome_back_continue"
   | "user_signed_up"
   | "onboarding_completed"
+  | "pitch_forged"
   | "mission_created"
   | "milestone_completed"
   | "fuel_earned"

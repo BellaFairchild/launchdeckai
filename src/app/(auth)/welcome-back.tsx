@@ -4,16 +4,25 @@ import { useRouter } from "expo-router";
 import { useCallback, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+import { ClerkAuthGate } from "@/components/auth/ClerkAuthGate";
 import { ScreenBackground } from "@/components/layout/ScreenBackground";
-import { ProgressRing } from "@/components/ui/ProgressRing";
 import { Button } from "@/components/ui/Button";
-import { api } from "@cvx/_generated/api";
+import { ProgressRing } from "@/components/ui/ProgressRing";
 import { track } from "@/lib/analytics";
 import { readinessLabel } from "@/lib/launch";
 import { setSkipWelcomeBack } from "@/lib/onboardingDraft";
 import { Text, View } from "@/tw";
+import { api } from "@cvx/_generated/api";
 
 export default function WelcomeBackScreen() {
+  return (
+    <ClerkAuthGate>
+      <WelcomeBackContent />
+    </ClerkAuthGate>
+  );
+}
+
+function WelcomeBackContent() {
   const router = useRouter();
   const { user } = useUser();
   const data = useQuery(api.missions.getLaunchData, {});

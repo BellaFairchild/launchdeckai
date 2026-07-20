@@ -10,21 +10,26 @@ import { CommanderSpotlightSheet } from "@/components/onboarding/CommanderSpotli
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { FuelBadge } from "@/components/ui/FuelBadge";
+import { Icon } from "@/components/ui/Icon";
 import { SuccessBurst } from "@/components/ui/SuccessBurst";
+import { withAlpha } from "@/constants/assetCategories";
 import { colors } from "@/constants/colors";
-import { MILESTONE_CATEGORIES } from "@/constants/milestoneTemplates";
+import {
+    MILESTONE_CATEGORIES,
+    MILESTONE_CATEGORY_META,
+} from "@/constants/milestoneTemplates";
 import { planMeets, PLANS } from "@/constants/plans";
 import { track } from "@/lib/analytics";
 import { playSignature } from "@/lib/audio";
 import { haptics } from "@/lib/haptics";
 import {
-  getHasSeenCommanderSpotlight,
-  setHasSeenCommanderSpotlight,
+    getHasSeenCommanderSpotlight,
+    setHasSeenCommanderSpotlight,
 } from "@/lib/onboardingDraft";
 import { useMissionStore } from "@/store/mission";
 import { useUIStore } from "@/store/ui";
 import { Pressable, Text, View } from "@/tw";
-import type { Milestone } from "@/types";
+import type { Milestone, MilestoneCategory } from "@/types";
 
 const HIGHLIGHT_RING: ViewStyle = {
   borderWidth: 2,
@@ -45,6 +50,34 @@ const COMPLETED_GLOW: ViewStyle = {
   shadowOffset: { width: 0, height: 0 },
   elevation: 10,
 };
+
+function MilestoneCategoryIcon({
+  category,
+  completed,
+  locked,
+}: {
+  category: MilestoneCategory;
+  completed: boolean;
+  locked: boolean;
+}) {
+  const meta = MILESTONE_CATEGORY_META[category];
+  const tint = completed ? colors.statusSuccess : meta.hex;
+  return (
+    <View
+      className="mt-0.5 h-9 w-9 shrink-0 items-center justify-center rounded-xl border"
+      style={{
+        borderColor: withAlpha(tint, locked ? 0.2 : completed ? 0.45 : 0.4),
+        backgroundColor: withAlpha(
+          tint,
+          locked ? 0.06 : completed ? 0.14 : 0.12,
+        ),
+        opacity: locked ? 0.55 : 1,
+      }}
+    >
+      <Icon name={meta.icon} size={18} color={tint} />
+    </View>
+  );
+}
 
 function MilestoneRow({
   milestone,
@@ -70,6 +103,11 @@ function MilestoneRow({
       >
         <SuccessBurst active={justCompleted} />
         <View className="flex-row items-start gap-3">
+          <MilestoneCategoryIcon
+            category={milestone.category}
+            completed={completed}
+            locked={locked}
+          />
           <View className="flex-1">
             <Text
               className={
@@ -113,13 +151,11 @@ function MilestoneRow({
                   : "border-brand-teal")
             }
           >
-            <Text
-              className={
-                completed ? "text-status-success" : "text-text-tertiary"
-              }
-            >
-              {completed ? "✓" : locked ? "🔒" : ""}
-            </Text>
+            {completed ? (
+              <Icon name="check" size={14} color={colors.statusSuccess} />
+            ) : locked ? (
+              <Icon name="lock" size={14} color={colors.textTertiary} />
+            ) : null}
           </Pressable>
         </View>
       </Card>
@@ -254,9 +290,26 @@ export default function MissionsScreen() {
                   catY.current[cat.id] = e.nativeEvent.layout.y;
                 }}
               >
-                <Text className="px-1 font-mono text-xs uppercase tracking-[2px] text-brand-teal">
-                  {cat.label}
-                </Text>
+                <View className="flex-row items-center gap-2 px-1">
+                  <View
+                    className="h-6 w-6 items-center justify-center rounded-lg"
+                    style={{
+                      backgroundColor: withAlpha(
+                        MILESTONE_CATEGORY_META[cat.id].hex,
+                        0.14,
+                      ),
+                    }}
+                  >
+                    <Icon
+                      name={MILESTONE_CATEGORY_META[cat.id].icon}
+                      size={14}
+                      color={MILESTONE_CATEGORY_META[cat.id].hex}
+                    />
+                  </View>
+                  <Text className="font-mono text-xs uppercase tracking-[2px] text-brand-teal">
+                    {cat.label}
+                  </Text>
+                </View>
                 {group.map((m) => {
                   const locked = !planMeets(plan, m.requiredPlan);
                   return (
@@ -266,7 +319,9 @@ export default function MissionsScreen() {
                       locked={locked}
                       highlighted={highlightId === m.id}
                       justCompleted={justCompletedId === m.id}
-                      onComplete={() => handleComplete(m.id, m.category, m.fuelReward)}
+                      onComplete={() =>
+                        handleComplete(m.id, m.category, m.fuelReward)
+                      }
                       onUnlock={() => router.push("/(modals)/refuel")}
                     />
                   );

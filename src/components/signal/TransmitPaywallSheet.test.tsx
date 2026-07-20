@@ -40,3 +40,10 @@ it("dismisses when the backdrop is pressed", () => {
   fireEvent.press(screen.getByLabelText("Dismiss paywall"));
   expect(onDismiss).toHaveBeenCalled();
 });
+
+it("does not dismiss when sheet content is pressed", () => {
+  const onDismiss = jest.fn();
+  render(<TransmitPaywallSheet visible onUpgrade={jest.fn()} onDismiss={onDismiss} />);
+  fireEvent.press(screen.getByText("Export needs Commander."));
+  expect(onDismiss).not.toHaveBeenCalled();
+});

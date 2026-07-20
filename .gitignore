@@ -37,6 +37,12 @@ yarn-error.*
 
 # IDE / agent tooling (machine-specific; project skills stay under .claude/skills/)
 .claude/settings.json
+# Ephemeral git worktrees created by agent tooling
+.claude/worktrees/
+
+# Expo web build output from `expo export` smoke checks (13.5 MB of generated
+# HTML + hashed assets — never commit; regenerate with `npx expo export`)
+.expo-web-check/
 
 # Playwright MCP test artifacts (ephemeral logs/snapshots)
 .playwright-mcp/

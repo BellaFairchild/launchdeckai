@@ -130,7 +130,7 @@ export default function DeckScreen() {
               Know exactly what to post, when, and where.
             </Text>
             <Button
-              label="Stage Your Launch Sequence →"
+              label="Launch Sequence"
               variant="premium"
               className="mt-4"
               onPress={() => router.push("/(modals)/signal-deck")}
@@ -204,6 +204,49 @@ export default function DeckScreen() {
               />
             </View>
           </View>
+
+          {__DEV__ ? (
+            <View className="gap-2">
+              <SectionLabel>Dev · Onboarding preview</SectionLabel>
+              <View className="overflow-hidden rounded-2xl border border-dashed border-border-med bg-bg-surface/40">
+                <SystemRow
+                  icon="missions"
+                  label="Full flow"
+                  sub="All 7 steps"
+                  onPress={() => router.push("/(auth)/onboarding")}
+                />
+                <View
+                  style={{ height: 1, backgroundColor: colors.borderDefault }}
+                />
+                <SystemRow
+                  icon="missions"
+                  label="Intent capture"
+                  sub="Steps 1–3"
+                  onPress={() => router.push("/(auth)/onboarding?phase=intent")}
+                />
+                <View
+                  style={{ height: 1, backgroundColor: colors.borderDefault }}
+                />
+                <SystemRow
+                  icon="missions"
+                  label="Mission setup"
+                  sub="Steps 4–7"
+                  onPress={() =>
+                    router.push("/(auth)/onboarding?phase=mission")
+                  }
+                />
+                <View
+                  style={{ height: 1, backgroundColor: colors.borderDefault }}
+                />
+                <SystemRow
+                  icon="user"
+                  label="Landing"
+                  sub="Auth entry screen"
+                  onPress={() => router.push("/(auth)/landing")}
+                />
+              </View>
+            </View>
+          ) : null}
         </ScrollView>
       </SafeAreaView>
     </TabScreen>

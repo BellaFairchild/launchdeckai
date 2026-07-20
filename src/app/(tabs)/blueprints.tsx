@@ -8,12 +8,12 @@ import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { ProgressRing } from "@/components/ui/ProgressRing";
-import { colors } from "@/constants/colors";
 import { BLUEPRINT_SECTIONS } from "@/constants/blueprintSections";
+import { colors } from "@/constants/colors";
 import { blueprintFileName, buildBlueprintHtml } from "@/lib/blueprintPdf";
 import { exportHtmlAsPdf } from "@/lib/exportPdf";
 import { useMissionStore } from "@/store/mission";
-import { Pressable, ScrollView, Text, View } from "@/tw";
+import { ScrollView, Text, View } from "@/tw";
 
 export default function BlueprintsScreen() {
   const router = useRouter();
@@ -82,16 +82,17 @@ export default function BlueprintsScreen() {
                     </Text>
                   </View>
 
-                  {/* Corner affordance: opens the blueprint form */}
-                  <Pressable
-                    onPress={open}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Open ${section.title} blueprint`}
-                    hitSlop={8}
-                    className="absolute bottom-0 right-0 h-8 w-8 items-center justify-center rounded-full border border-border-med bg-bg-surface active:opacity-80"
+                  {/* Corner affordance — card tap target handles navigation */}
+                  <View
+                    pointerEvents="none"
+                    className="absolute bottom-0 right-0 h-8 w-8 items-center justify-center rounded-full border border-border-med bg-bg-surface"
                   >
-                    <Icon name="arrow-right" size={16} color={colors.brandTeal} />
-                  </Pressable>
+                    <Icon
+                      name="arrow-right"
+                      size={16}
+                      color={colors.brandTeal}
+                    />
+                  </View>
                 </View>
               </Card>
             );

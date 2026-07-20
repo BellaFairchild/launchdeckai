@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation } from "./_generated/server";
 
-import { getActiveMission, requireUser } from "./helpers";
+import { getActiveMission, recalcReadiness, requireUser } from "./helpers";
 
 export const save = mutation({
   args: {
@@ -24,6 +24,8 @@ export const save = mutation({
     await ctx.db.patch("blueprints", blueprint._id, {
       fields: args.fields,
       completionStatus: Math.max(0, Math.min(100, args.completionStatus)),
+      updatedAt: Date.now(),
     });
+    await recalcReadiness(ctx, mission._id);
   },
 });

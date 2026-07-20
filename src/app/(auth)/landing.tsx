@@ -6,6 +6,7 @@ import { ScreenBackground } from "@/components/layout/ScreenBackground";
 import { Button } from "@/components/ui/Button";
 import { GradientView } from "@/components/ui/GradientView";
 import { track } from "@/lib/analytics";
+import { authEnabled } from "@/lib/auth";
 import { Text, View } from "@/tw";
 
 const BENEFITS = ["App plan", "Checklists", "Writing help"] as const;
@@ -24,7 +25,11 @@ export default function LandingScreen() {
 
   const onHaveAccount = useCallback(() => {
     track("landing_have_account");
-    router.push("/(auth)/sign-in");
+    if (authEnabled) {
+      router.push("/(auth)/sign-in");
+      return;
+    }
+    router.replace("/(tabs)/deck");
   }, [router]);
 
   return (
@@ -33,7 +38,10 @@ export default function LandingScreen() {
         <View className="flex-1 justify-between px-7 pb-6 pt-8">
           <View className="items-center gap-3">
             <View className="relative h-14 w-14 items-center justify-center overflow-hidden rounded-2xl border border-white/10">
-              <GradientView colors={["#1500FD", "#10B7D6"]} direction="diagonal" />
+              <GradientView
+                colors={["#1500FD", "#10B7D6"]}
+                direction="diagonal"
+              />
               <View className="absolute -right-1 -top-1 h-3.5 w-3.5 rounded-full border-2 border-bg-deep bg-brand-gold" />
             </View>
 
@@ -63,8 +71,8 @@ export default function LandingScreen() {
             </Text>
 
             <Text className="text-center font-body text-sm leading-relaxed text-text-secondary">
-              Organize your app idea, launch tasks, store details, marketing, and
-              next steps in one guided workspace.
+              Organize your app idea, launch tasks, store details, marketing,
+              and next steps in one guided workspace.
             </Text>
 
             <View className="mt-1 flex-row flex-wrap justify-center gap-2">

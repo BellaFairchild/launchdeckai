@@ -1,12 +1,22 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
-import { getActiveMission, recalcReadiness, requireUser } from "./helpers";
 import {
-    BLUEPRINT_SECTIONS,
-    MILESTONE_TEMPLATES,
-    planMeets,
-} from "./templates";
+    adjustFuel,
+    enrichMilestone,
+    ensureMilestoneTemplates,
+    getActiveMission,
+    recalcReadiness,
+    requireUser,
+} from "./helpers";
+import { BLUEPRINT_SECTIONS, planMeets } from "./templates";
+
+/**
+ * Foundation milestones the onboarding flow inherently completes (name,
+ * one-liner, audience). Marked done + Fuel awarded the moment the Mission is
+ * created — the "Fuel earned" reward beat from the onboarding spec.
+ */
+const ONBOARDING_COMPLETED_SLUGS = ["ms_name", "ms_oneliner", "ms_audience"];
 
 /**
  * One bundled subscription powering the whole app's data layer when signed in.
@@ -44,7 +54,7 @@ export const getLaunchData = query({
       };
     }
 
-    const [milestones, blueprints, assets, broadcasts] = await Promise.all([
+    const [milestonesRaw, blueprints, assets, broadcasts] = await Promise.all([
       ctx.db
         .query("milestones")
         .withIndex("by_missionId", (q) => q.eq("missionId", mission._id))
@@ -62,6 +72,10 @@ export const getLaunchData = query({
         .withIndex("by_missionId", (q) => q.eq("missionId", mission._id))
         .collect(),
     ]);
+
+    const milestones = await Promise.all(
+      milestonesRaw.map((m) => enrichMilestone(ctx, m)),
+    );
 
     return { user, mission, milestones, blueprints, assets, broadcasts };
   },
@@ -89,6 +103,7 @@ export const createMission = mutation({
   },
   handler: async (ctx, args) => {
     const user = await requireUser(ctx);
+    const now = Date.now();
 
     const missionId = await ctx.db.insert("missions", {
       userId: user._id,
@@ -101,19 +116,34 @@ export const createMission = mutation({
       stage: args.stage,
       status: "active",
       readinessScore: 0,
+      createdAt: now,
+      updatedAt: now,
     });
 
-    for (const t of MILESTONE_TEMPLATES) {
+    const templates = await ensureMilestoneTemplates(ctx);
+    let onboardingFuel = 0;
+    for (const template of templates) {
+      const isLocked = !planMeets(user.plan, template.requiredPlan);
+      const autoComplete =
+        !isLocked && ONBOARDING_COMPLETED_SLUGS.includes(template.slug);
       await ctx.db.insert("milestones", {
         missionId,
-        templateId: t.id,
-        title: t.title,
-        description: t.description,
-        category: t.category,
-        completed: false,
-        fuelReward: t.fuelReward,
-        requiredPlan: t.requiredPlan,
-        isLocked: !planMeets(user.plan, t.requiredPlan),
+        templateId: template._id,
+        status: autoComplete ? "completed" : "pending",
+        completedAt: autoComplete ? now : undefined,
+        isLocked,
+      });
+      if (autoComplete) onboardingFuel += template.fuelReward;
+    }
+
+    // Award the foundation Fuel in one batched adjustment (the passed user's
+    // fuelBalance is read once, so a single call avoids stale-balance overwrites).
+    if (onboardingFuel > 0) {
+      await adjustFuel(ctx, {
+        user,
+        amount: onboardingFuel,
+        reason: "milestone_completed",
+        missionId,
       });
     }
 
@@ -128,6 +158,7 @@ export const createMission = mutation({
         section,
         fields,
         completionStatus,
+        updatedAt: now,
       });
     }
 

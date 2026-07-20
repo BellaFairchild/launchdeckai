@@ -15,6 +15,7 @@ jest.mock("react-native-reanimated", () => {
       ScrollView,
       createAnimatedComponent: (c: unknown) => c,
     },
+    FadeIn: { duration: () => ({}) },
     useSharedValue: (v: number) => ({ value: v }),
     useAnimatedStyle: () => ({}),
     withTiming: (to: number) => to,
@@ -67,28 +68,35 @@ jest.mock("@/components/layout/ScreenBackground", () => {
 });
 
 jest.mock("@/lib/analytics", () => ({ track: jest.fn() }));
-jest.mock("@/lib/audio", () => ({
-  playSignature: jest.fn(),
+jest.mock("@/lib/audio", () => ({ playSignature: jest.fn() }));
+jest.mock("@/lib/haptics", () => ({
+  haptics: { success: jest.fn(), light: jest.fn() },
 }));
-jest.mock("@/lib/haptics", () => ({ haptics: { success: jest.fn() } }));
 
-jest.mock("@/lib/auth", () => ({
-  authEnabled: true,
-}));
+jest.mock("@/lib/auth", () => ({ authEnabled: true }));
 
 const mockSaveOnboardingDraft = jest.fn(async () => undefined);
-const mockGetOnboardingDraft = jest.fn(async () => null);
+const mockGetOnboardingDraft = jest.fn<Promise<unknown>, unknown[]>(
+  async () => null,
+);
 
 jest.mock("@/lib/onboardingDraft", () => ({
   getOnboardingDraft: (...args: unknown[]) => mockGetOnboardingDraft(...args),
-  saveOnboardingDraft: (...args: unknown[]) =>
-    mockSaveOnboardingDraft(...args),
+  saveOnboardingDraft: (...args: unknown[]) => mockSaveOnboardingDraft(...args),
   clearOnboardingDraft: jest.fn(async () => undefined),
+}));
+
+const mockForge = jest.fn(async () => ({
+  name: "FocusFlow",
+  oneLiner: "Mindful task tracking for builders",
+  audience: "Solo founders who tried every productivity app",
+  mock: true,
 }));
 
 jest.mock("convex/react", () => ({
   useConvexAuth: () => ({ isAuthenticated: false, isLoading: false }),
   useMutation: () => jest.fn(),
+  useAction: () => mockForge,
 }));
 
 jest.mock("expo-speech-recognition", () => ({
@@ -113,94 +121,100 @@ beforeEach(() => {
   mockSearchParams = { phase: "intent" };
   mockGetOnboardingDraft.mockResolvedValue(null);
   mockSaveOnboardingDraft.mockResolvedValue(undefined);
+  mockForge.mockResolvedValue({
+    name: "FocusFlow",
+    oneLiner: "Mindful task tracking for builders",
+    audience: "Solo founders who tried every productivity app",
+    mock: true,
+  });
 });
 
-async function advanceIntentSteps() {
-  fireEvent.changeText(screen.getByLabelText("App name"), "FocusFlow");
-  fireEvent.press(screen.getByText("Continue"));
-
-  await waitFor(() => {
-    expect(screen.getByLabelText("One-liner description")).toBeOnTheScreen();
-  });
-
-  fireEvent.changeText(
-    screen.getByLabelText("One-liner description"),
-    "Mindful tasks for builders",
-  );
-  fireEvent.press(screen.getByText("Continue"));
-
-  await waitFor(() => {
-    expect(screen.getByLabelText("Target audience")).toBeOnTheScreen();
-  });
-
-  fireEvent.changeText(
-    screen.getByLabelText("Target audience"),
-    "Solo founders",
-  );
-  fireEvent.press(screen.getByText("Continue"));
-}
-
-it("hydrates intent fields from draft on mount", async () => {
-  mockGetOnboardingDraft.mockResolvedValue({
-    appName: "DraftApp",
-    oneLiner: "Saved pitch",
-    audience: "Indie hackers",
-    step: 1,
-  });
-
+it("opens on the pitch step with Astro's coaching line", async () => {
   render(<OnboardingScreen />);
 
   await waitFor(() => {
-    expect(screen.getByDisplayValue("Saved pitch")).toBeOnTheScreen();
+    expect(screen.getByLabelText("Your pitch")).toBeOnTheScreen();
   });
-
-  expect(screen.getByText(/Intent capture · 2\/3/)).toBeOnTheScreen();
+  expect(screen.getByText(/your own words/i)).toBeOnTheScreen();
+  expect(screen.getByText("Forge My Mission Brief")).toBeOnTheScreen();
 });
 
-it("persists draft after completing audience step", async () => {
+it("forges a brief, then confirms to save-plan with the captured pitch", async () => {
   render(<OnboardingScreen />);
 
   await waitFor(() => {
-    expect(screen.getByLabelText("App name")).toBeOnTheScreen();
+    expect(screen.getByLabelText("Your pitch")).toBeOnTheScreen();
   });
 
-  await advanceIntentSteps();
+  fireEvent.changeText(
+    screen.getByLabelText("Your pitch"),
+    "A habit tracker that adapts to your real schedule.",
+  );
+  fireEvent.press(screen.getByText("Forge My Mission Brief"));
+
+  // Results cards render from the forge action.
+  await waitFor(() => {
+    expect(screen.getByDisplayValue("FocusFlow")).toBeOnTheScreen();
+  });
+  expect(mockForge).toHaveBeenCalledWith({
+    pitch: "A habit tracker that adapts to your real schedule.",
+  });
+
+  fireEvent.press(screen.getByText("This Is My App"));
 
   await waitFor(() => {
     expect(mockSaveOnboardingDraft).toHaveBeenCalledWith({
       appName: "FocusFlow",
-      oneLiner: "Mindful tasks for builders",
-      audience: "Solo founders",
+      oneLiner: "Mindful task tracking for builders",
+      audience: "Solo founders who tried every productivity app",
+      pitch: "A habit tracker that adapts to your real schedule.",
       step: 2,
     });
-  });
-});
-
-it("navigates to save-plan after step 2 when auth enabled and not authenticated", async () => {
-  render(<OnboardingScreen />);
-
-  await waitFor(() => {
-    expect(screen.getByLabelText("App name")).toBeOnTheScreen();
-  });
-
-  await advanceIntentSteps();
-
-  await waitFor(() => {
     expect(mockReplace).toHaveBeenCalledWith("/(auth)/save-plan");
   });
 });
 
-it("shows three progress segments in intent phase", async () => {
+it("supports manual entry as a fallback", async () => {
   render(<OnboardingScreen />);
 
   await waitFor(() => {
-    expect(screen.getByText("Intent capture · 1/3")).toBeOnTheScreen();
+    expect(screen.getByText("I'll fill it in myself")).toBeOnTheScreen();
   });
+  fireEvent.press(screen.getByText("I'll fill it in myself"));
+
+  fireEvent.changeText(screen.getByLabelText("App name"), "ManualApp");
+  fireEvent.changeText(screen.getByLabelText("One-liner"), "Typed by hand");
+  fireEvent.changeText(screen.getByLabelText("Audience"), "Power users");
+  fireEvent.press(screen.getByText("This Is My App"));
+
+  await waitFor(() => {
+    expect(mockSaveOnboardingDraft).toHaveBeenCalledWith(
+      expect.objectContaining({
+        appName: "ManualApp",
+        oneLiner: "Typed by hand",
+        audience: "Power users",
+        step: 2,
+      }),
+    );
+    expect(mockReplace).toHaveBeenCalledWith("/(auth)/save-plan");
+  });
+  expect(mockForge).not.toHaveBeenCalled();
 });
 
-it("shows Astro's coaching line on the first intent step", async () => {
-  render(<OnboardingScreen />);
-  await waitFor(() => {
-    expect(screen.getByText(/rename it anytime/i)).toBeOnTheScreen();
+it("hydrates into the results view when a draft already has a brief", async () => {
+  mockGetOnboardingDraft.mockResolvedValue({
+    appName: "DraftApp",
+    oneLiner: "Saved one-liner",
+    audience: "Indie hackers",
+    pitch: "Saved pitch text that is long enough",
+    step: 2,
   });
+
+  render(<OnboardingScreen />);
+
+  await waitFor(() => {
+    expect(screen.getByDisplayValue("DraftApp")).toBeOnTheScreen();
+  });
+  expect(screen.getByDisplayValue("Saved one-liner")).toBeOnTheScreen();
+  expect(screen.getByText("This Is My App")).toBeOnTheScreen();
 });

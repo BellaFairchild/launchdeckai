@@ -2,7 +2,7 @@ import { useCallback, useRef } from "react";
 import { useReducedMotion } from "react-native-reanimated";
 
 import { AstroAvatar } from "@/components/astro/AstroAvatar";
-import { COACH } from "@/constants/onboardingCoach";
+import { COACH, type CoachLine } from "@/constants/onboardingCoach";
 import { track } from "@/lib/analytics";
 import { cn } from "@/lib/cn";
 import { haptics } from "@/lib/haptics";
@@ -14,7 +14,7 @@ export type DictationTarget = {
   onChange: (next: string) => void;
 };
 
-export type VoiceField = "app_name" | "one_liner" | "audience";
+export type VoiceField = "pitch" | "app_name" | "one_liner" | "audience";
 
 type Props = {
   /** Absolute onboarding step index (0-6). */
@@ -23,6 +23,8 @@ type Props = {
   field?: VoiceField;
   /** The active text field's binding; present on text steps only. */
   dictationTarget?: DictationTarget;
+  /** Overrides COACH[step] — used by sub-phase flows like the intent pitch step. */
+  coach?: CoachLine;
   /** Future seam: a conversational handler for finalized utterances. */
   onUtterance?: (transcript: string) => void;
 };
@@ -31,9 +33,10 @@ export function AstroVoiceDock({
   step,
   field,
   dictationTarget,
+  coach: coachOverride,
   onUtterance,
 }: Props) {
-  const coach = COACH[step] ?? COACH[0];
+  const coach = coachOverride ?? COACH[step] ?? COACH[0];
   const baseRef = useRef("");
   const reducedMotion = useReducedMotion();
 

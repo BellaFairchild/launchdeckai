@@ -23,6 +23,8 @@ export type IconName =
   | "bolt"
   | "clock"
   | "download"
+  | "copy"
+  | "file"
   | "chevron-down"
   | "plus"
   | "close"
@@ -77,7 +79,14 @@ function glyph(name: IconName, c: string, sw: number): React.ReactNode {
           <Rect x={4} y={3.5} width={16} height={17} rx={2.2} {...stroke} />
           <Line x1={4.5} y1={9} x2={19.5} y2={9} {...stroke} opacity={0.5} />
           <Line x1={4.5} y1={15} x2={19.5} y2={15} {...stroke} opacity={0.5} />
-          <Line x1={9.6} y1={4.2} x2={9.6} y2={19.8} {...stroke} opacity={0.5} />
+          <Line
+            x1={9.6}
+            y1={4.2}
+            x2={9.6}
+            y2={19.8}
+            {...stroke}
+            opacity={0.5}
+          />
           <Line x1={15} y1={4.2} x2={15} y2={19.8} {...stroke} opacity={0.5} />
           <Circle cx={9.6} cy={9} r={1.5} fill={c} />
         </>
@@ -144,7 +153,27 @@ function glyph(name: IconName, c: string, sw: number): React.ReactNode {
         <>
           <Line x1={12} y1={3.5} x2={12} y2={14.5} {...stroke} />
           <Path d="M7.5 10 L12 14.5 L16.5 10" {...stroke} />
-          <Path d="M4.5 16.5 V18.5 a1.6 1.6 0 0 0 1.6 1.6 H17.9 A1.6 1.6 0 0 0 19.5 18.5 V16.5" {...stroke} />
+          <Path
+            d="M4.5 16.5 V18.5 a1.6 1.6 0 0 0 1.6 1.6 H17.9 A1.6 1.6 0 0 0 19.5 18.5 V16.5"
+            {...stroke}
+          />
+        </>
+      );
+    case "copy":
+      return (
+        <>
+          <Rect x={8} y={8} width={11} height={13} rx={2} {...stroke} />
+          <Path d="M6 16 V6.8 A1.8 1.8 0 0 1 7.8 5 H16" {...stroke} />
+        </>
+      );
+    case "file":
+      return (
+        <>
+          <Path
+            d="M8 4 H13 L17 8 V18 A1.6 1.6 0 0 1 15.4 19.6 H8.6 A1.6 1.6 0 0 1 7 18 V5.6 A1.6 1.6 0 0 1 8.6 4 Z"
+            {...stroke}
+          />
+          <Path d="M13 4 V8 H17" {...stroke} />
         </>
       );
     case "plus":
@@ -204,8 +233,14 @@ function glyph(name: IconName, c: string, sw: number): React.ReactNode {
     case "link":
       return (
         <>
-          <Path d="M10.5 13.5 a3.5 3.5 0 0 1 0 -5 L13 6 a3.5 3.5 0 0 1 5 5 L16.6 12.4" {...stroke} />
-          <Path d="M13.5 10.5 a3.5 3.5 0 0 1 0 5 L11 18 a3.5 3.5 0 0 1 -5 -5 L7.4 11.6" {...stroke} />
+          <Path
+            d="M10.5 13.5 a3.5 3.5 0 0 1 0 -5 L13 6 a3.5 3.5 0 0 1 5 5 L16.6 12.4"
+            {...stroke}
+          />
+          <Path
+            d="M13.5 10.5 a3.5 3.5 0 0 1 0 5 L11 18 a3.5 3.5 0 0 1 -5 -5 L7.4 11.6"
+            {...stroke}
+          />
         </>
       );
     case "book":

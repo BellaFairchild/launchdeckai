@@ -1,6 +1,6 @@
 import { getStorageItem, setStorageItem } from "./secureStorage";
 
-export const DRAFT_KEY = "launchdeck_onboarding_draft_v1";
+export const DRAFT_KEY = "launchdeck_onboarding_draft_v2";
 export const SKIP_WELCOME_KEY = "launchdeck_skip_welcome_back";
 export const SPOTLIGHT_KEY = "launchdeck_commander_spotlight_seen";
 
@@ -8,6 +8,8 @@ export type OnboardingDraft = {
   appName: string;
   oneLiner: string;
   audience: string;
+  /** Full founder pitch — becomes mission.appDescription (AI context source). */
+  pitch: string;
   step: number;
 };
 

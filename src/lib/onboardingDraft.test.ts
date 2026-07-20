@@ -32,6 +32,7 @@ it("saves and parses draft JSON", async () => {
     appName: "FocusFlow",
     oneLiner: "Tasks",
     audience: "Founders",
+    pitch: "A focused task app for builders",
     step: 2,
   };
   mockGet.mockResolvedValue(JSON.stringify(draft));
@@ -41,7 +42,7 @@ it("saves and parses draft JSON", async () => {
 
 it("hasIntentDraft is true when appName and oneLiner present", async () => {
   mockGet.mockResolvedValue(
-    JSON.stringify({ appName: "A", oneLiner: "B", audience: "", step: 1 }),
+    JSON.stringify({ appName: "A", oneLiner: "B", audience: "", pitch: "", step: 1 }),
   );
   expect(await hasIntentDraft()).toBe(true);
 });
@@ -56,6 +57,7 @@ it("saveOnboardingDraft persists JSON", async () => {
     appName: "A",
     oneLiner: "B",
     audience: "C",
+    pitch: "D",
     step: 1,
   };
   await saveOnboardingDraft(draft);

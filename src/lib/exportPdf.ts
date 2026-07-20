@@ -18,11 +18,12 @@ export async function exportHtmlAsPdf(
   }
 
   const { uri } = await Print.printToFileAsync({ html });
-  if (await Sharing.isAvailableAsync()) {
-    await Sharing.shareAsync(uri, {
-      mimeType: "application/pdf",
-      dialogTitle: fileName,
-      UTI: "com.adobe.pdf",
-    });
+  if (!(await Sharing.isAvailableAsync())) {
+    throw new Error("Sharing is not available on this device");
   }
+  await Sharing.shareAsync(uri, {
+    mimeType: "application/pdf",
+    dialogTitle: fileName,
+    UTI: "com.adobe.pdf",
+  });
 }

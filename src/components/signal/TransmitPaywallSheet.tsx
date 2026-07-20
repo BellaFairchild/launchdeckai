@@ -15,13 +15,14 @@ export function TransmitPaywallSheet({
   if (!visible) return null;
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onDismiss}>
-      <Pressable
-        className="flex-1 justify-end bg-black/60"
-        accessibilityLabel="Dismiss paywall"
-        accessibilityRole="button"
-        onPress={onDismiss}
-      >
-        <Pressable className="gap-3 rounded-t-3xl bg-bg-card px-6 pb-10 pt-6">
+      <View className="flex-1 justify-end">
+        <Pressable
+          className="absolute inset-0 bg-black/60"
+          accessibilityLabel="Dismiss paywall"
+          accessibilityRole="button"
+          onPress={onDismiss}
+        />
+        <View className="relative z-10 gap-3 rounded-t-3xl bg-bg-card px-6 pb-10 pt-6">
           <Text className="font-display text-2xl font-bold text-text-primary">
             Export needs Commander.
           </Text>
@@ -34,8 +35,8 @@ export function TransmitPaywallSheet({
           </Text>
           <Button label="Upgrade to Commander" variant="premium" className="mt-2" onPress={onUpgrade} />
           <Button label="Maybe later" variant="ghost" onPress={onDismiss} />
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   );
 }
