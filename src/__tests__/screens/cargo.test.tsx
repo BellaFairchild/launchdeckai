@@ -57,7 +57,7 @@ jest.mock("@/lib/cargoBundle", () => ({
   buildCargoBundle: jest.fn(() => ({ ids: [], doc: "" })),
 }));
 
-import CargoModal from "./cargo";
+import CargoModal from "@/app/(modals)/cargo";
 
 beforeEach(() => {
   jest.clearAllMocks();

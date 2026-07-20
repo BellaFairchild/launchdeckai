@@ -100,7 +100,7 @@ jest.mock("convex/react", () => ({
 
 // ── Subject under test ───────────────────────────────────────────────────────
 
-import FoundryScreen from "./foundry";
+import FoundryScreen from "@/app/(tabs)/foundry";
 import { useMissionStore } from "@/store/mission";
 import { useUIStore } from "@/store/ui";
 import { FOUNDRY_TOOLS } from "@/constants/foundryTools";

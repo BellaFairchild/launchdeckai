@@ -101,7 +101,7 @@ jest.mock("@/lib/analytics", () => ({
 
 // ── Subject under test ───────────────────────────────────────────────────────
 
-import MissionsScreen from "./missions";
+import MissionsScreen from "@/app/(tabs)/missions";
 import { useMissionStore } from "@/store/mission";
 import { useUIStore } from "@/store/ui";
 import type { Milestone, Mission, Blueprint, BlueprintSection, Asset } from "@/types";

@@ -131,7 +131,7 @@ jest.mock("expo-router", () => {
 
 // ── Subject under test ────────────────────────────────────────────────────────
 
-import BlueprintDetail from "./[section]";
+import BlueprintDetail from "@/app/blueprints/[section]";
 import { useMissionStore } from "@/store/mission";
 import type { Blueprint, BlueprintSection } from "@/types";
 import { BLUEPRINT_SECTIONS } from "@/constants/blueprintSections";

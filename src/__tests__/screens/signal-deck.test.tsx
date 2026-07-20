@@ -104,7 +104,7 @@ jest.mock("@/lib/launch", () => ({
 // ── playSignalTransmit (audio, already stubbed globally for playSignature) ────
 // jest.setup.js already stubs all @/lib/audio exports, so no extra mock needed.
 
-import SignalDeckModal from "./signal-deck";
+import SignalDeckModal from "@/app/(modals)/signal-deck";
 import type { Asset } from "@/types";
 
 // ---------------------------------------------------------------------------
