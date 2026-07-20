@@ -80,15 +80,11 @@ jest.mock("@/components/signal/SignalActions", () => {
 });
 
 // ── exportSignalPack (native file-system + JSZip, must not run in tests) ──────
-// Typed with the real signature so `mock.calls[0]` destructures to the actual
-// (assets, launchDate, appName) tuple rather than an empty one.
-const mockExportSignalPack =
-  jest.fn<Promise<string[]>, [Asset[], number | undefined, string?]>(
-    async () => [],
-  );
+const mockExportSignalPack = jest.fn<Promise<string[]>, unknown[]>(
+  async () => [],
+);
 jest.mock("@/lib/exportSignalPack", () => ({
-  exportSignalPack: (...args: [Asset[], number | undefined, string?]) =>
-    mockExportSignalPack(...args),
+  exportSignalPack: (...args: unknown[]) => mockExportSignalPack(...args),
 }));
 
 // ── analytics (fire-and-forget fetch, irrelevant to render assertions) ────────

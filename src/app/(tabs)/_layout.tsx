@@ -1,13 +1,23 @@
-import { Tabs } from "expo-router";
-import { Platform, StyleSheet } from "react-native";
+import { useConvexAuth } from "convex/react";
+import { Redirect, Tabs } from "expo-router";
+import { ActivityIndicator, Platform, StyleSheet, View } from "react-native";
 
 import { ScreenBackground } from "@/components/layout/ScreenBackground";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { TabBar } from "@/components/navigation/TabBar";
+import { authEnabled } from "@/lib/auth";
 
 const isWeb = Platform.OS === "web";
 
-export default function TabsLayout() {
+function AuthSplash() {
+  return (
+    <View style={styles.splash}>
+      <ActivityIndicator size="large" color="#4DC8C0" />
+    </View>
+  );
+}
+
+function TabsShell() {
   return (
     <ScreenBackground>
       <Tabs
@@ -32,7 +42,27 @@ export default function TabsLayout() {
   );
 }
 
+function AuthenticatedTabsLayout() {
+  const { isLoading, isAuthenticated } = useConvexAuth();
+
+  if (isLoading) return <AuthSplash />;
+  if (!isAuthenticated) return <Redirect href="/(auth)/sign-in" />;
+
+  return <TabsShell />;
+}
+
+export default function TabsLayout() {
+  if (!authEnabled) return <TabsShell />;
+  return <AuthenticatedTabsLayout />;
+}
+
 const styles = StyleSheet.create({
+  splash: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#060B14",
+  },
   tabs: { flex: 1 },
   sceneContainer: {
     flex: 1,

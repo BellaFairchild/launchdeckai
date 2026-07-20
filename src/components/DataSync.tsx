@@ -1,19 +1,27 @@
-import React from "react";
-import { useConvexAuth, useQuery, useMutation } from "convex/react";
 import { useClerk } from "@clerk/clerk-expo";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
+import React from "react";
 
-import { api } from "@cvx/_generated/api";
-import type { Id, Doc } from "@cvx/_generated/dataModel";
-import { authEnabled } from "@/lib/auth";
-import { configurePurchases } from "@/lib/purchases";
-import { setAnalyticsUser } from "@/lib/analytics";
-import { useUIStore } from "@/store/ui";
-import { useMissionStore } from "@/store/mission";
-import { useSavedResourcesStore } from "@/store/savedResources";
-import { reconcileBroadcastReminders } from "@/lib/notifications";
 import { BLUEPRINT_SECTIONS } from "@/constants/blueprintSections";
 import { SIGNAL_TEMPLATES } from "@/constants/signalTemplates";
-import type { Mission, Milestone, Blueprint, Asset, BlueprintSection, Broadcast } from "@/types";
+import { setAnalyticsUser } from "@/lib/analytics";
+import { authEnabled } from "@/lib/auth";
+import { reconcileBroadcastReminders } from "@/lib/notifications";
+import { configurePurchases } from "@/lib/purchases";
+import { useMissionStore } from "@/store/mission";
+import { useSavedResourcesStore } from "@/store/savedResources";
+import { useUIStore } from "@/store/ui";
+import type {
+    Asset,
+    Blueprint,
+    BlueprintSection,
+    Broadcast,
+    Milestone,
+    Mission,
+} from "@/types";
+import { api } from "@cvx/_generated/api";
+import type { Doc, Id } from "@cvx/_generated/dataModel";
+import type { EnrichedMilestone } from "@cvx/helpers";
 
 function mapMission(d: Doc<"missions">): Mission {
   return {
@@ -30,7 +38,7 @@ function mapMission(d: Doc<"missions">): Mission {
   };
 }
 
-function mapMilestone(d: Doc<"milestones">): Milestone {
+function mapMilestone(d: EnrichedMilestone): Milestone {
   return {
     id: d._id,
     title: d.title,
@@ -54,7 +62,7 @@ function mapAsset(d: Doc<"assets">): Asset {
     signalId: d.signalId,
     signalLabel: d.signalLabel,
     signalPhase: d.signalPhase,
-    updatedAt: d._creationTime,
+    updatedAt: d.updatedAt ?? d._creationTime,
   };
 }
 
@@ -66,7 +74,9 @@ function mapBroadcast(d: Doc<"broadcasts">): Broadcast {
   };
 }
 
-function mapBlueprints(docs: Doc<"blueprints">[]): Record<BlueprintSection, Blueprint> {
+function mapBlueprints(
+  docs: Doc<"blueprints">[],
+): Record<BlueprintSection, Blueprint> {
   const out = {} as Record<BlueprintSection, Blueprint>;
   for (const section of BLUEPRINT_SECTIONS) {
     out[section.id] = { section: section.id, fields: {}, completionStatus: 0 };
@@ -147,7 +157,15 @@ function DataSyncInner() {
         void cancelBroadcast({ signalId });
       },
     });
-  }, [isAuthenticated, completeMilestone, saveBlueprint, updateStatus, createFoundryAsset, scheduleBroadcast, cancelBroadcast]);
+  }, [
+    isAuthenticated,
+    completeMilestone,
+    saveBlueprint,
+    updateStatus,
+    createFoundryAsset,
+    scheduleBroadcast,
+    cancelBroadcast,
+  ]);
 
   // Hydrate stores from the live Convex query.
   React.useEffect(() => {

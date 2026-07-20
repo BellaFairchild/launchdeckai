@@ -1,14 +1,14 @@
 import type { ReactNode } from "react";
 import type { ViewStyle } from "react-native";
 import Svg, {
-  Circle,
-  Defs,
-  G,
-  Line,
-  LinearGradient,
-  Path,
-  Rect,
-  Stop,
+    Circle,
+    Defs,
+    G,
+    Line,
+    LinearGradient,
+    Path,
+    Rect,
+    Stop,
 } from "react-native-svg";
 
 import { GradientView } from "@/components/ui/GradientView";
@@ -43,10 +43,38 @@ type Step = {
 // Ordered Foundation → Launch. Colors progress blue → teal → gold to read as a
 // rising launch gradient; nodes climb left-to-right like an ascending arc.
 const STEPS: Step[] = [
-  { n: "01", title: "Foundation", caption: "Name, pitch & audience", color: "#3B82F6", icon: "blueprints", node: { x: 44, y: 124 } },
-  { n: "02", title: "Assets", caption: "Forge launch content", color: "#4DC8C0", icon: "box", node: { x: 120, y: 100 } },
-  { n: "03", title: "Broadcasting", caption: "Schedule your signals", color: "#10B7D6", icon: "signal", node: { x: 206, y: 70 } },
-  { n: "04", title: "Launch", caption: "Submit & lift off", color: "#F3B233", icon: "rocket", node: { x: 282, y: 38 } },
+  {
+    n: "01",
+    title: "Foundation",
+    caption: "Name, pitch & audience",
+    color: "#3B82F6",
+    icon: "blueprints",
+    node: { x: 44, y: 124 },
+  },
+  {
+    n: "02",
+    title: "Assets",
+    caption: "Forge launch content",
+    color: "#4DC8C0",
+    icon: "box",
+    node: { x: 120, y: 100 },
+  },
+  {
+    n: "03",
+    title: "Broadcasting",
+    caption: "Schedule your signals",
+    color: "#10B7D6",
+    icon: "signal",
+    node: { x: 206, y: 70 },
+  },
+  {
+    n: "04",
+    title: "Launch",
+    caption: "Submit & lift off",
+    color: "#F3B233",
+    icon: "rocket",
+    node: { x: 282, y: 38 },
+  },
 ];
 
 const GROUND_Y = 140;
@@ -85,8 +113,14 @@ function rocketBody(flame: boolean): ReactNode {
     <>
       {flame ? (
         <>
-          <Path d="M-2.6,12 C-1.6,16.4 -0.8,18.6 0,21 C0.8,18.6 1.6,16.4 2.6,12 Z" fill="#FFD65A" />
-          <Path d="M-1.3,12 C-0.7,15 0,16.8 0,18 C0,16.8 0.7,15 1.3,12 Z" fill="#FF9B42" />
+          <Path
+            d="M-2.6,12 C-1.6,16.4 -0.8,18.6 0,21 C0.8,18.6 1.6,16.4 2.6,12 Z"
+            fill="#FFD65A"
+          />
+          <Path
+            d="M-1.3,12 C-0.7,15 0,16.8 0,18 C0,16.8 0.7,15 1.3,12 Z"
+            fill="#FF9B42"
+          />
         </>
       ) : null}
       {/* fins */}
@@ -101,7 +135,14 @@ function rocketBody(flame: boolean): ReactNode {
       <Path d="M-3,10 L3,10 L2.2,12.4 L-2.2,12.4 Z" fill="#F3B233" />
       {/* window */}
       <Circle cx={0} cy={-3.6} r={2.3} fill="#0A1220" />
-      <Circle cx={0} cy={-3.6} r={2.3} fill="none" stroke="#10B7D6" strokeWidth={1.1} />
+      <Circle
+        cx={0}
+        cy={-3.6}
+        r={2.3}
+        fill="none"
+        stroke="#10B7D6"
+        strokeWidth={1.1}
+      />
     </>
   );
 }
@@ -164,11 +205,25 @@ export function LaunchFlightPath() {
 
             {/* Starfield */}
             {STARS.map((s, i) => (
-              <Circle key={i} cx={s.x} cy={s.y} r={s.r} fill="#FFFFFF" fillOpacity={s.o} />
+              <Circle
+                key={i}
+                cx={s.x}
+                cy={s.y}
+                r={s.r}
+                fill="#FFFFFF"
+                fillOpacity={s.o}
+              />
             ))}
 
             {/* Ground / pad baseline */}
-            <Line x1={14} y1={GROUND_Y} x2={306} y2={GROUND_Y} stroke="#1E2D45" strokeWidth={1} />
+            <Line
+              x1={14}
+              y1={GROUND_Y}
+              x2={306}
+              y2={GROUND_Y}
+              stroke="#1E2D45"
+              strokeWidth={1}
+            />
             <Rect x={36} y={137} width={16} height={3} rx={1} fill="#27406A" />
 
             {/* Altitude gridlines dropping from each station to the ground */}
@@ -187,7 +242,14 @@ export function LaunchFlightPath() {
             ))}
 
             {/* Trajectory — soft glow underlay + dashed gradient flight line */}
-            <Path d={FLIGHT_PATH} stroke="#10B7D6" strokeOpacity={0.16} strokeWidth={8} strokeLinecap="round" fill="none" />
+            <Path
+              d={FLIGHT_PATH}
+              stroke="#10B7D6"
+              strokeOpacity={0.16}
+              strokeWidth={8}
+              strokeLinecap="round"
+              fill="none"
+            />
             <Path
               d={FLIGHT_PATH}
               stroke="url(#flight)"
@@ -200,8 +262,21 @@ export function LaunchFlightPath() {
             {/* Station orbs */}
             {STEPS.slice(0, 3).map((s) => (
               <G key={`node-${s.n}`}>
-                <Circle cx={s.node.x} cy={s.node.y} r={11} fill={s.color} fillOpacity={0.16} />
-                <Circle cx={s.node.x} cy={s.node.y} r={6.5} fill="#0A1220" stroke={s.color} strokeWidth={2} />
+                <Circle
+                  cx={s.node.x}
+                  cy={s.node.y}
+                  r={11}
+                  fill={s.color}
+                  fillOpacity={0.16}
+                />
+                <Circle
+                  cx={s.node.x}
+                  cy={s.node.y}
+                  r={6.5}
+                  fill="#0A1220"
+                  stroke={s.color}
+                  strokeWidth={2}
+                />
                 <Circle cx={s.node.x} cy={s.node.y} r={2.6} fill={s.color} />
               </G>
             ))}
@@ -231,13 +306,7 @@ export function LaunchFlightPath() {
                   <Icon name={s.icon} size={20} color={s.color} />
                 )}
               </View>
-              <Text
-                className="font-mono text-[10px] font-bold tracking-wider"
-                style={{ color: s.color }}
-              >
-                {s.n}
-              </Text>
-              <Text className="mt-0.5 text-center font-display text-[13px] font-bold text-text-primary">
+              <Text className="text-center font-display text-[13px] font-bold text-text-primary">
                 {s.title}
               </Text>
               <Text className="mt-0.5 text-center font-body text-[11px] leading-4 text-text-tertiary">

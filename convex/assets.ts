@@ -45,6 +45,7 @@ export const createFoundryAsset = mutation({
     const mission = await getActiveMission(ctx, user._id);
     if (!mission) throw new Error("No active mission");
 
+    const now = Date.now();
     const assetId = await ctx.db.insert("assets", {
       missionId: mission._id,
       userId: user._id,
@@ -56,6 +57,8 @@ export const createFoundryAsset = mutation({
       signalId: args.signalId,
       signalLabel: args.signalLabel,
       signalPhase: args.signalPhase,
+      createdAt: now,
+      updatedAt: now,
     });
 
     await adjustFuel(ctx, {
@@ -75,6 +78,9 @@ export const updateStatus = mutation({
     const user = await requireUser(ctx);
     const asset = await ctx.db.get("assets", args.assetId);
     if (!asset || asset.userId !== user._id) throw new Error("Unauthorized");
-    await ctx.db.patch("assets", asset._id, { status: args.status });
+    await ctx.db.patch("assets", asset._id, {
+      status: args.status,
+      updatedAt: Date.now(),
+    });
   },
 });

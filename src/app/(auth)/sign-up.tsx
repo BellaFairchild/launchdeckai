@@ -5,6 +5,7 @@ import { KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AstroAvatar } from "@/components/astro/AstroAvatar";
+import { ClerkAuthGate } from "@/components/auth/ClerkAuthGate";
 import { ClerkCaptcha } from "@/components/auth/ClerkCaptcha";
 import { ScreenBackground } from "@/components/layout/ScreenBackground";
 import { Button } from "@/components/ui/Button";
@@ -12,6 +13,14 @@ import { track } from "@/lib/analytics";
 import { Pressable, Text, TextInput, View } from "@/tw";
 
 export default function SignUpScreen() {
+  return (
+    <ClerkAuthGate>
+      <SignUpContent />
+    </ClerkAuthGate>
+  );
+}
+
+function SignUpContent() {
   const router = useRouter();
   const { signUp, setActive, isLoaded } = useSignUp();
 

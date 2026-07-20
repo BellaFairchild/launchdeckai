@@ -1,0 +1,1383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LaunchDeckAI — Initialize Mission</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Arvo:ital,wght@0,400;0,700;1,400&family=Ledger&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+
+/* ─── RESET & BASE ─── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+
+:root {
+  --bg-deep:     #060B14;
+  --bg-surface:  #0A1220;
+  --bg-card:     #0E1520;
+  --bg-input:    #0B1628;
+  --border:      #1E2D45;
+  --border-med:  #2A4060;
+  --teal:        #4DC8C0;
+  --teal-light:  #7DDBD6;
+  --teal-glow:   rgba(77,200,192,0.18);
+  --blue:        #3B82F6;
+  --blue-light:  #60A5FA;
+  --success:     #4ADE80;
+  --warning:     #F4A261;
+  --error:       #FF4D6D;
+  --text-1:      #F1F5F9;
+  --text-2:      #94A3B8;
+  --text-3:      #64748B;
+  --font-h:      'Arvo', serif;
+  --font-b:      'Ledger', serif;
+  --font-m:      'DM Mono', monospace;
+}
+
+body {
+  min-height: 100%;
+  background: var(--bg-deep);
+  color: var(--text-1);
+  font-family: var(--font-b);
+  font-size: 16px;
+  line-height: 1.6;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ─── STARFIELD ─── */
+.starfield {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+}
+.star {
+  position: absolute; border-radius: 50%; background: white;
+  animation: twinkle var(--d,3s) ease-in-out infinite alternate;
+  opacity: var(--o,0.3);
+}
+@keyframes twinkle {
+  from { opacity: var(--o,0.3); }
+  to   { opacity: 0.04; }
+}
+
+/* ─── GRID ─── */
+.grid-overlay {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+  background-image:
+    linear-gradient(rgba(77,200,192,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(77,200,192,0.025) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+/* ─── SHELL ─── */
+.shell {
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── TOP BAR ─── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 32px;
+  border-bottom: 1px solid rgba(30,45,69,0.5);
+}
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: var(--font-h);
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--text-1);
+}
+.logo-icon {
+  width: 30px; height: 30px;
+  background: linear-gradient(135deg, var(--teal), var(--blue));
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.step-indicator {
+  font-family: var(--font-m);
+  font-size: 11px;
+  color: var(--text-3);
+  letter-spacing: 1px;
+}
+.skip-btn {
+  font-family: var(--font-m);
+  font-size: 12px;
+  color: var(--text-3);
+  background: none; border: none; cursor: pointer;
+  transition: color 0.2s;
+  letter-spacing: 0.5px;
+}
+.skip-btn:hover { color: var(--text-2); }
+
+/* ─── PROGRESS RAIL ─── */
+.progress-rail {
+  height: 2px;
+  background: var(--border);
+  position: relative;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--teal), var(--blue));
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 10px rgba(77,200,192,0.5);
+}
+
+/* ─── CONTENT AREA ─── */
+.content-area {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+/* ─── STEP PANEL ─── */
+.step-panel {
+  width: 100%;
+  max-width: 580px;
+  animation: stepIn 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes stepIn {
+  from { opacity: 0; transform: translateY(28px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.step-panel.exit {
+  animation: stepOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes stepOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(-20px) scale(0.97); }
+}
+
+/* ─── STEP META ─── */
+.step-phase {
+  font-family: var(--font-m);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.step-phase::before {
+  content: '';
+  display: inline-block;
+  width: 20px; height: 1px;
+  background: var(--teal);
+}
+.step-title {
+  font-family: var(--font-h);
+  font-size: clamp(28px, 5vw, 42px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -1px;
+  margin-bottom: 10px;
+  color: var(--text-1);
+}
+.step-title em {
+  font-style: italic;
+  color: var(--teal);
+}
+.step-sub {
+  font-size: 15px;
+  color: var(--text-2);
+  line-height: 1.6;
+  margin-bottom: 36px;
+  max-width: 480px;
+}
+
+/* ─── FORM ELEMENTS ─── */
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 32px;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.field label {
+  font-family: var(--font-m);
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.field input,
+.field textarea {
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  font-family: var(--font-b);
+  font-size: 15px;
+  color: var(--text-1);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  resize: none;
+  width: 100%;
+}
+.field input::placeholder,
+.field textarea::placeholder { color: var(--text-3); }
+.field input:focus,
+.field textarea:focus {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px var(--teal-glow);
+}
+.field textarea { min-height: 90px; }
+
+.char-count {
+  font-family: var(--font-m);
+  font-size: 11px;
+  color: var(--text-3);
+  text-align: right;
+  margin-top: -8px;
+}
+.char-count.warn { color: var(--warning); }
+
+/* ─── OPTION CARDS ─── */
+.option-grid {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+.option-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+.option-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.option-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s, transform 0.15s;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+.option-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--teal);
+  transform: scaleX(0);
+  transition: transform 0.25s ease;
+  transform-origin: left;
+}
+.option-card:hover {
+  border-color: var(--border-med);
+  background: #111c2e;
+  transform: translateY(-1px);
+}
+.option-card:hover::before { transform: scaleX(0.4); }
+.option-card.selected {
+  border-color: var(--teal);
+  background: rgba(77,200,192,0.06);
+  transform: translateY(-1px);
+}
+.option-card.selected::before { transform: scaleX(1); }
+
+.option-icon {
+  font-size: 24px;
+  margin-bottom: 10px;
+  display: block;
+}
+.option-label {
+  font-family: var(--font-h);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 3px;
+}
+.option-sub {
+  font-family: var(--font-m);
+  font-size: 11px;
+  color: var(--text-3);
+  line-height: 1.4;
+}
+.option-check {
+  position: absolute;
+  top: 12px; right: 12px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: var(--teal);
+  display: none;
+  align-items: center; justify-content: center;
+  font-size: 10px;
+  color: var(--bg-deep);
+  font-weight: 700;
+}
+.option-card.selected .option-check { display: flex; }
+
+/* ─── PLATFORM CARDS ─── */
+.platform-card .option-icon { font-size: 28px; }
+
+/* ─── DATE PICKER ─── */
+.date-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.date-unsure {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+  margin-bottom: 32px;
+}
+.date-unsure input[type=checkbox] { display: none; }
+.date-unsure-box {
+  width: 18px; height: 18px;
+  border: 1px solid var(--border-med);
+  border-radius: 4px;
+  flex-shrink: 0;
+  transition: background 0.2s, border-color 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px;
+}
+.date-unsure.checked .date-unsure-box {
+  background: var(--teal);
+  border-color: var(--teal);
+  color: var(--bg-deep);
+  font-weight: 700;
+}
+.date-unsure span {
+  font-size: 14px;
+  color: var(--text-2);
+  font-family: var(--font-b);
+}
+
+/* ─── STAGE SLIDER CARDS ─── */
+.stage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 32px;
+}
+.stage-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.stage-card:hover {
+  border-color: var(--border-med);
+  background: #111c2e;
+}
+.stage-card.selected {
+  border-color: var(--teal);
+  background: rgba(77,200,192,0.05);
+}
+.stage-num {
+  font-family: var(--font-m);
+  font-size: 11px;
+  color: var(--text-3);
+  width: 20px;
+  flex-shrink: 0;
+}
+.stage-card.selected .stage-num { color: var(--teal); }
+.stage-info { flex: 1; }
+.stage-name {
+  font-family: var(--font-h);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 2px;
+}
+.stage-desc {
+  font-size: 12px;
+  color: var(--text-3);
+  font-family: var(--font-m);
+}
+.stage-arrow {
+  color: var(--text-3);
+  font-size: 14px;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.stage-card:hover .stage-arrow,
+.stage-card.selected .stage-arrow {
+  opacity: 1;
+  color: var(--teal);
+  transform: translateX(2px);
+}
+
+/* ─── HELP CHIPS ─── */
+.help-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 32px;
+}
+.help-chip {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 16px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-2);
+  transition: border-color 0.2s, background 0.2s, color 0.2s;
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--font-b);
+}
+.help-chip:hover {
+  border-color: var(--border-med);
+  color: var(--text-1);
+}
+.help-chip.selected {
+  border-color: var(--teal);
+  background: rgba(77,200,192,0.07);
+  color: var(--teal);
+}
+.chip-icon { font-size: 16px; }
+
+/* ─── MISSION CARD (FINAL) ─── */
+.mission-card {
+  background: linear-gradient(135deg, rgba(77,200,192,0.08), rgba(59,130,246,0.06));
+  border: 1px solid rgba(77,200,192,0.25);
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 32px;
+  position: relative;
+  overflow: hidden;
+}
+.mission-card::before {
+  content: '';
+  position: absolute;
+  top: -60px; right: -60px;
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, rgba(77,200,192,0.15), transparent 70%);
+  pointer-events: none;
+}
+.mission-label {
+  font-family: var(--font-m);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--teal);
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 6px;
+}
+.mission-label .dot {
+  width: 6px; height: 6px;
+  background: var(--success);
+  border-radius: 50%;
+  animation: pulse-dot 2s infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.5; transform: scale(0.7); }
+}
+.mission-app-name {
+  font-family: var(--font-h);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 4px;
+  letter-spacing: -0.5px;
+}
+.mission-one-liner {
+  font-size: 14px;
+  color: var(--text-2);
+  margin-bottom: 20px;
+}
+.mission-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.mission-stat {
+  background: rgba(6,11,20,0.5);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+}
+.mission-stat-label {
+  font-family: var(--font-m);
+  font-size: 10px;
+  color: var(--text-3);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.mission-stat-value {
+  font-family: var(--font-h);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-1);
+}
+
+/* ─── TMINUS CHIP ─── */
+.tminus-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(10,18,32,0.8);
+  border: 1px solid var(--border-med);
+  border-radius: 10px;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  font-family: var(--font-m);
+  width: fit-content;
+}
+.tminus-label { font-size: 11px; color: var(--text-3); letter-spacing: 1px; }
+.tminus-val { font-size: 20px; font-weight: 300; color: var(--teal); }
+.tminus-unit { font-size: 10px; color: var(--text-3); }
+.tminus-sep { color: var(--border-med); }
+
+/* ─── READINESS RING ─── */
+.readiness-wrap {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 14px;
+}
+.ring-svg { flex-shrink: 0; }
+.ring-bg { stroke: var(--border); }
+.ring-fill {
+  stroke: var(--teal);
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 0 6px rgba(77,200,192,0.6));
+}
+.ring-text {
+  font-family: var(--font-h);
+  font-size: 16px;
+  font-weight: 700;
+  fill: var(--text-1);
+}
+.ring-sub {
+  font-family: var(--font-m);
+  font-size: 8px;
+  fill: var(--text-3);
+}
+.readiness-info { flex: 1; }
+.readiness-title {
+  font-family: var(--font-h);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-1);
+  margin-bottom: 4px;
+}
+.readiness-desc {
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+/* ─── CTA BUTTON ─── */
+.cta-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--teal) 0%, var(--blue) 100%);
+  color: var(--bg-deep);
+  border: none;
+  border-radius: 12px;
+  padding: 16px 24px;
+  font-family: var(--font-h);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  letter-spacing: -0.2px;
+  transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 0 30px rgba(77,200,192,0.25);
+  position: relative;
+  overflow: hidden;
+}
+.cta-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.cta-btn:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 0 50px rgba(77,200,192,0.4); }
+.cta-btn:hover::after { opacity: 1; }
+.cta-btn:active { transform: translateY(0); }
+.cta-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* ─── BACK BUTTON ─── */
+.back-btn {
+  background: none; border: none; cursor: pointer;
+  font-family: var(--font-m);
+  font-size: 12px;
+  color: var(--text-3);
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 32px;
+  transition: color 0.2s;
+  letter-spacing: 0.5px;
+  padding: 0;
+}
+.back-btn:hover { color: var(--text-2); }
+.back-btn.hidden { visibility: hidden; }
+
+/* ─── FUEL PREVIEW ─── */
+.fuel-preview {
+  background: rgba(244,162,97,0.06);
+  border: 1px solid rgba(244,162,97,0.2);
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+}
+.fuel-preview-num {
+  font-family: var(--font-h);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--warning);
+}
+.fuel-preview-label {
+  font-family: var(--font-m);
+  font-size: 11px;
+  color: var(--text-3);
+  line-height: 1.4;
+}
+
+/* ─── ASTRO PANEL ─── */
+.astro-float {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+.astro-bubble {
+  background: var(--bg-card);
+  border: 1px solid var(--border-med);
+  border-radius: 12px 12px 2px 12px;
+  padding: 12px 16px;
+  max-width: 220px;
+  font-size: 13px;
+  color: var(--text-2);
+  line-height: 1.5;
+  animation: bubbleIn 0.4s cubic-bezier(0.4,0,0.2,1) both;
+}
+.astro-bubble strong { color: var(--teal); font-family: var(--font-h); }
+@keyframes bubbleIn {
+  from { opacity: 0; transform: translateY(10px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.astro-orb {
+  width: 52px; height: 52px;
+  background: linear-gradient(135deg, var(--bg-card), #152030);
+  border: 1px solid var(--border-med);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  box-shadow: 0 0 20px rgba(77,200,192,0.15);
+  cursor: pointer;
+  transition: transform 0.3s, box-shadow 0.3s;
+  animation: float 4s ease-in-out infinite;
+}
+.astro-orb:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px rgba(77,200,192,0.3);
+  animation-play-state: paused;
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+/* ─── STEP DOTS ─── */
+.step-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 20px;
+}
+.step-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--border-med);
+  transition: background 0.3s, width 0.3s;
+}
+.step-dot.active {
+  background: var(--teal);
+  width: 20px;
+  border-radius: 3px;
+  box-shadow: 0 0 8px rgba(77,200,192,0.5);
+}
+.step-dot.done { background: rgba(77,200,192,0.35); }
+
+/* ─── BLASTOFF ANIMATION ─── */
+.blastoff-wrap {
+  text-align: center;
+  padding: 20px 0;
+}
+.blastoff-rocket {
+  font-size: 72px;
+  display: block;
+  margin-bottom: 8px;
+  animation: launchRocket 2s cubic-bezier(0.4, 0, 0.2, 1) 0.5s both;
+}
+@keyframes launchRocket {
+  0%   { transform: translateY(0) scale(0.8); opacity: 0; }
+  30%  { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-12px) scale(1); opacity: 1; }
+}
+.blastoff-title {
+  font-family: var(--font-h);
+  font-size: 38px;
+  font-weight: 700;
+  letter-spacing: -1.5px;
+  margin-bottom: 6px;
+  animation: fadeUp 0.6s 0.8s both;
+}
+.blastoff-sub {
+  font-size: 15px; color: var(--text-2);
+  animation: fadeUp 0.6s 1s both;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── TOAST ─── */
+.toast {
+  position: fixed;
+  bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--bg-card);
+  border: 1px solid var(--teal);
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-family: var(--font-m);
+  font-size: 12px;
+  color: var(--teal);
+  z-index: 200;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  pointer-events: none;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 600px) {
+  .topbar { padding: 16px 20px; }
+  .content-area { padding: 24px 16px; }
+  .option-grid.cols-3 { grid-template-columns: 1fr 1fr; }
+  .astro-float { display: none; }
+  .mission-stats { grid-template-columns: 1fr 1fr; }
+}
+
+</style>
+</head>
+<body>
+
+<div class="starfield" id="sf"></div>
+<div class="grid-overlay"></div>
+
+<!-- TOP BAR -->
+<div class="shell">
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-icon">🚀</div>
+      LaunchDeckAI
+    </div>
+    <div class="step-indicator" id="step-indicator">STEP 1 OF 8</div>
+    <button class="skip-btn" id="skip-btn" onclick="skipOnboarding()">SKIP →</button>
+  </div>
+
+  <!-- PROGRESS RAIL -->
+  <div class="progress-rail">
+    <div class="progress-fill" id="progress-fill" style="width: 12.5%"></div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content-area">
+    <div class="step-panel" id="step-panel">
+      <!-- injected by JS -->
+    </div>
+  </div>
+
+  <!-- STEP DOTS -->
+  <div class="step-dots" id="step-dots"></div>
+</div>
+
+<!-- ASTRO -->
+<div class="astro-float">
+  <div class="astro-bubble" id="astro-bubble">
+    <strong>Astro here.</strong> Let's get your first Mission initialized. This takes about 2 minutes.
+  </div>
+  <div class="astro-orb" onclick="toggleBubble()">🧑‍🚀</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ───
+const state = {
+  current: 0,
+  appName: '',
+  oneLiner: '',
+  appDesc: '',
+  audience: '',
+  problem: '',
+  platform: '',
+  launchDate: '',
+  launchUnsure: false,
+  stage: '',
+  helpNeeds: [],
+};
+
+// ─── ASTRO MESSAGES PER STEP ───
+const astroMessages = [
+  { title: 'Astro here.', msg: "Let's get your Mission initialized. Takes about 2 minutes." },
+  { title: 'Step 1 of 8', msg: "What's the app? Give me a name and a one-liner that nails it." },
+  { title: 'Good.', msg: "Now tell me who you built this for. Specificity is fuel." },
+  { title: 'Targeting locked.', msg: "iOS, Android, or both? This shapes your store assets." },
+  { title: 'Platform set.', msg: "A launch date activates your T-Minus countdown. Even an estimate works." },
+  { title: 'T-Minus loading.', msg: "Where are you right now? I'll calibrate your Mission phase." },
+  { title: 'Stage confirmed.', msg: "Where do you need the most firepower?" },
+  { title: '🚀 Mission ready.', msg: "Your launch deck is initialized. Let's go." },
+];
+
+// ─── STEP DEFINITIONS ───
+const steps = [
+  { id: 'welcome',   phase: 'INITIALIZATION',   render: renderWelcome },
+  { id: 'app-info',  phase: 'MISSION BRIEF',     render: renderAppInfo },
+  { id: 'audience',  phase: 'TARGET LOCK',       render: renderAudience },
+  { id: 'platform',  phase: 'PLATFORM SELECTION',render: renderPlatform },
+  { id: 'date',      phase: 'T-MINUS SETUP',     render: renderDate },
+  { id: 'stage',     phase: 'CURRENT STAGE',     render: renderStage },
+  { id: 'needs',     phase: 'MISSION PRIORITIES',render: renderNeeds },
+  { id: 'complete',  phase: 'MISSION CREATED',   render: renderComplete },
+];
+
+// ─── STARFIELD ───
+const sf = document.getElementById('sf');
+for (let i = 0; i < 110; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  const size = Math.random() * 2 + 0.5;
+  s.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${(Math.random()*4+2).toFixed(1)}s;--o:${(Math.random()*0.4+0.05).toFixed(2)};animation-delay:${(Math.random()*6).toFixed(1)}s;`;
+  sf.appendChild(s);
+}
+
+// ─── RENDER STEP ───
+function renderStep(idx, direction = 1) {
+  const panel = document.getElementById('step-panel');
+  
+  // exit old
+  panel.classList.add('exit');
+  setTimeout(() => {
+    panel.classList.remove('exit');
+    steps[idx].render(panel);
+    updateUI(idx);
+  }, direction > 0 ? 280 : 200);
+}
+
+function updateUI(idx) {
+  const total = steps.length;
+  document.getElementById('step-indicator').textContent = `STEP ${idx + 1} OF ${total}`;
+  document.getElementById('progress-fill').style.width = `${((idx + 1) / total) * 100}%`;
+  
+  // dots
+  const dotsEl = document.getElementById('step-dots');
+  dotsEl.innerHTML = steps.map((_, i) => {
+    let cls = 'step-dot';
+    if (i === idx) cls += ' active';
+    else if (i < idx) cls += ' done';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+
+  // astro
+  const msg = astroMessages[idx];
+  const bubble = document.getElementById('astro-bubble');
+  bubble.innerHTML = `<strong>${msg.title}</strong> ${msg.msg}`;
+  bubble.style.animation = 'none';
+  void bubble.offsetWidth;
+  bubble.style.animation = 'bubbleIn 0.4s cubic-bezier(0.4,0,0.2,1) both';
+
+  // skip visibility
+  document.getElementById('skip-btn').style.display = idx === steps.length - 1 ? 'none' : '';
+}
+
+// ─── STEP RENDERS ───
+
+// STEP 0: WELCOME
+function renderWelcome(el) {
+  el.innerHTML = `
+    <div class="blastoff-wrap">
+      <span class="blastoff-rocket">🚀</span>
+    </div>
+    <div class="step-phase">// INITIALIZATION</div>
+    <h1 class="step-title">Build your<br><em>launch deck.</em></h1>
+    <p class="step-sub">LaunchDeckAI turns your app idea into a calm, backwards-planned Mission — with AI-generated assets, a live T-minus countdown, and a copilot that knows your app. Let's get you initialized.</p>
+
+    <div class="fuel-preview">
+      <span>⛽</span>
+      <div class="fuel-preview-num">50</div>
+      <div class="fuel-preview-label">Free Fuel credits included with your Cadet tier.<br>Start your Mission, no credit card required.</div>
+    </div>
+
+    <button class="cta-btn" onclick="nextStep()">
+      ⚡ Initialize My Mission
+    </button>
+    <div style="text-align:center;margin-top:12px;font-family:var(--font-m);font-size:11px;color:var(--text-3);letter-spacing:0.5px">FREE TO START · 2 MINUTE SETUP · NO CREDIT CARD</div>
+  `;
+}
+
+// STEP 1: APP INFO
+function renderAppInfo(el) {
+  el.innerHTML = `
+    <button class="back-btn" onclick="prevStep()">← BACK</button>
+    <div class="step-phase">// MISSION BRIEF</div>
+    <h2 class="step-title">What are you<br><em>launching?</em></h2>
+    <p class="step-sub">Give your Mission a name and a one-liner. This is the brief that powers every AI tool in your launch.</p>
+
+    <div class="field-group">
+      <div class="field">
+        <label>App Name</label>
+        <input type="text" id="inp-appname" placeholder="e.g. TrackFlow, SoulKindred, FocusPulse" maxlength="40" oninput="syncState('appName', this.value)" value="${state.appName}">
+        <div class="char-count" id="cc-appname">${state.appName.length}/40</div>
+      </div>
+      <div class="field">
+        <label>Your One-Liner</label>
+        <input type="text" id="inp-oneliner" placeholder="e.g. The habit tracker that actually makes habits stick." maxlength="100" oninput="syncState('oneLiner', this.value)" value="${state.oneLiner}">
+        <div class="char-count" id="cc-oneliner">${state.oneLiner.length}/100</div>
+      </div>
+      <div class="field">
+        <label>Brief Description <span style="color:var(--text-3);font-size:10px">(Optional — helps the AI be more specific)</span></label>
+        <textarea id="inp-desc" placeholder="What does your app do? What's special about it?" maxlength="300" oninput="syncState('appDesc', this.value)">${state.appDesc}</textarea>
+      </div>
+    </div>
+
+    <button class="cta-btn" id="cta-1" onclick="validateStep1()" ${(!state.appName || !state.oneLiner) ? 'disabled' : ''}>
+      Set Mission Name →
+    </button>
+  `;
+
+  // live char counts + validation
+  ['appname', 'oneliner'].forEach(k => {
+    const inp = document.getElementById(`inp-${k}`);
+    const cc  = document.getElementById(`cc-${k}`);
+    inp.addEventListener('input', () => {
+      cc.textContent = `${inp.value.length}/${inp.getAttribute('maxlength')}`;
+      cc.className = inp.value.length > inp.getAttribute('maxlength') * 0.9 ? 'char-count warn' : 'char-count';
+      validateStep1check();
+    });
+  });
+}
+
+function validateStep1() {
+  if (!state.appName.trim() || !state.oneLiner.trim()) { toast('Enter your app name and one-liner to continue.'); return; }
+  nextStep();
+}
+function validateStep1check() {
+  const btn = document.getElementById('cta-1');
+  if (btn) btn.disabled = !state.appName.trim() || !state.oneLiner.trim();
+}
+
+// STEP 2: AUDIENCE
+function renderAudience(el) {
+  el.innerHTML = `
+    <button class="back-btn" onclick="prevStep()">← BACK</button>
+    <div class="step-phase">// TARGET LOCK</div>
+    <h2 class="step-title">Who is this<br><em>built for?</em></h2>
+    <p class="step-sub">The more specific you are, the smarter your AI-generated copy will be. A real person in a real situation is better than a demographic label.</p>
+
+    <div class="field-group">
+      <div class="field">
+        <label>Target Audience</label>
+        <input type="text" id="inp-audience" placeholder="e.g. Indie devs launching their first iOS app" maxlength="120" oninput="syncState('audience', this.value)" value="${state.audience}">
+      </div>
+      <div class="field">
+        <label>Main Problem You Solve</label>
+        <textarea id="inp-problem" placeholder="e.g. Most habit apps track streaks but don't actually help people build habits..." maxlength="250" oninput="syncState('problem', this.value)">${state.problem}</textarea>
+      </div>
+    </div>
+
+    <button class="cta-btn" id="cta-2" onclick="validateStep2()" ${!state.audience ? 'disabled' : ''}>
+      Lock Target →
+    </button>
+  `;
+  document.getElementById('inp-audience').addEventListener('input', () => {
+    const btn = document.getElementById('cta-2');
+    if (btn) btn.disabled = !state.audience.trim();
+  });
+}
+
+function validateStep2() {
+  if (!state.audience.trim()) { toast('Define your target audience to continue.'); return; }
+  nextStep();
+}
+
+// STEP 3: PLATFORM
+function renderPlatform(el) {
+  const opts = [
+    { val: 'ios',     icon: '🍎', label: 'iOS Only',      sub: 'App Store · Swift / RN / Flutter' },
+    { val: 'android', icon: '🤖', label: 'Android Only',  sub: 'Google Play · Kotlin / RN / Flutter' },
+    { val: 'both',    icon: '🌐', label: 'Both Platforms', sub: 'App Store + Google Play' },
+  ];
+  el.innerHTML = `
+    <button class="back-btn" onclick="prevStep()">← BACK</button>
+    <div class="step-phase">// PLATFORM SELECTION</div>
+    <h2 class="step-title">Where are you<br><em>launching?</em></h2>
+    <p class="step-sub">Your platform determines which store assets, submission checklists, and metadata the AI generates for you.</p>
+
+    <div class="option-grid cols-3" style="margin-bottom:32px">
+      ${opts.map(o => `
+        <div class="option-card platform-card ${state.platform === o.val ? 'selected' : ''}" onclick="selectPlatform('${o.val}')">
+          <div class="option-check">✓</div>
+          <span class="option-icon">${o.icon}</span>
+          <div class="option-label">${o.label}</div>
+          <div class="option-sub">${o.sub}</div>
+        </div>
+      `).join('')}
+    </div>
+
+    <button class="cta-btn" id="cta-3" onclick="nextStep()" ${!state.platform ? 'disabled' : ''}>
+      Confirm Platform →
+    </button>
+  `;
+}
+
+function selectPlatform(val) {
+  state.platform = val;
+  document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  const btn = document.getElementById('cta-3');
+  if (btn) btn.disabled = false;
+}
+
+// STEP 4: DATE
+function renderDate(el) {
+  const today = new Date();
+  const minDate = new Date(today);
+  minDate.setDate(minDate.getDate() + 1);
+  const maxDate = new Date(today);
+  maxDate.setFullYear(maxDate.getFullYear() + 2);
+  const fmt = d => d.toISOString().split('T')[0];
+
+  el.innerHTML = `
+    <button class="back-btn" onclick="prevStep()">← BACK</button>
+    <div class="step-phase">// T-MINUS SETUP</div>
+    <h2 class="step-title">When do you want<br>to <em>blastoff?</em></h2>
+    <p class="step-sub">Set a launch date to activate your T-Minus countdown and generate your backwards-planned roadmap. An estimate is fine — you can change it anytime.</p>
+
+    <div class="field-group">
+      <div class="date-row">
+        <div class="field">
+          <label>Launch Date</label>
+          <input type="date" id="inp-date" min="${fmt(minDate)}" max="${fmt(maxDate)}" value="${state.launchDate}" oninput="syncState('launchDate', this.value); updateTminusPreview()">
+        </div>
+        <div class="field">
+          <label>T-Minus Preview</label>
+          <div class="tminus-row" id="tminus-preview" style="margin:0;background:var(--bg-input);border-color:var(--border)">
+            <span class="tminus-label">T−</span>
+            <span class="tminus-val" id="tp-days" style="font-size:18px">—</span>
+            <span class="tminus-unit">DAYS</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="date-unsure ${state.launchUnsure ? 'checked' : ''}" id="date-unsure-toggle" onclick="toggleUnsure()">
+      <div class="date-unsure-box" id="unsure-box">${state.launchUnsure ? '✓' : ''}</div>
+      <span>I'm not sure yet — skip the date for now</span>
+    </div>
+
+    <button class="cta-btn" id="cta-4" onclick="validateStep4()" ${(!state.launchDate && !state.launchUnsure) ? 'disabled' : ''}>
+      ${state.launchUnsure ? 'Continue Without Date →' : 'Set T-Minus Countdown →'}
+    </button>
+  `;
+  if (state.launchDate) updateTminusPreview();
+  document.getElementById('inp-date').addEventListener('input', validateDateBtn);
+}
+
+function updateTminusPreview() {
+  const val = document.getElementById('inp-date')?.value;
+  const el  = document.getElementById('tp-days');
+  if (!el) return;
+  if (!val) { el.textContent = '—'; return; }
+  const diff = Math.ceil((new Date(val + 'T12:00:00') - Date.now()) / (1000*60*60*24));
+  el.textContent = diff > 0 ? diff : '—';
+  el.style.color = diff < 14 ? 'var(--warning)' : 'var(--teal)';
+}
+
+function toggleUnsure() {
+  state.launchUnsure = !state.launchUnsure;
+  const toggle = document.getElementById('date-unsure-toggle');
+  const box    = document.getElementById('unsure-box');
+  const cta    = document.getElementById('cta-4');
+  toggle.classList.toggle('checked', state.launchUnsure);
+  box.textContent = state.launchUnsure ? '✓' : '';
+  if (state.launchUnsure) {
+    document.getElementById('inp-date').value = '';
+    state.launchDate = '';
+  }
+  if (cta) {
+    cta.disabled = false;
+    cta.textContent = state.launchUnsure ? 'Continue Without Date →' : 'Set T-Minus Countdown →';
+  }
+}
+
+function validateDateBtn() {
+  const cta = document.getElementById('cta-4');
+  if (cta) cta.disabled = !state.launchDate && !state.launchUnsure;
+}
+
+function validateStep4() {
+  if (!state.launchDate && !state.launchUnsure) { toast('Pick a launch date or mark as TBD.'); return; }
+  nextStep();
+}
+
+// STEP 5: STAGE
+function renderStage(el) {
+  const stages = [
+    { val: 'idea',           num: '01', name: 'Idea Phase',        desc: 'Still working out what to build' },
+    { val: 'building',       num: '02', name: 'Building',          desc: 'Deep in development, not done yet' },
+    { val: 'testing',        num: '03', name: 'Beta / Testing',    desc: 'App is functional, gathering feedback' },
+    { val: 'store_prep',     num: '04', name: 'Store Prep',        desc: 'Working on screenshots, copy, listings' },
+    { val: 'ready_to_submit',num: '05', name: 'Ready to Submit',   desc: 'Everything is set — almost launch day' },
+  ];
+  el.innerHTML = `
+    <button class="back-btn" onclick="prevStep()">← BACK</button>
+    <div class="step-phase">// CURRENT STAGE</div>
+    <h2 class="step-title">Where are you<br><em>right now?</em></h2>
+    <p class="step-sub">This calibrates your Mission phase, today's task list, and which AI tools you'll need first.</p>
+
+    <div class="stage-list">
+      ${stages.map(s => `
+        <div class="stage-card ${state.stage === s.val ? 'selected' : ''}" onclick="selectStage('${s.val}')">
+          <span class="stage-num">${s.num}</span>
+          <div class="stage-info">
+            <div class="stage-name">${s.name}</div>
+            <div class="stage-desc">${s.desc}</div>
+          </div>
+          <span class="stage-arrow">→</span>
+        </div>
+      `).join('')}
+    </div>
+
+    <button class="cta-btn" id="cta-5" onclick="nextStep()" ${!state.stage ? 'disabled' : ''}>
+      Confirm Stage →
+    </button>
+  `;
+}
+
+function selectStage(val) {
+  state.stage = val;
+  document.querySelectorAll('.stage-card').forEach(c => c.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  const btn = document.getElementById('cta-5');
+  if (btn) btn.disabled = false;
+}
+
+// STEP 6: NEEDS
+function renderNeeds(el) {
+  const chips = [
+    { val: 'store_copy',  icon: '📱', label: 'App Store Copy' },
+    { val: 'screenshots', icon: '🖼️', label: 'Screenshots' },
+    { val: 'social',      icon: '📣', label: 'Social Content' },
+    { val: 'email',       icon: '📧', label: 'Email Sequence' },
+    { val: 'press',       icon: '📰', label: 'Press Kit' },
+    { val: 'roadmap',     icon: '🗺️', label: 'Launch Roadmap' },
+    { val: 'video',       icon: '🎬', label: 'Video Scripts' },
+    { val: 'all',         icon: '⚡', label: 'All of the above' },
+  ];
+  el.innerHTML = `
+    <button class="back-btn" onclick="prevStep()">← BACK</button>
+    <div class="step-phase">// MISSION PRIORITIES</div>
+    <h2 class="step-title">Where do you need<br><em>firepower?</em></h2>
+    <p class="step-sub">Pick everything that's on your launch shortlist. Your Foundry tools and today's task list will be calibrated to these priorities.</p>
+
+    <div class="help-chips">
+      ${chips.map(c => `
+        <div class="help-chip ${state.helpNeeds.includes(c.val) ? 'selected' : ''}" onclick="toggleNeed('${c.val}')">
+          <span class="chip-icon">${c.icon}</span>
+          ${c.label}
+        </div>
+      `).join('')}
+    </div>
+
+    <button class="cta-btn" id="cta-6" onclick="validateStep6()" ${state.helpNeeds.length === 0 ? 'disabled' : ''}>
+      Build My Launch Plan →
+    </button>
+  `;
+}
+
+function toggleNeed(val) {
+  if (val === 'all') {
+    state.helpNeeds = state.helpNeeds.includes('all') ? [] : ['all'];
+  } else {
+    state.helpNeeds = state.helpNeeds.filter(v => v !== 'all');
+    const i = state.helpNeeds.indexOf(val);
+    if (i > -1) state.helpNeeds.splice(i, 1);
+    else state.helpNeeds.push(val);
+  }
+  renderNeeds(document.getElementById('step-panel'));
+  // re-attach
+}
+
+function validateStep6() {
+  if (state.helpNeeds.length === 0) { toast('Select at least one area to prioritize.'); return; }
+  nextStep();
+}
+
+// STEP 7: COMPLETE
+function renderComplete(el) {
+  const platformLabels = { ios: 'iOS', android: 'Android', both: 'iOS + Android' };
+  const stageLabels = {
+    idea: 'Idea Phase', building: 'Building', testing: 'Beta Testing',
+    store_prep: 'Store Prep', ready_to_submit: 'Launch Ready',
+  };
+  const daysLeft = state.launchDate
+    ? Math.ceil((new Date(state.launchDate + 'T12:00:00') - Date.now()) / (1000*60*60*24))
+    : null;
+
+  el.innerHTML = `
+    <div class="step-phase">// MISSION CREATED</div>
+    <h2 class="step-title">Your launch deck<br>is <em>ready.</em></h2>
+    <p class="step-sub">Mission initialized. Your roadmap, today's priorities, and Foundry tools are all calibrated to <strong style="color:var(--text-1)">${state.appName || 'your app'}</strong>.</p>
+
+    <div class="mission-card">
+      <div class="mission-label"><span class="dot"></span> MISSION ACTIVE</div>
+      <div class="mission-app-name">${state.appName || 'Untitled App'}</div>
+      <div class="mission-one-liner">${state.oneLiner || 'Your one-liner goes here.'}</div>
+      <div class="mission-stats">
+        <div class="mission-stat">
+          <div class="mission-stat-label">Platform</div>
+          <div class="mission-stat-value">${platformLabels[state.platform] || '—'}</div>
+        </div>
+        <div class="mission-stat">
+          <div class="mission-stat-label">Stage</div>
+          <div class="mission-stat-value">${stageLabels[state.stage] || '—'}</div>
+        </div>
+        <div class="mission-stat">
+          <div class="mission-stat-label">T-Minus</div>
+          <div class="mission-stat-value" style="color:var(--teal)">${daysLeft ? `${daysLeft}d` : 'TBD'}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="readiness-wrap">
+      <svg class="ring-svg" width="64" height="64" viewBox="0 0 64 64">
+        <circle class="ring-bg" cx="32" cy="32" r="26" fill="none" stroke-width="5"/>
+        <circle class="ring-fill" cx="32" cy="32" r="26" fill="none" stroke-width="5"
+          stroke-dasharray="${2 * Math.PI * 26}"
+          stroke-dashoffset="${2 * Math.PI * 26 * (1 - 0.12)}"
+          id="ring-circle"/>
+        <text x="32" y="33" text-anchor="middle" class="ring-text" font-size="13" font-weight="700" fill="#F1F5F9">12%</text>
+        <text x="32" y="43" text-anchor="middle" class="ring-sub" font-size="7" fill="#64748B">READY</text>
+      </svg>
+      <div class="readiness-info">
+        <div class="readiness-title">Mission Readiness: 12%</div>
+        <div class="readiness-desc">You're in the launchpad. Complete today's Foundation tasks to build momentum and unlock your first Fuel rewards.</div>
+      </div>
+    </div>
+
+    <div style="height:12px"></div>
+
+    <button class="cta-btn" onclick="enterMissionControl()">
+      🚀 Enter Mission Control
+    </button>
+    <div style="text-align:center;margin-top:12px;font-family:var(--font-m);font-size:11px;color:var(--text-3);letter-spacing:0.5px">YOUR FIRST 3 TASKS ARE READY · 50 FUEL LOADED</div>
+  `;
+
+  // animate ring in after render
+  setTimeout(() => {
+    const circle = document.getElementById('ring-circle');
+    if (circle) {
+      const circumference = 2 * Math.PI * 26;
+      circle.style.strokeDashoffset = circumference * (1 - 0.12);
+    }
+  }, 300);
+}
+
+// ─── NAV ───
+function nextStep() {
+  if (state.current < steps.length - 1) {
+    state.current++;
+    renderStep(state.current, 1);
+  }
+}
+
+function prevStep() {
+  if (state.current > 0) {
+    state.current--;
+    renderStep(state.current, -1);
+  }
+}
+
+function syncState(key, val) {
+  state[key] = val;
+}
+
+function skipOnboarding() {
+  state.current = steps.length - 1;
+  renderStep(state.current, 1);
+}
+
+function enterMissionControl() {
+  toast('🚀 Launching Mission Control…');
+  setTimeout(() => { /* navigate to dashboard */ }, 1500);
+}
+
+// ─── ASTRO BUBBLE TOGGLE ───
+let bubbleVisible = true;
+function toggleBubble() {
+  const bubble = document.getElementById('astro-bubble');
+  bubbleVisible = !bubbleVisible;
+  bubble.style.display = bubbleVisible ? '' : 'none';
+}
+
+// ─── TOAST ───
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ─── INIT ───
+renderStep(0);
+
+// ─── T-MINUS LIVE CLOCK (for global awareness) ───
+// can be extended for launch-screen countdown
+</script>
+</body>
+</html>

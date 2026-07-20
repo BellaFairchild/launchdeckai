@@ -45,6 +45,44 @@ export function mockGenerateAsset(args: {
   return body;
 }
 
+const PITCH_STOPWORDS = new Set([
+  "a", "an", "the", "it", "its", "it's", "is", "im", "i'm", "i", "my", "we",
+  "our", "this", "that", "for", "to", "of", "and", "with", "app", "application",
+  "tool", "platform", "thing", "something", "basically", "really", "just",
+]);
+
+/** Demo-mode mission brief when ANTHROPIC_API_KEY is absent — deterministic, no AI. */
+export function mockGenerateMissionBrief(pitch: string): {
+  name: string;
+  oneLiner: string;
+  audience: string;
+} {
+  const trimmed = pitch.trim();
+  const titleCase = (w: string) =>
+    w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+
+  const salient = trimmed
+    .replace(/[^\p{L}\p{N}\s']/gu, " ")
+    .split(/\s+/)
+    .filter((w) => w.length > 1 && !PITCH_STOPWORDS.has(w.toLowerCase()));
+
+  const name =
+    salient.slice(0, 2).map(titleCase).join(" ").trim() || "Launch App";
+
+  const firstSentence = (trimmed.split(/(?<=[.!?])\s/)[0] ?? trimmed).trim();
+  const oneLiner =
+    firstSentence.length > 60
+      ? `${firstSentence.slice(0, 57).trimEnd()}…`
+      : firstSentence || "A focused app built for people who tried the rest.";
+
+  const forMatch = trimmed.match(/\bfor\s+([^.!?]{4,60})/i);
+  const audience = forMatch
+    ? `For ${forMatch[1].trim()}.`
+    : "People who've tried every alternative and want something that finally fits.";
+
+  return { name, oneLiner, audience };
+}
+
 export function mockCopilotReply(args: {
   mission: MissionContext;
   context: {

@@ -1,5 +1,5 @@
 import { useRouter, type Href } from "expo-router";
-import { Image, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { AstroAvatar } from "@/components/astro/AstroAvatar";
@@ -10,6 +10,7 @@ import { PLANS } from "@/constants/plans";
 import { cn } from "@/lib/cn";
 import { useUIStore } from "@/store/ui";
 import { Pressable, ScrollView, Text, View } from "@/tw";
+import { Image } from "@/tw/image";
 
 type Item = {
   label: string;
@@ -90,13 +91,13 @@ export function DrawerOverlay() {
               >
                 <Image
                   source={drawerIcons[item.icon]}
+                  accessibilityIgnoresInvertColors
                   style={{
                     width: DRAWER_ICON_SIZE,
                     height: DRAWER_ICON_SIZE,
                     borderRadius: 11,
+                    objectFit: "contain",
                   }}
-                  resizeMode="contain"
-                  accessibilityIgnoresInvertColors
                 />
                 <Text
                   className={cn(

@@ -23,6 +23,8 @@ export type IconName =
   | "bolt"
   | "clock"
   | "download"
+  | "copy"
+  | "file"
   | "chevron-down"
   | "plus"
   | "close"
@@ -165,6 +167,23 @@ function glyph(name: IconName, c: string, sw: number): React.ReactNode {
             d="M4.5 16.5 V18.5 a1.6 1.6 0 0 0 1.6 1.6 H17.9 A1.6 1.6 0 0 0 19.5 18.5 V16.5"
             {...stroke}
           />
+        </>
+      );
+    case "copy":
+      return (
+        <>
+          <Rect x={8} y={8} width={11} height={13} rx={2} {...stroke} />
+          <Path d="M6 16 V6.8 A1.8 1.8 0 0 1 7.8 5 H16" {...stroke} />
+        </>
+      );
+    case "file":
+      return (
+        <>
+          <Path
+            d="M8 4 H13 L17 8 V18 A1.6 1.6 0 0 1 15.4 19.6 H8.6 A1.6 1.6 0 0 1 7 18 V5.6 A1.6 1.6 0 0 1 8.6 4 Z"
+            {...stroke}
+          />
+          <Path d="M13 4 V8 H17" {...stroke} />
         </>
       );
     case "plus":

@@ -6,11 +6,20 @@ import { KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AstroAvatar } from "@/components/astro/AstroAvatar";
+import { ClerkAuthGate } from "@/components/auth/ClerkAuthGate";
 import { ScreenBackground } from "@/components/layout/ScreenBackground";
 import { Button } from "@/components/ui/Button";
 import { Pressable, Text, TextInput, View } from "@/tw";
 
 export default function SignInScreen() {
+  return (
+    <ClerkAuthGate>
+      <SignInContent />
+    </ClerkAuthGate>
+  );
+}
+
+function SignInContent() {
   const router = useRouter();
   const { signIn, setActive, isLoaded } = useSignIn();
   const { startSSOFlow } = useSSO();

@@ -10,8 +10,16 @@ export const analyticsEnabled = KEY.length > 0;
 
 /** Canonical event names (Docs/11). */
 export type AnalyticsEvent =
+  | "landing_viewed"
+  | "landing_get_started"
+  | "landing_have_account"
+  | "save_plan_viewed"
+  | "save_plan_sign_in_started"
+  | "welcome_back_viewed"
+  | "welcome_back_continue"
   | "user_signed_up"
   | "onboarding_completed"
+  | "pitch_forged"
   | "mission_created"
   | "milestone_completed"
   | "fuel_earned"
@@ -26,7 +34,9 @@ export type AnalyticsEvent =
   | "broadcast_reminder_tapped"
   | "transmit_sequence_tapped"
   | "copilot_message_sent"
-  | "plan_upgraded";
+  | "plan_upgraded"
+  | "upsell_soft_shown"
+  | "onboarding_voice_used";
 
 let distinctId = "anonymous";
 

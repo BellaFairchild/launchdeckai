@@ -93,16 +93,17 @@ export default function BlueprintsScreen() {
                     </View>
                   </View>
 
-                  {/* Corner affordance: opens the blueprint form */}
-                  <Pressable
-                    onPress={open}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Open ${section.title} blueprint`}
-                    hitSlop={8}
-                    className="absolute bottom-0 right-0 h-8 w-8 items-center justify-center rounded-full border border-border-med bg-bg-surface active:opacity-80"
+                  {/* Corner affordance — card tap target handles navigation */}
+                  <View
+                    pointerEvents="none"
+                    className="absolute bottom-0 right-0 h-8 w-8 items-center justify-center rounded-full border border-border-med bg-bg-surface"
                   >
-                    <Icon name="arrow-right" size={16} color={colors.brandTeal} />
-                  </Pressable>
+                    <Icon
+                      name="arrow-right"
+                      size={16}
+                      color={colors.brandTeal}
+                    />
+                  </View>
                 </View>
               </Card>
             );
