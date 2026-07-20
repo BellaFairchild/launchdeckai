@@ -11,6 +11,7 @@ import { playClick, playSignature } from "@/lib/audio";
 import { cn } from "@/lib/cn";
 import { haptics } from "@/lib/haptics";
 import { useMissionStore } from "@/store/mission";
+import { useUIStore } from "@/store/ui";
 import { Pressable, ScrollView, Text, View } from "@/tw";
 import type { Asset, AssetStatus } from "@/types";
 
@@ -133,6 +134,7 @@ function CargoPayloadHub({
 
 export default function CargoModal() {
   const router = useRouter();
+  const plan = useUIStore((s) => s.plan);
   const assets = useMissionStore((s) => s.assets);
   const updateAssetStatus = useMissionStore((s) => s.updateAssetStatus);
 
@@ -152,6 +154,8 @@ export default function CargoModal() {
 
         {assets.length === 0 ? (
           <EmptyState
+            astroPose="pointing"
+            plan={plan}
             title="No assets yet"
             message="Forge your first asset in the Foundry."
             ctaLabel="Open Foundry"

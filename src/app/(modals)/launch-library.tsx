@@ -9,9 +9,11 @@ import {
     RESOURCE_CATEGORIES,
 } from "@/constants/launchResources";
 import { cn } from "@/lib/cn";
+import { useUIStore } from "@/store/ui";
 import { Pressable, ScrollView, Text, TextInput, View } from "@/tw";
 
 export default function LaunchLibraryModal() {
+  const plan = useUIStore((s) => s.plan);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>("All");
 
@@ -70,7 +72,8 @@ export default function LaunchLibraryModal() {
       <ScrollView contentContainerClassName="gap-3 px-5 py-4 pb-12">
         {filtered.length === 0 ? (
           <EmptyState
-            icon="search"
+            astroPose="confused"
+            plan={plan}
             title="No resources found"
             message="Try a different search or category."
           />

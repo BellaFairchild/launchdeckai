@@ -62,7 +62,7 @@ export function AstroAvatar({
         <Image
           source={source}
           style={squareSize(resolvedSize)}
-          className="object-contain"
+          contentFit="contain"
         />
       </View>
     );
@@ -73,7 +73,8 @@ export function AstroAvatar({
       accessibilityLabel={`Astro (${plan})`}
       source={source}
       style={squareSize(resolvedSize)}
-      className={cn("object-contain", className)}
+      contentFit="contain"
+      className={className}
     />
   );
 }

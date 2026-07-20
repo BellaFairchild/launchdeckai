@@ -5,6 +5,7 @@ import { KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ScreenBackground } from "@/components/layout/ScreenBackground";
+import { AstroAvatar } from "@/components/astro/AstroAvatar";
 import { Button } from "@/components/ui/Button";
 import { track } from "@/lib/analytics";
 import { playSignature } from "@/lib/audio";
@@ -261,9 +262,10 @@ export default function OnboardingScreen() {
             )}
 
             {step === 6 && (
-              <View className="gap-2">
+              <View className="gap-3">
+                <AstroAvatar plan="cadet" variant="bust" pose="thumbsup" size={96} />
                 <Text className="font-display text-2xl font-bold text-text-primary">
-                  Ready for launch prep 🚀
+                  Ready for launch prep
                 </Text>
                 <Text className="font-body text-sm text-text-secondary">
                   {appName || "Your app"} — “{oneLiner || "your one-liner"}” for{" "}

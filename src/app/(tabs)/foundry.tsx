@@ -5,12 +5,17 @@ import { ActivityIndicator, Modal } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { TabScreen } from "@/components/layout/TabScreen";
+import { AstroAvatar } from "@/components/astro/AstroAvatar";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { FuelBadge } from "@/components/ui/FuelBadge";
-import { Icon, type IconName } from "@/components/ui/Icon";
+import { Icon } from "@/components/ui/Icon";
 import { colors } from "@/constants/colors";
+import {
+  foundryIcons,
+  type FoundryIconName,
+} from "@/constants/foundryIcons";
 import { FOUNDRY_TOOLS, type FoundryTool } from "@/constants/foundryTools";
 import { planMeets, PLANS } from "@/constants/plans";
 import { track } from "@/lib/analytics";
@@ -19,37 +24,35 @@ import { haptics } from "@/lib/haptics";
 import { useMissionStore } from "@/store/mission";
 import { useUIStore } from "@/store/ui";
 import { Pressable, ScrollView, Text, View } from "@/tw";
+import { Image } from "@/tw/image";
 import type { SignalPhase } from "@/types";
 import { api } from "@cvx/_generated/api";
 
+const TOOL_GLYPH_SIZE = 48;
+
 /**
- * Branded tool glyph tile — a large-radius glass square with a teal structural
- * tint and glow-as-elevation (never a gray drop shadow). Dimmed when locked.
+ * 3D tool glyph — self-contained art tile (assets/images/foundry/). Dimmed
+ * when the tool is plan-locked.
  */
-function ToolGlyph({ icon, locked }: { icon: IconName; locked?: boolean }) {
+function ToolGlyph({
+  icon,
+  locked,
+}: {
+  icon: FoundryIconName;
+  locked?: boolean;
+}) {
   return (
-    <View
-      className="h-12 w-12 items-center justify-center rounded-2xl"
+    <Image
+      source={foundryIcons[icon]}
       style={{
-        backgroundColor: locked
-          ? "rgba(148,163,184,0.08)"
-          : "rgba(77,200,192,0.12)",
-        borderWidth: 1,
-        borderColor: locked
-          ? "rgba(148,163,184,0.18)"
-          : "rgba(77,200,192,0.32)",
-        shadowColor: colors.brandTeal,
-        shadowOpacity: locked ? 0 : 0.4,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 0 },
+        width: TOOL_GLYPH_SIZE,
+        height: TOOL_GLYPH_SIZE,
+        borderRadius: 14,
+        opacity: locked ? 0.45 : 1,
       }}
-    >
-      <Icon
-        name={icon}
-        size={24}
-        color={locked ? colors.textTertiary : colors.brandTeal}
-      />
-    </View>
+      contentFit="cover"
+      accessibilityIgnoresInvertColors
+    />
   );
 }
 
@@ -299,6 +302,22 @@ export default function FoundryScreen() {
                     <ActivityIndicator size="small" color="#060B14" />
                   ) : (
                     <>
+                      {locked ? (
+                        <AstroAvatar
+                          plan={plan}
+                          variant="bust"
+                          pose="crossedArms"
+                          size={28}
+                        />
+                      ) : null}
+                      {!locked && !affordable ? (
+                        <AstroAvatar
+                          plan={plan}
+                          variant="bust"
+                          pose="pointing"
+                          size={28}
+                        />
+                      ) : null}
                       {locked ? (
                         <Icon
                           name="lock"

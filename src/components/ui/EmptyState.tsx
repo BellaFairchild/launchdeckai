@@ -1,11 +1,17 @@
+import { AstroAvatar } from "@/components/astro/AstroAvatar";
+import type { AstroPose } from "@/constants/astroAssets";
 import { colors } from "@/constants/colors";
+import type { Plan } from "@/constants/plans";
 import { Text, View } from "@/tw";
 import { Button } from "./Button";
 import { Icon, type IconName } from "./Icon";
 
 type Props = {
-  /** Bespoke vector glyph shown above the title (see components/ui/Icon). */
+  /** Bespoke vector glyph shown above the title when no Astro pose is set. */
   icon?: IconName;
+  /** Astro bust pose — takes precedence over the vector icon. */
+  astroPose?: AstroPose;
+  plan?: Plan;
   title: string;
   message?: string;
   ctaLabel?: string;
@@ -14,6 +20,8 @@ type Props = {
 
 export function EmptyState({
   icon = "satellite",
+  astroPose,
+  plan = "cadet",
   title,
   message,
   ctaLabel,
@@ -21,25 +29,29 @@ export function EmptyState({
 }: Props) {
   return (
     <View className="items-center justify-center gap-3 px-8 py-12">
-      <View
-        className="h-16 w-16 items-center justify-center rounded-3xl"
-        style={{
-          backgroundColor: "rgba(77,200,192,0.10)",
-          borderWidth: 1,
-          borderColor: "rgba(77,200,192,0.26)",
-          shadowColor: colors.brandTeal,
-          shadowOpacity: 0.35,
-          shadowRadius: 14,
-          shadowOffset: { width: 0, height: 0 },
-        }}
-      >
-        <Icon
-          name={icon}
-          size={30}
-          color={colors.brandTeal}
-          strokeWidth={1.8}
-        />
-      </View>
+      {astroPose ? (
+        <AstroAvatar plan={plan} variant="bust" pose={astroPose} size={96} />
+      ) : (
+        <View
+          className="h-16 w-16 items-center justify-center rounded-3xl"
+          style={{
+            backgroundColor: "rgba(77,200,192,0.10)",
+            borderWidth: 1,
+            borderColor: "rgba(77,200,192,0.26)",
+            shadowColor: colors.brandTeal,
+            shadowOpacity: 0.35,
+            shadowRadius: 14,
+            shadowOffset: { width: 0, height: 0 },
+          }}
+        >
+          <Icon
+            name={icon}
+            size={30}
+            color={colors.brandTeal}
+            strokeWidth={1.8}
+          />
+        </View>
+      )}
       <Text className="text-center font-display text-lg font-bold text-text-primary">
         {title}
       </Text>

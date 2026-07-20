@@ -118,11 +118,22 @@ export default function Gallery() {
                 <AstroAvatar key={`bust-${p}`} plan={p} variant="bust" />
               ))}
             </View>
+            <View className="mt-3 flex-row flex-wrap items-end gap-4">
+              {PLANS.map((p) => (
+                <AstroAvatar
+                  key={`full-${p}`}
+                  plan={p}
+                  variant="fullBody"
+                  size={140}
+                />
+              ))}
+            </View>
           </Section>
 
           <Section title="Empty / Error states">
             <Card>
               <EmptyState
+                astroPose="pointing"
                 title="No assets yet"
                 message="Forge your first asset in the Foundry."
                 ctaLabel="Open Foundry"

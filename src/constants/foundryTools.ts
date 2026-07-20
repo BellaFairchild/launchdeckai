@@ -1,16 +1,16 @@
-import type { IconName } from "@/components/ui/Icon";
+import type { FoundryIconName } from "@/constants/foundryIcons";
 import type { AssetCategory, AssetType, Plan } from "@/types";
 
 export interface FoundryTool {
-  id: string;
+  id: FoundryIconName;
   name: string;
   description: string;
   assetType: AssetType;
   category: AssetCategory;
   fuelCost: number;
   requiredPlan: Plan;
-  /** Bespoke vector glyph (see components/ui/Icon) — never emoji. */
-  icon: IconName;
+  /** 3D tool glyph key (see constants/foundryIcons). */
+  icon: FoundryIconName;
 }
 
 /** Foundry generation tools (Docs/06). AI runs server-side via Convex Actions (Phase 9). */
@@ -23,7 +23,7 @@ export const FOUNDRY_TOOLS: FoundryTool[] = [
     category: "app_store",
     fuelCost: 20,
     requiredPlan: "cadet",
-    icon: "store",
+    icon: "app_store_copy",
   },
   {
     id: "social_blast",
@@ -33,7 +33,7 @@ export const FOUNDRY_TOOLS: FoundryTool[] = [
     category: "social",
     fuelCost: 15,
     requiredPlan: "cadet",
-    icon: "megaphone",
+    icon: "social_blast",
   },
   {
     id: "email_sequence",
@@ -43,7 +43,7 @@ export const FOUNDRY_TOOLS: FoundryTool[] = [
     category: "pr",
     fuelCost: 20,
     requiredPlan: "cadet",
-    icon: "mail",
+    icon: "email_sequence",
   },
   {
     id: "press_kit",
@@ -53,7 +53,7 @@ export const FOUNDRY_TOOLS: FoundryTool[] = [
     category: "pr",
     fuelCost: 25,
     requiredPlan: "commander",
-    icon: "press",
+    icon: "press_kit",
   },
   {
     id: "video_script",
@@ -63,7 +63,7 @@ export const FOUNDRY_TOOLS: FoundryTool[] = [
     category: "media",
     fuelCost: 25,
     requiredPlan: "commander",
-    icon: "film",
+    icon: "video_script",
   },
   {
     id: "product_hunt_copy",
@@ -73,7 +73,7 @@ export const FOUNDRY_TOOLS: FoundryTool[] = [
     category: "social",
     fuelCost: 20,
     requiredPlan: "commander",
-    icon: "rocket",
+    icon: "product_hunt_copy",
   },
   {
     id: "signal_asset",
@@ -83,7 +83,7 @@ export const FOUNDRY_TOOLS: FoundryTool[] = [
     category: "social",
     fuelCost: 15,
     requiredPlan: "cadet",
-    icon: "signal",
+    icon: "signal_asset",
   },
 ];
 

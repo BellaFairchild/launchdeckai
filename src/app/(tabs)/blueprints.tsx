@@ -5,10 +5,14 @@ import { TabScreen } from "@/components/layout/TabScreen";
 import { Card } from "@/components/ui/Card";
 import { Icon } from "@/components/ui/Icon";
 import { ProgressRing } from "@/components/ui/ProgressRing";
-import { colors } from "@/constants/colors";
+import { blueprintIcons } from "@/constants/blueprintIcons";
 import { BLUEPRINT_SECTIONS } from "@/constants/blueprintSections";
+import { colors } from "@/constants/colors";
 import { useMissionStore } from "@/store/mission";
 import { Pressable, ScrollView, Text, View } from "@/tw";
+import { Image } from "@/tw/image";
+
+const SECTION_ICON_SIZE = 48;
 
 export default function BlueprintsScreen() {
   const router = useRouter();
@@ -42,17 +46,29 @@ export default function BlueprintsScreen() {
                     />
                   </View>
 
-                  {/* Text column, kept clear of the corner ring */}
-                  <View className="pr-12">
-                    <Text className="font-display text-base font-bold text-text-primary">
-                      {section.title}
-                    </Text>
-                    <Text className="mt-0.5 font-body text-sm text-text-secondary">
-                      {section.description}
-                    </Text>
-                    <Text className="mt-1 font-mono text-[11px] uppercase tracking-wider text-text-tertiary">
-                      {filled}/{section.fields.length} fields · {completion}%
-                    </Text>
+                  {/* Icon + text column, kept clear of the corner ring */}
+                  <View className="flex-row items-start gap-3 pr-12">
+                    <Image
+                      source={blueprintIcons[section.id]}
+                      style={{
+                        width: SECTION_ICON_SIZE,
+                        height: SECTION_ICON_SIZE,
+                        borderRadius: 14,
+                      }}
+                      contentFit="cover"
+                      accessibilityIgnoresInvertColors
+                    />
+                    <View className="flex-1">
+                      <Text className="font-display text-base font-bold text-text-primary">
+                        {section.title}
+                      </Text>
+                      <Text className="mt-0.5 font-body text-sm text-text-secondary">
+                        {section.description}
+                      </Text>
+                      <Text className="mt-1 font-mono text-[11px] uppercase tracking-wider text-text-tertiary">
+                        {filled}/{section.fields.length} fields · {completion}%
+                      </Text>
+                    </View>
                   </View>
 
                   {/* Corner affordance: opens the blueprint form */}

@@ -6,6 +6,7 @@ import { SignalCalendar } from "@/components/signal/SignalCalendar";
 import { signalStatus } from "@/components/signal/status";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { Segmented } from "@/components/ui/Segmented";
 import { SignalBars, type SignalStatus } from "@/components/ui/SignalBars";
 import { planMeets } from "@/constants/plans";
@@ -162,6 +163,17 @@ export default function SignalDeckModal() {
           onChange={setView}
           className="self-center"
         />
+
+        {readyCount === 0 ? (
+          <EmptyState
+            astroPose="pointing"
+            plan={plan}
+            title="No signals flight-ready yet"
+            message="Forge the assets your Signal Deck needs in the Foundry."
+            ctaLabel="Open Foundry"
+            onCtaPress={() => router.push("/(tabs)/foundry")}
+          />
+        ) : null}
 
         {view === "calendar" ? (
           <SignalCalendar

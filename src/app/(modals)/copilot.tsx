@@ -150,7 +150,12 @@ export default function CopilotModal() {
       >
         {/* Astro header */}
         <View className="flex-row items-center gap-3 border-b border-border-default px-5 py-3">
-          <AstroAvatar plan={plan} variant="orb" size={52} />
+          <AstroAvatar
+            plan={plan}
+            variant="orb"
+            pose={busy ? "thinking" : "avatar"}
+            size={52}
+          />
           <View className="flex-1">
             <Text className="font-display text-lg font-bold text-text-primary">
               Astro
@@ -216,11 +221,16 @@ export default function CopilotModal() {
           ))}
 
           {busy ? (
-            <View className="self-start">
+            <View className="self-start max-w-[85%]">
               <Card variant="glass">
-                <View className="flex-row items-center gap-2">
-                  <ActivityIndicator size="small" color="#4DC8C0" />
-                  <Text className="font-body text-sm text-text-tertiary">
+                <View className="flex-row items-center gap-3">
+                  <AstroAvatar
+                    plan={plan}
+                    variant="bust"
+                    pose="thinking"
+                    size={56}
+                  />
+                  <Text className="flex-1 font-body text-sm text-text-tertiary">
                     Astro is thinking…
                   </Text>
                 </View>

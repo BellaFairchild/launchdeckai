@@ -102,14 +102,24 @@ export default function RefuelModal() {
   return (
     <View className="flex-1 bg-bg-deep">
       <ScrollView contentContainerClassName="gap-4 px-5 py-4 pb-12">
-        <View>
-          <Text className="font-display text-2xl font-bold text-text-primary">
-            Refuel Station
-          </Text>
-          <Text className="font-body text-sm text-text-secondary">
-            Upgrade your command tier. Downgrades lock features — they never
-            delete your data.
-          </Text>
+        <View className="flex-row items-start gap-3">
+          <View className="flex-1">
+            <Text className="font-display text-2xl font-bold text-text-primary">
+              Refuel Station
+            </Text>
+            <Text className="font-body text-sm text-text-secondary">
+              Upgrade your command tier. Downgrades lock features — they never
+              delete your data.
+            </Text>
+          </View>
+          {nextPlan ? (
+            <AstroAvatar
+              plan={plan}
+              variant="bust"
+              pose="pointing"
+              size={72}
+            />
+          ) : null}
         </View>
 
         {/* Fuel hero */}

@@ -2,9 +2,11 @@ import { Tabs, useRouter } from "expo-router";
 import { type ComponentProps } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { AstroAvatar } from "@/components/astro/AstroAvatar";
 import { GradientView } from "@/components/ui/GradientView";
 import { colors } from "@/constants/colors";
 import { navIconSource, type NavIconName } from "@/constants/navIcons";
+import { useUIStore } from "@/store/ui";
 import { playNavigate } from "@/lib/audio";
 import { cn } from "@/lib/cn";
 import { haptics } from "@/lib/haptics";
@@ -136,9 +138,12 @@ function TabButton({
  * Custom bottom tab bar (Docs/04): Deck · Missions · [Astro Copilot Orb] ·
  * Blueprints · Foundry. Center orb opens Copilot modal.
  */
+const COPILOT_ORB_SIZE = 52;
+
 export function TabBar({ state, navigation }: TabBarProps) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const plan = useUIStore((s) => s.plan);
 
   const routes = state.routes;
   const half = Math.ceil(routes.length / 2);
@@ -205,7 +210,7 @@ export function TabBar({ state, navigation }: TabBarProps) {
             elevation: 10,
           }}
         >
-          <NavTabIcon name="astro" focused />
+          <AstroAvatar plan={plan} variant="orb" size={COPILOT_ORB_SIZE} />
         </Pressable>
       </View>
 
