@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { Alert } from "react-native";
 
 import { SignalActions } from "@/components/signal/SignalActions";
 import { SignalCalendar } from "@/components/signal/SignalCalendar";
@@ -16,7 +17,9 @@ import {
     TOTAL_SIGNALS,
 } from "@/constants/signalTemplates";
 import { track } from "@/lib/analytics";
-import { playSignature } from "@/lib/audio";
+import { playSignalTransmit, playSignature } from "@/lib/audio";
+import { exportSignalPack } from "@/lib/exportSignalPack";
+import { TransmitPaywallSheet } from "@/components/signal/TransmitPaywallSheet";
 import { haptics } from "@/lib/haptics";
 import { formatLaunchDate, tMinus } from "@/lib/launch";
 import { useMissionStore } from "@/store/mission";
@@ -75,15 +78,23 @@ function SignalRow({
   );
 }
 
+/** Launch chime fires once per app session, on first Signal Deck entry. */
+let launchChimePlayed = false;
+
 export default function SignalDeckModal() {
   const router = useRouter();
-  const { mission, assets } = useMissionStore();
+  const { mission, assets, updateAssetStatus } = useMissionStore();
   const plan = useUIStore((s) => s.plan);
   const [exported, setExported] = useState(false);
+  const [paywall, setPaywall] = useState(false);
   const [view, setView] = useState<DeckView>("list");
 
   useEffect(() => {
     track("signal_deck_opened");
+    if (!launchChimePlayed) {
+      launchChimePlayed = true;
+      playSignature("launch_chime");
+    }
   }, []);
 
   const t = tMinus(mission.launchDate);
@@ -93,15 +104,26 @@ export default function SignalDeckModal() {
 
   const canExport = planMeets(plan, "commander");
 
+  const runExport = async () => {
+    try {
+      const ids = await exportSignalPack(assets, mission.launchDate, mission.appName);
+      ids.forEach((id) => updateAssetStatus(id, "exported"));
+      setExported(true);
+      haptics.success();
+      playSignalTransmit();
+    } catch (e) {
+      haptics.warning();
+      Alert.alert("Export failed", "We couldn't package your signal pack. Please try again.");
+    }
+  };
+
   const onTransmit = () => {
     track("transmit_sequence_tapped", { canExport });
     if (!canExport) {
-      router.push("/(modals)/refuel");
+      setPaywall(true);
       return;
     }
-    setExported(true);
-    haptics.success();
-    playSignature("signal_ready");
+    void runExport();
   };
 
   const onForge = (signal: SignalTemplate) => {
@@ -142,8 +164,7 @@ export default function SignalDeckModal() {
           />
           {exported ? (
             <Text className="mt-2 font-body text-sm text-status-success">
-              ✓ signal-pack.zip exported (mock) — schedule, JSON, and
-              flight-ready content.
+              ✓ signal-pack.zip exported — schedule, JSON, and flight-ready content.
             </Text>
           ) : null}
           {!canExport ? (
@@ -216,6 +237,14 @@ export default function SignalDeckModal() {
           })
         )}
       </ScrollView>
+      <TransmitPaywallSheet
+        visible={paywall}
+        onUpgrade={() => {
+          setPaywall(false);
+          router.push("/(modals)/refuel");
+        }}
+        onDismiss={() => setPaywall(false)}
+      />
     </View>
   );
 }

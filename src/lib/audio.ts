@@ -28,6 +28,8 @@ import {
     webPlayLocked,
     webPlayNavigate,
     webPlayPopup,
+    webPlaySignalReceive,
+    webPlaySignalTransmit,
     webPlaySignature,
     webPlaySuccess,
     webPlayToggle,
@@ -147,6 +149,20 @@ export function playCountdownTick() {
   if (!soundOn()) return;
   if (isWeb()) webPlayCountdownTick();
   else playUi("ui_countdown_tick");
+}
+
+export function playSignalTransmit() {
+  notifyUserInteraction();
+  if (!soundOn()) return;
+  if (isWeb()) webPlaySignalTransmit();
+  else playUi("signal_transmit");
+}
+
+export function playSignalReceive() {
+  notifyUserInteraction();
+  if (!soundOn()) return;
+  if (isWeb()) webPlaySignalReceive();
+  else playUi("signal_receive");
 }
 
 export function playSignature(id: SignatureId) {

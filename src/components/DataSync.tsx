@@ -9,6 +9,7 @@ import { configurePurchases } from "@/lib/purchases";
 import { setAnalyticsUser } from "@/lib/analytics";
 import { useUIStore } from "@/store/ui";
 import { useMissionStore } from "@/store/mission";
+import { useSavedResourcesStore } from "@/store/savedResources";
 import { reconcileBroadcastReminders } from "@/lib/notifications";
 import { BLUEPRINT_SECTIONS } from "@/constants/blueprintSections";
 import { SIGNAL_TEMPLATES } from "@/constants/signalTemplates";
@@ -93,6 +94,8 @@ function DataSyncInner() {
   const scheduleBroadcast = useMutation(api.broadcasts.schedule);
   const cancelBroadcast = useMutation(api.broadcasts.cancel);
   const setPlan = useMutation(api.users.setPlan);
+  const savedIds = useQuery(api.resources.listSaved);
+  const toggleSavedResource = useMutation(api.resources.toggleSaved);
 
   // Expose Clerk sign-out to the UI store (used by the drawer + settings).
   React.useEffect(() => {
@@ -179,6 +182,23 @@ function DataSyncInner() {
       );
     }
   }, [isAuthenticated, data, setPlan]);
+
+  // Hydrate saved resources from Convex (works in demo mode — listSaved returns []).
+  React.useEffect(() => {
+    if (savedIds) useSavedResourcesStore.getState().hydrate(savedIds);
+  }, [savedIds]);
+
+  // Wire / clear the Convex toggle into the saved resources store.
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      useSavedResourcesStore.getState().setConvexToggle(null);
+      return;
+    }
+    useSavedResourcesStore.getState().setConvexToggle((id) => {
+      void toggleSavedResource({ resourceId: id });
+    });
+    return () => useSavedResourcesStore.getState().setConvexToggle(null);
+  }, [isAuthenticated, toggleSavedResource]);
 
   return null;
 }

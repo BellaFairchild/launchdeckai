@@ -133,10 +133,10 @@ export function DeckHeroCard({ mission }: Props) {
             <Text
               numberOfLines={1}
               adjustsFontSizeToFit
-              className="text-center font-display font-black leading-none text-brand-flame"
+              className="text-center font-display font-black leading-none text-rocket-teal"
               style={{
                 fontSize: 72,
-                textShadowColor: "rgba(255, 214, 90, 0.45)",
+                textShadowColor: "rgba(16, 183, 214, 0.45)",
                 textShadowOffset: { width: 0, height: 2 },
                 textShadowRadius: 12,
               }}

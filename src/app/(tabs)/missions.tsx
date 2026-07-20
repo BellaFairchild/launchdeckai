@@ -1,13 +1,15 @@
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Alert, Platform, ScrollView, type ViewStyle } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { TabScreen } from "@/components/layout/TabScreen";
+import { LaunchFlightPath } from "@/components/mission/LaunchFlightPath";
 import { MissionHeroCard } from "@/components/mission/MissionHeroCard";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { FuelBadge } from "@/components/ui/FuelBadge";
+import { SuccessBurst } from "@/components/ui/SuccessBurst";
 import { colors } from "@/constants/colors";
 import { MILESTONE_CATEGORIES } from "@/constants/milestoneTemplates";
 import { planMeets, PLANS } from "@/constants/plans";
@@ -30,23 +32,38 @@ const HIGHLIGHT_RING: ViewStyle = {
   elevation: 10,
 };
 
+/** Brand-gold outer glow shown when a milestone is tapped done. */
+const COMPLETED_GLOW: ViewStyle = {
+  shadowColor: colors.brandGold,
+  shadowOpacity: 0.35,
+  shadowRadius: 18,
+  shadowOffset: { width: 0, height: 0 },
+  elevation: 10,
+};
+
 function MilestoneRow({
   milestone,
   locked,
   highlighted,
+  justCompleted,
   onComplete,
   onUnlock,
 }: {
   milestone: Milestone;
   locked: boolean;
   highlighted: boolean;
+  justCompleted: boolean;
   onComplete: () => void;
   onUnlock: () => void;
 }) {
   const { completed } = milestone;
   return (
     <View style={highlighted ? HIGHLIGHT_RING : undefined}>
-      <Card variant={completed ? "success" : locked ? "glass" : "elevated"}>
+      <Card
+        variant={completed ? "success" : locked ? "glass" : "elevated"}
+        style={completed ? COMPLETED_GLOW : undefined}
+      >
+        <SuccessBurst active={justCompleted} />
         <View className="flex-row items-start gap-3">
           <Pressable
             onPress={locked ? onUnlock : completed ? undefined : onComplete}
@@ -113,7 +130,28 @@ export default function MissionsScreen() {
   const scrollRef = useRef<ScrollView>(null);
   const catY = useRef<Record<string, number>>({});
   const highlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const burstTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [highlightId, setHighlightId] = useState<string | null>(null);
+  const [justCompletedId, setJustCompletedId] = useState<string | null>(null);
+
+  const handleComplete = (id: string, category: string, fuelReward: number) => {
+    completeMilestone(id);
+    haptics.success();
+    playSignature("milestone");
+    track("milestone_completed", { category });
+    track("fuel_earned", { amount: fuelReward, reason: "milestone" });
+    setJustCompletedId(id);
+    if (burstTimer.current) clearTimeout(burstTimer.current);
+    burstTimer.current = setTimeout(() => setJustCompletedId(null), 900);
+  };
+
+  useEffect(
+    () => () => {
+      if (highlightTimer.current) clearTimeout(highlightTimer.current);
+      if (burstTimer.current) clearTimeout(burstTimer.current);
+    },
+    [],
+  );
 
   const completedCount = milestones.filter((m) => m.completed).length;
   const nextMilestone = milestones.find(
@@ -176,6 +214,8 @@ export default function MissionsScreen() {
             onNewMission={onNewMission}
           />
 
+          <LaunchFlightPath />
+
           {MILESTONE_CATEGORIES.map((cat) => {
             const group = milestones.filter((m) => m.category === cat.id);
             if (group.length === 0) return null;
@@ -198,16 +238,8 @@ export default function MissionsScreen() {
                       milestone={m}
                       locked={locked}
                       highlighted={highlightId === m.id}
-                      onComplete={() => {
-                        completeMilestone(m.id);
-                        haptics.success();
-                        playSignature("milestone");
-                        track("milestone_completed", { category: m.category });
-                        track("fuel_earned", {
-                          amount: m.fuelReward,
-                          reason: "milestone",
-                        });
-                      }}
+                      justCompleted={justCompletedId === m.id}
+                      onComplete={() => handleComplete(m.id, m.category, m.fuelReward)}
                       onUnlock={() => router.push("/(modals)/refuel")}
                     />
                   );

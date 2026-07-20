@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { PLANS, planMeets } from "@/constants/plans";
 import { track } from "@/lib/analytics";
+import { playSignalReceive } from "@/lib/audio";
 import { cn } from "@/lib/cn";
 import { formatLaunchDate, readinessLabel, tMinus } from "@/lib/launch";
 import { useMissionStore } from "@/store/mission";
@@ -137,6 +138,7 @@ export default function CopilotModal() {
       ...prev,
       { id: prev.length, role: "assistant", text: reply },
     ]);
+    playSignalReceive();
     setBusy(false);
   };
 

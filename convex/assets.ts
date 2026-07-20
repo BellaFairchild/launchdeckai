@@ -1,7 +1,7 @@
-import { mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { mutation } from "./_generated/server";
 
-import { requireUser, adjustFuel } from "./helpers";
+import { adjustFuel, getActiveMission, requireUser } from "./helpers";
 import { FOUNDRY_TOOLS, planMeets } from "./templates";
 
 const assetStatus = v.union(
@@ -38,14 +38,11 @@ export const createFoundryAsset = mutation({
     const user = await requireUser(ctx);
     const econ = FOUNDRY_TOOLS[args.tool];
     if (!econ) throw new Error("Unknown Foundry tool");
-    if (!planMeets(user.plan, econ.requiredPlan)) throw new Error("Plan required");
+    if (!planMeets(user.plan, econ.requiredPlan))
+      throw new Error("Plan required");
     if (user.fuelBalance < econ.fuelCost) throw new Error("Insufficient Fuel");
 
-    const mission = await ctx.db
-      .query("missions")
-      .withIndex("by_userId", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("status"), "active"))
-      .first();
+    const mission = await getActiveMission(ctx, user._id);
     if (!mission) throw new Error("No active mission");
 
     const assetId = await ctx.db.insert("assets", {
@@ -76,8 +73,8 @@ export const updateStatus = mutation({
   args: { assetId: v.id("assets"), status: assetStatus },
   handler: async (ctx, args) => {
     const user = await requireUser(ctx);
-    const asset = await ctx.db.get(args.assetId);
+    const asset = await ctx.db.get("assets", args.assetId);
     if (!asset || asset.userId !== user._id) throw new Error("Unauthorized");
-    await ctx.db.patch(asset._id, { status: args.status });
+    await ctx.db.patch("assets", asset._id, { status: args.status });
   },
 });

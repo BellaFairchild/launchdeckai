@@ -17,6 +17,7 @@ import type * as helpers from "../helpers.js";
 import type * as http from "../http.js";
 import type * as milestones from "../milestones.js";
 import type * as missions from "../missions.js";
+import type * as resources from "../resources.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as templates from "../templates.js";
 import type * as users from "../users.js";
@@ -38,6 +39,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   milestones: typeof milestones;
   missions: typeof missions;
+  resources: typeof resources;
   subscriptions: typeof subscriptions;
   templates: typeof templates;
   users: typeof users;

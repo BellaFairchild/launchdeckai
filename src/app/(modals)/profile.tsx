@@ -3,12 +3,16 @@ import { AstroAvatar } from "@/components/astro/AstroAvatar";
 import { Badge } from "@/components/ui/Badge";
 import { Card } from "@/components/ui/Card";
 import { FuelBadge } from "@/components/ui/FuelBadge";
-import { Icon, type IconName } from "@/components/ui/Icon";
+import { Icon } from "@/components/ui/Icon";
 import { colors } from "@/constants/colors";
 import { PLANS } from "@/constants/plans";
 import { useMissionStore } from "@/store/mission";
 import { useUIStore } from "@/store/ui";
 import { ScrollView, Text, View } from "@/tw";
+import { cn } from "@/lib/cn";
+import { deriveRibbons } from "@/lib/ribbons";
+import { signalStatus } from "@/components/signal/status";
+import { SIGNAL_TEMPLATES } from "@/constants/signalTemplates";
 
 function Stat({ value, label }: { value: string; label: string }) {
   return (
@@ -23,18 +27,19 @@ function Stat({ value, label }: { value: string; label: string }) {
   );
 }
 
-const RIBBONS: { icon: IconName; label: string }[] = [
-  { icon: "rocket", label: "First Launch" },
-  { icon: "hammer", label: "Forge Master" },
-  { icon: "signal", label: "Comms Online" },
-];
-
 export default function ProfileModal() {
   const { plan, fuel, streak } = useUIStore();
-  const { mission, milestones } = useMissionStore();
+  const { mission, milestones, assets } = useMissionStore();
 
   const cleared = milestones.filter((m) => m.completed).length;
   const level = Math.max(1, Math.floor(cleared / 2) + 1);
+
+  const ribbons = deriveRibbons({
+    completedMilestones: cleared,
+    forgedAssets: assets.length,
+    signalsReady: SIGNAL_TEMPLATES.filter((s) => signalStatus(s.id, assets) === "flight_ready").length,
+    streak,
+  });
 
   return (
     <View className="flex-1 bg-bg-deep">
@@ -73,18 +78,30 @@ export default function ProfileModal() {
             Service Ribbons
           </Text>
           <View className="mt-3 flex-row flex-wrap gap-3">
-            {RIBBONS.map((r) => (
-              <View key={r.label} className="items-center gap-1">
+            {ribbons.map((r) => (
+              <View
+                key={r.id}
+                className={cn("items-center gap-1", !r.earned && "opacity-40")}
+                accessibilityLabel={`${r.label} ribbon, ${r.earned ? "earned" : "locked"}`}
+              >
                 <View
                   className="h-12 w-12 items-center justify-center rounded-2xl border border-border-med bg-bg-surface"
-                  style={{
-                    shadowColor: colors.brandGold,
-                    shadowOpacity: 0.3,
-                    shadowRadius: 9,
-                    shadowOffset: { width: 0, height: 0 },
-                  }}
+                  style={
+                    r.earned
+                      ? {
+                          shadowColor: colors.brandGold,
+                          shadowOpacity: 0.3,
+                          shadowRadius: 9,
+                          shadowOffset: { width: 0, height: 0 },
+                        }
+                      : undefined
+                  }
                 >
-                  <Icon name={r.icon} size={22} color={colors.brandGold} />
+                  <Icon
+                    name={r.earned ? r.icon : "lock"}
+                    size={22}
+                    color={r.earned ? colors.brandGold : colors.textTertiary}
+                  />
                 </View>
                 <Text className="font-mono text-[10px] uppercase tracking-wider text-text-tertiary">
                   {r.label}

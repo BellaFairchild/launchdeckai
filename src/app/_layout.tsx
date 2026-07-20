@@ -1,7 +1,11 @@
 import "@/global.css";
 
 import { useEffect } from "react";
+import { Arvo_400Regular } from "@expo-google-fonts/arvo";
+import { Ledger_400Regular } from "@expo-google-fonts/ledger";
+import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -16,11 +20,27 @@ import { registerBroadcastResponseListener } from "@/lib/notifications";
 
 const DEEP = "#060B14";
 
+// Keep the splash screen up until the brand fonts are ready, so text never
+// flashes in a system fallback first. Registered family names must match the
+// --font-display / --font-body tokens in global.css.
+SplashScreen.preventAutoHideAsync();
+
 export default function RootLayout() {
+  const [fontsLoaded] = useFonts({
+    Arvo: Arvo_400Regular,
+    Ledger: Ledger_400Regular,
+  });
+
   useEffect(() => {
     const sub = registerBroadcastResponseListener();
     return () => sub.remove();
   }, []);
+
+  useEffect(() => {
+    if (fontsLoaded) SplashScreen.hideAsync();
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: DEEP }}>

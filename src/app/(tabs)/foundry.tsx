@@ -1,60 +1,25 @@
 import { useAction } from "convex/react";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
-import { ActivityIndicator, Modal } from "react-native";
+import { useRef, useState } from "react";
+import { Modal, type ScrollView as RNScrollView } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { TabScreen } from "@/components/layout/TabScreen";
-import { AstroAvatar } from "@/components/astro/AstroAvatar";
-import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
-import { FuelBadge } from "@/components/ui/FuelBadge";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { FoundryToolCard } from "@/components/ui/FoundryToolCard";
 import { Icon } from "@/components/ui/Icon";
-import { colors } from "@/constants/colors";
-import {
-  foundryIcons,
-  type FoundryIconName,
-} from "@/constants/foundryIcons";
 import { FOUNDRY_TOOLS, type FoundryTool } from "@/constants/foundryTools";
-import { planMeets, PLANS } from "@/constants/plans";
+import { planMeets } from "@/constants/plans";
 import { track } from "@/lib/analytics";
 import { playSignature } from "@/lib/audio";
 import { haptics } from "@/lib/haptics";
 import { useMissionStore } from "@/store/mission";
 import { useUIStore } from "@/store/ui";
 import { Pressable, ScrollView, Text, View } from "@/tw";
-import { Image } from "@/tw/image";
 import type { SignalPhase } from "@/types";
 import { api } from "@cvx/_generated/api";
-
-const TOOL_GLYPH_SIZE = 48;
-
-/**
- * 3D tool glyph — self-contained art tile (assets/images/foundry/). Dimmed
- * when the tool is plan-locked.
- */
-function ToolGlyph({
-  icon,
-  locked,
-}: {
-  icon: FoundryIconName;
-  locked?: boolean;
-}) {
-  return (
-    <Image
-      source={foundryIcons[icon]}
-      style={{
-        width: TOOL_GLYPH_SIZE,
-        height: TOOL_GLYPH_SIZE,
-        borderRadius: 14,
-        opacity: locked ? 0.45 : 1,
-      }}
-      contentFit="cover"
-      accessibilityIgnoresInvertColors
-    />
-  );
-}
 
 export default function FoundryScreen() {
   const router = useRouter();
@@ -69,7 +34,12 @@ export default function FoundryScreen() {
   const addAsset = useMissionStore((s) => s.addAsset);
   const convex = useMissionStore((s) => s.convex);
   const generateAsset = useAction(api.ai.generateAsset);
+  // The forged-draft card renders at the top of the list, but the user may have
+  // scrolled down to tap a tool — scroll back up so the result is visible
+  // instead of appearing off-screen above (looks like "nothing happened").
+  const scrollRef = useRef<RNScrollView>(null);
   const [busyTool, setBusyTool] = useState<string | null>(null);
+  const [forgeError, setForgeError] = useState<string | null>(null);
   // A freshly forged draft awaiting preview / upload. Not yet persisted — Fuel
   // is spent only when the user uploads it to the Cargo Bay.
   const [forged, setForged] = useState<{
@@ -98,6 +68,7 @@ export default function FoundryScreen() {
     }
 
     setUploadedTitle(null);
+    setForgeError(null);
     setBusyTool(tool.id);
     let content = "";
     let viaAI = false;
@@ -119,11 +90,15 @@ export default function FoundryScreen() {
       content = res.content;
       viaAI = !res.mock;
     } catch {
-      content = `Draft ${tool.name} for ${mission.appName} (offline — check Convex connection).`;
+      setBusyTool(null);
+      setForgeError(tool.id);
+      haptics.warning();
+      return;
     }
 
     setForged({ tool, title: params.signalLabel ?? tool.name, content, viaAI });
     setBusyTool(null);
+    scrollRef.current?.scrollTo({ y: 0, animated: true });
     haptics.success();
     playSignature("signal_ready");
     track("foundry_asset_generated", { tool: tool.id, viaAI });
@@ -182,7 +157,10 @@ export default function FoundryScreen() {
   return (
     <TabScreen>
       <SafeAreaView style={{ flex: 1 }} edges={["bottom"]}>
-        <ScrollView contentContainerClassName="gap-3 px-5 py-4 pb-24">
+        <ScrollView
+          ref={scrollRef}
+          contentContainerClassName="gap-3 px-5 py-4 pb-24"
+        >
           {params.signalId ? (
             <Card variant="premium">
               <Text className="font-mono text-[11px] uppercase tracking-wider text-brand-gold">
@@ -194,17 +172,27 @@ export default function FoundryScreen() {
             </Card>
           ) : null}
 
+          {forgeError ? (
+            <ErrorState
+              title="Generation failed"
+              message="Couldn't reach the Forge. Check your connection and try again — no Fuel was spent."
+              onRetry={() => {
+                const tool = FOUNDRY_TOOLS.find((t) => t.id === forgeError);
+                if (tool) void onForge(tool);
+              }}
+            />
+          ) : null}
+
           {forged ? (
             <Card variant="elevated">
               <View className="flex-row items-start gap-3">
-                <ToolGlyph icon={forged.tool.icon} />
+                <Text className="text-2xl">{forged.tool.glyph}</Text>
                 <View className="flex-1">
                   <Text className="font-display text-base font-bold text-text-primary">
                     {forged.title}
                   </Text>
                   <Text className="mt-0.5 font-mono text-[11px] uppercase tracking-wider text-brand-teal">
-                    {forged.viaAI ? "AI-forged" : "Mock draft"} · ready to
-                    upload
+                    {forged.viaAI ? "AI-forged" : "Mock draft"} · ready to upload
                   </Text>
                   <Text className="mt-1 font-body text-sm text-text-secondary">
                     Forged from your Mission context. Preview it, then upload to
@@ -258,92 +246,17 @@ export default function FoundryScreen() {
             Generate launch assets with AI, powered by your Mission context.
           </Text>
 
-          {FOUNDRY_TOOLS.map((tool) => {
-            const locked = !planMeets(plan, tool.requiredPlan);
-            const affordable = fuel >= tool.fuelCost;
-            return (
-              <Card key={tool.id} variant={locked ? "glass" : "elevated"}>
-                <View className="flex-row items-start gap-3">
-                  <ToolGlyph icon={tool.icon} locked={locked} />
-                  <View className="flex-1">
-                    <Text className="font-display text-base font-bold text-text-primary">
-                      {tool.name}
-                    </Text>
-                    <Text className="mt-0.5 font-body text-sm text-text-secondary">
-                      {tool.description}
-                    </Text>
-                    <View className="mt-2 flex-row items-center gap-2">
-                      <FuelBadge
-                        amount={tool.fuelCost}
-                        size="sm"
-                        warning={!affordable}
-                      />
-                      {locked ? (
-                        <Badge
-                          label={`Needs ${PLANS[tool.requiredPlan].name}`}
-                          variant="locked"
-                        />
-                      ) : null}
-                    </View>
-                  </View>
-                </View>
-                <Pressable
-                  onPress={() => (busyTool ? undefined : onForge(tool))}
-                  accessibilityRole="button"
-                  className={
-                    "mt-3 min-h-[44px] flex-row items-center justify-center gap-2 rounded-full px-4 py-2.5 " +
-                    (locked
-                      ? "bg-bg-depleted border border-border-default"
-                      : "bg-brand-teal active:opacity-90") +
-                    (busyTool && busyTool !== tool.id ? " opacity-60" : "")
-                  }
-                >
-                  {busyTool === tool.id ? (
-                    <ActivityIndicator size="small" color="#060B14" />
-                  ) : (
-                    <>
-                      {locked ? (
-                        <AstroAvatar
-                          plan={plan}
-                          variant="bust"
-                          pose="crossedArms"
-                          size={28}
-                        />
-                      ) : null}
-                      {!locked && !affordable ? (
-                        <AstroAvatar
-                          plan={plan}
-                          variant="bust"
-                          pose="pointing"
-                          size={28}
-                        />
-                      ) : null}
-                      {locked ? (
-                        <Icon
-                          name="lock"
-                          size={15}
-                          color={colors.textTertiary}
-                        />
-                      ) : null}
-                      <Text
-                        className={
-                          locked
-                            ? "font-body font-semibold text-text-tertiary"
-                            : "font-body font-semibold text-bg-deep"
-                        }
-                      >
-                        {locked
-                          ? `Unlock with ${PLANS[tool.requiredPlan].name}`
-                          : affordable
-                            ? "Forge Content"
-                            : `Need ${tool.fuelCost} Fuel — Refuel`}
-                      </Text>
-                    </>
-                  )}
-                </Pressable>
-              </Card>
-            );
-          })}
+          {FOUNDRY_TOOLS.map((tool) => (
+            <FoundryToolCard
+              key={tool.id}
+              tool={tool}
+              locked={!planMeets(plan, tool.requiredPlan)}
+              affordable={fuel >= tool.fuelCost}
+              busy={busyTool === tool.id}
+              anyBusy={!!busyTool}
+              onForge={() => onForge(tool)}
+            />
+          ))}
         </ScrollView>
 
         {/* Quick Preview — read the forged content before uploading it. */}

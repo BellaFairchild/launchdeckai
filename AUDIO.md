@@ -159,6 +159,41 @@ Adaptive ducking, idle fade, Copilot cues, PostHog sound analytics, optional Dec
 
 ---
 
+## 9. Stardust extension — Cargo / Blueprint / Signal / Plan / Launch chime
+
+Six cues added on top of §4–5, in the same palette and synthesis vocabulary
+(`scripts/generate-audio-assets.js`). Shared thread: a **"stardust" texture** —
+high C-pentatonic sine micro-grains (`grain()` / `stardust()`), scaled from one
+grain in a tap to a 7-grain cascade in the plan sparkle. Teal = motion/comms,
+gold = reward/completion, walnut = the cargo "stow". All ≤ −9 dBFS UI / −10 dBFS
+signature, HPF 80 Hz, C-major pentatonic.
+
+| Sound | Asset ID | Dur | Synthesis | Pitch | Mood |
+| ----- | -------- | --- | --------- | ----- | ---- |
+| Launch chime (feature activation) | `signature/sig_launch_chime` | 1.4 s | ascending C-pent arp C5–C6 + sine up-whoosh 200→1.2k + 5-grain stardust tail + soft pad | 200 Hz–2.6 kHz | uplifting, calm liftoff |
+| Blueprint completion | `signature/sig_blueprint_complete` | 1.8 s | teal ascending-fifth D5→A5 + gold bell triad (G4+B4+D5, 600 ms) + 3 drafting "ruled-line" ticks + 110 Hz pad tail | 110 Hz–1.2 kHz | composed pride, "locked in" |
+| Cargo Bay save | `signature/sig_cargo_saved` | 0.8 s | walnut wooden transient (1-pole LP noise) + teal confirm E5→A5 + 2 settling grains A6→E6 | <2 kHz, 659–880 Hz | secure, "safely stowed" |
+| Signal transmit (send) | `ui/signal_transmit` | 0.5 s | sine up-whoosh 400→1.6k + 2 ascending comm beeps 1200→1500 | 400 Hz–1.6 kHz | precise, "message away" |
+| Signal receive | `ui/signal_receive` | 0.7 s | 2 descending beeps 1500→1200 + settling E5 ping | 659 Hz–1.5 kHz | "signal acquired" |
+| Plan-tier sparkle | `signature/sig_plan_unlock` | 0.9 s | gold bell bloom (C5+E5+G5, 700 ms) + 7-grain ascending stardust C6–E7 + reveal sweep | 523 Hz–2.6 kHz | magical, aspirational |
+
+**API (`src/lib/audio.ts` / `audioAssets.ts`):**
+`playSignature("launch_chime" | "blueprint_complete" | "cargo_saved" | "plan_unlock")`;
+`playSignalTransmit()` / `playSignalReceive()`. Native plays the bundled WAV
+(`SIGNATURE_SOUND` map); web mirrors procedurally in `audioWeb.ts`.
+
+**Recommended trigger sites** (pair each with `haptics.success()`; signature wins
+over UI, never < 500 ms apart):
+
+| Cue | Where to fire | Status |
+| --- | ------------- | ------ |
+| `cargo_saved` | asset → flight-ready (`CategoryGrid` mark-ready) + bundle export | ✅ wired |
+| `signal_transmit` | Signal Deck "Transmit Sequence" (`signal-deck` onTransmit) | ✅ wired |
+| `plan_unlock` | Refuel plan upgrade — demo + RevenueCat paths (`refuel` onCta) | ✅ wired |
+| `signal_receive` | incoming Copilot reply (`copilot`) | ✅ wired |
+| `blueprint_complete` | a Blueprint section reaches 100% (`blueprints/[section]` onSave) | ✅ wired |
+| `launch_chime` | first Signal Deck entry per session (`signal-deck`); **not** every foreground (cold start = brand stinger) | ✅ wired — relocatable to another activation moment |
+
 ## Deliverables checklist (sound designer)
 
 - [ ] Master spec signed off (this document)

@@ -28,6 +28,8 @@ type Props = {
   /** Optional leading element (icon). */
   left?: React.ReactNode;
   className?: string;
+  testID?: string;
+  accessibilityLabel?: string;
 };
 
 /** Variants that paint a gradient fill behind their label. */
@@ -106,6 +108,8 @@ export function Button({
   fullWidth,
   left,
   className,
+  testID,
+  accessibilityLabel,
 }: Props) {
   const isDisabled = disabled || loading || variant === "locked";
   const fill = FILL[variant];
@@ -127,8 +131,11 @@ export function Button({
         playClick();
         haptics.light();
       }}
+      testID={testID}
+      disabled={Boolean(disabled || loading)}
       onPress={isDisabled ? undefined : onPress}
       accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel ?? trimmed}
       accessibilityState={{ disabled: isDisabled }}
       style={!isDisabled ? GLOW[variant] : undefined}
       className={cn(

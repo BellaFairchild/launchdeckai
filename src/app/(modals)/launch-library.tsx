@@ -9,6 +9,7 @@ import {
     RESOURCE_CATEGORIES,
 } from "@/constants/launchResources";
 import { cn } from "@/lib/cn";
+import { useSavedResourcesStore } from "@/store/savedResources";
 import { useUIStore } from "@/store/ui";
 import { Pressable, ScrollView, Text, TextInput, View } from "@/tw";
 
@@ -17,8 +18,13 @@ export default function LaunchLibraryModal() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>("All");
 
+  const toggleSaved = useSavedResourcesStore((s) => s.toggle);
+  const savedIds = useSavedResourcesStore((s) => s.saved);
+
   const filtered = LAUNCH_RESOURCES.filter((r) => {
-    const matchesCat = category === "All" || r.category === category;
+    const matchesCat =
+      category === "All" ||
+      (category === "Saved" ? savedIds.includes(r.id) : r.category === category);
     const q = query.trim().toLowerCase();
     const matchesQuery =
       !q ||
@@ -74,31 +80,55 @@ export default function LaunchLibraryModal() {
           <EmptyState
             astroPose="confused"
             plan={plan}
-            title="No resources found"
-            message="Try a different search or category."
+            title={
+              category === "Saved"
+                ? "No saved resources yet"
+                : "No resources found"
+            }
+            message={
+              category === "Saved"
+                ? "Tap the ☆ on any resource to save it here."
+                : "Try a different search or category."
+            }
           />
         ) : (
-          filtered.map((r) => (
-            <Card key={r.id} variant="glass">
-              <Text className="font-display text-base font-bold text-text-primary">
-                {r.title}
-              </Text>
-              <Text className="mt-0.5 font-body text-sm text-text-secondary">
-                {r.description}
-              </Text>
-              <View className="mt-2 flex-row items-center justify-between">
-                <Text className="font-mono text-[11px] uppercase tracking-wider text-text-tertiary">
-                  {r.category}
+          filtered.map((r) => {
+            const starred = savedIds.includes(r.id);
+            return (
+              <Card key={r.id} variant="glass">
+                <Text className="font-display text-base font-bold text-text-primary">
+                  {r.title}
                 </Text>
-                <Button
-                  label="Open →"
-                  size="sm"
-                  variant="ghost"
-                  onPress={() => Linking.openURL(r.url)}
-                />
-              </View>
-            </Card>
-          ))
+                <Text className="mt-0.5 font-body text-sm text-text-secondary">
+                  {r.description}
+                </Text>
+                <View className="mt-2 flex-row items-center justify-between">
+                  <Text className="font-mono text-[11px] uppercase tracking-wider text-text-tertiary">
+                    {r.category}
+                  </Text>
+                  <View className="flex-row items-center gap-2">
+                    <Pressable
+                      accessibilityRole="button"
+                      accessibilityLabel={
+                        starred ? `Unsave ${r.title}` : `Save ${r.title}`
+                      }
+                      hitSlop={8}
+                      onPress={() => toggleSaved(r.id)}
+                      className="px-2 py-1"
+                    >
+                      <Text className="text-lg">{starred ? "★" : "☆"}</Text>
+                    </Pressable>
+                    <Button
+                      label="Open →"
+                      size="sm"
+                      variant="ghost"
+                      onPress={() => Linking.openURL(r.url)}
+                    />
+                  </View>
+                </View>
+              </Card>
+            );
+          })
         )}
       </ScrollView>
     </View>

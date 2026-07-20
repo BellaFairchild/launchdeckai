@@ -1,11 +1,10 @@
 import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
-import * as SecureStore from "expo-secure-store";
 import React from "react";
-import { Platform } from "react-native";
 
 import { authEnabled, CLERK_PUBLISHABLE_KEY } from "./auth";
+import { getStorageItem, setStorageItem } from "./secureStorage";
 
 /**
  * Convex client. EXPO_PUBLIC_CONVEX_URL is written to .env.local by `npx convex dev`.
@@ -20,29 +19,18 @@ const convex = new ConvexReactClient(url, {
 });
 
 /**
- * Persist the Clerk session token in the device secure store (native only).
- * On web SecureStore has no implementation, so we leave the token cache
- * undefined and let Clerk use its own browser storage.
+ * Persist the Clerk session token. Native uses the Keychain/Keystore-backed
+ * SecureStore; web falls back to localStorage (see lib/secureStorage) so the
+ * session survives a refresh instead of being dropped.
  */
-const tokenCache =
-  Platform.OS === "web"
-    ? undefined
-    : {
-        async getToken(key: string) {
-          try {
-            return await SecureStore.getItemAsync(key);
-          } catch {
-            return null;
-          }
-        },
-        async saveToken(key: string, value: string) {
-          try {
-            await SecureStore.setItemAsync(key, value);
-          } catch {
-            // ignore
-          }
-        },
-      };
+const tokenCache = {
+  getToken(key: string) {
+    return getStorageItem(key);
+  },
+  saveToken(key: string, value: string) {
+    return setStorageItem(key, value);
+  },
+};
 
 export function ConvexClientProvider({
   children,

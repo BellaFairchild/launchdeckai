@@ -17,6 +17,7 @@ export const RESOURCE_CATEGORIES = [
   "Monetization",
   "Design",
   "AI Tools",
+  "Saved",
 ] as const;
 
 /** A small curated starter set (Docs/06). Expandable; "Saved" comes with backend. */

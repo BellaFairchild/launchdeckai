@@ -1,5 +1,5 @@
-import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
 import { requireUser } from "./helpers";
 
@@ -51,10 +51,14 @@ export const getOrCreateUser = mutation({
  */
 export const setPlan = mutation({
   args: {
-    plan: v.union(v.literal("cadet"), v.literal("commander"), v.literal("admiral")),
+    plan: v.union(
+      v.literal("cadet"),
+      v.literal("commander"),
+      v.literal("admiral"),
+    ),
   },
   handler: async (ctx, args) => {
     const user = await requireUser(ctx);
-    await ctx.db.patch(user._id, { plan: args.plan });
+    await ctx.db.patch("users", user._id, { plan: args.plan });
   },
 });

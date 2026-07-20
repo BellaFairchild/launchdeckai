@@ -1,11 +1,11 @@
 /**
  * Type scale from Docs/05_DESIGN_SYSTEM.md.
- * Headings: Space Grotesk · Body: Inter · Numbers/console: JetBrains Mono.
- * Fonts are loaded via expo-font in the root layout (Phase 2).
+ * Headings: Arvo · Body: Ledger · Numbers/console: JetBrains Mono.
+ * Fonts are loaded via expo-font in src/app/_layout.tsx.
  */
 export const fontFamily = {
-  display: "SpaceGrotesk",
-  body: "Inter",
+  display: "Arvo",
+  body: "Ledger",
   mono: "JetBrainsMono",
 } as const;
 

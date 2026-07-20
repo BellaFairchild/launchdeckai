@@ -1,8 +1,12 @@
-import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
 
-import { requireUser, recalcReadiness } from "./helpers";
-import { MILESTONE_TEMPLATES, BLUEPRINT_SECTIONS, planMeets } from "./templates";
+import { getActiveMission, recalcReadiness, requireUser } from "./helpers";
+import {
+    BLUEPRINT_SECTIONS,
+    MILESTONE_TEMPLATES,
+    planMeets,
+} from "./templates";
 
 /**
  * One bundled subscription powering the whole app's data layer when signed in.
@@ -17,16 +21,27 @@ export const getLaunchData = query({
       .query("users")
       .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
       .unique();
-    if (!user) return { user: null, mission: null, milestones: [], blueprints: [], assets: [], broadcasts: [] };
+    if (!user)
+      return {
+        user: null,
+        mission: null,
+        milestones: [],
+        blueprints: [],
+        assets: [],
+        broadcasts: [],
+      };
 
-    const mission = await ctx.db
-      .query("missions")
-      .withIndex("by_userId", (q) => q.eq("userId", user._id))
-      .filter((q) => q.eq(q.field("status"), "active"))
-      .first();
+    const mission = await getActiveMission(ctx, user._id);
 
     if (!mission) {
-      return { user, mission: null, milestones: [], blueprints: [], assets: [], broadcasts: [] };
+      return {
+        user,
+        mission: null,
+        milestones: [],
+        blueprints: [],
+        assets: [],
+        broadcasts: [],
+      };
     }
 
     const [milestones, blueprints, assets, broadcasts] = await Promise.all([
@@ -59,7 +74,11 @@ export const createMission = mutation({
     appDescription: v.string(),
     oneLiner: v.string(),
     targetAudience: v.string(),
-    platform: v.union(v.literal("ios"), v.literal("android"), v.literal("both")),
+    platform: v.union(
+      v.literal("ios"),
+      v.literal("android"),
+      v.literal("both"),
+    ),
     stage: v.union(
       v.literal("building"),
       v.literal("testing"),
@@ -104,7 +123,12 @@ export const createMission = mutation({
           ? { appName: args.appName, oneLiner: args.oneLiner }
           : {};
       const completionStatus = section === "app_info" ? 25 : 0;
-      await ctx.db.insert("blueprints", { missionId, section, fields, completionStatus });
+      await ctx.db.insert("blueprints", {
+        missionId,
+        section,
+        fields,
+        completionStatus,
+      });
     }
 
     await recalcReadiness(ctx, missionId);

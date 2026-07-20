@@ -1,6 +1,20 @@
 import type { FoundryIconName } from "@/constants/foundryIcons";
 import type { AssetCategory, AssetType, Plan } from "@/types";
 
+/**
+ * The platform each tool forges *for*. Drives the card's hover/press color
+ * system (border tint, ambient wash, icon glow) so each tool wears its
+ * destination's brand color. See PLATFORM_BRAND below + FoundryToolCard.
+ */
+export type ToolPlatform =
+  | "apple"
+  | "twitter"
+  | "email"
+  | "linkedin"
+  | "tiktok"
+  | "producthunt"
+  | "signal";
+
 export interface FoundryTool {
   id: FoundryIconName;
   name: string;
@@ -11,7 +25,19 @@ export interface FoundryTool {
   requiredPlan: Plan;
   /** 3D tool glyph key (see constants/foundryIcons). */
   icon: FoundryIconName;
+  platform: ToolPlatform;
 }
+
+/** Brand color + short label per platform. Hex feeds the dynamic card glow. */
+export const PLATFORM_BRAND: Record<ToolPlatform, { hex: string; label: string }> = {
+  apple: { hex: "#FFFFFF", label: "App Store" },
+  twitter: { hex: "#1DA1F2", label: "X / Twitter" },
+  email: { hex: "#F97316", label: "Email" },
+  linkedin: { hex: "#0A66C2", label: "Press / LinkedIn" },
+  tiktok: { hex: "#FE2C55", label: "Video" },
+  producthunt: { hex: "#DA552F", label: "Product Hunt" },
+  signal: { hex: "#4DC8C0", label: "Signal Deck" },
+};
 
 /** Foundry generation tools (Docs/06). AI runs server-side via Convex Actions (Phase 9). */
 export const FOUNDRY_TOOLS: FoundryTool[] = [
@@ -24,6 +50,7 @@ export const FOUNDRY_TOOLS: FoundryTool[] = [
     fuelCost: 20,
     requiredPlan: "cadet",
     icon: "app_store_copy",
+    platform: "apple",
   },
   {
     id: "social_blast",
@@ -34,6 +61,7 @@ export const FOUNDRY_TOOLS: FoundryTool[] = [
     fuelCost: 15,
     requiredPlan: "cadet",
     icon: "social_blast",
+    platform: "twitter",
   },
   {
     id: "email_sequence",
@@ -44,6 +72,7 @@ export const FOUNDRY_TOOLS: FoundryTool[] = [
     fuelCost: 20,
     requiredPlan: "cadet",
     icon: "email_sequence",
+    platform: "email",
   },
   {
     id: "press_kit",
@@ -54,6 +83,7 @@ export const FOUNDRY_TOOLS: FoundryTool[] = [
     fuelCost: 25,
     requiredPlan: "commander",
     icon: "press_kit",
+    platform: "linkedin",
   },
   {
     id: "video_script",
@@ -64,6 +94,7 @@ export const FOUNDRY_TOOLS: FoundryTool[] = [
     fuelCost: 25,
     requiredPlan: "commander",
     icon: "video_script",
+    platform: "tiktok",
   },
   {
     id: "product_hunt_copy",
@@ -74,6 +105,7 @@ export const FOUNDRY_TOOLS: FoundryTool[] = [
     fuelCost: 20,
     requiredPlan: "commander",
     icon: "product_hunt_copy",
+    platform: "producthunt",
   },
   {
     id: "signal_asset",
@@ -84,6 +116,7 @@ export const FOUNDRY_TOOLS: FoundryTool[] = [
     fuelCost: 15,
     requiredPlan: "cadet",
     icon: "signal_asset",
+    platform: "signal",
   },
 ];
 
