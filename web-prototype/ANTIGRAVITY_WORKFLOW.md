@@ -1,6 +1,10 @@
 # LaunchDeckAI — Antigravity Agent Development Workflow
 
-This document sets the hard developer standards, directory structures, verification loops, and quality control routines to follow when updating or modifying the LaunchDeckAI codebase.
+> **Web prototype only.** This workflow applies to the React + Vite simulator in
+> `web-prototype/`. For the Expo mobile app, see
+> [`../Docs/13_ENGINEERING_AND_TESTING.md`](../Docs/13_ENGINEERING_AND_TESTING.md).
+
+This document sets the hard developer standards, directory structures, verification loops, and quality control routines to follow when updating or modifying the LaunchDeckAI web prototype codebase.
 
 ---
 

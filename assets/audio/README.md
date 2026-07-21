@@ -1,4 +1,4 @@
-# LaunchDeck audio assets
+# LaunchDeckAI audio assets
 
 See [AUDIO.md](../../AUDIO.md) for the full sound design spec.
 

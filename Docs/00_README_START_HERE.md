@@ -2,6 +2,16 @@
 
 This folder is the build command center for the LaunchDeckAI mobile app and future web companion.
 
+## Root-level companion docs
+
+Read these alongside the numbered docs below:
+
+- **`../PRODUCT.md`** — brand personality, design principles, accessibility
+- **`../DESIGN.md`** — canonical visual system (typography, colors, components)
+- **`../AUDIO.md`** — sound design specification
+- **`../AGENTS.md`** / **`../CLAUDE.md`** — agent instructions (design + engineering context)
+- **`../src/constants/plans.ts`** — canonical subscription tier specs (Cadet / Commander / Admiral)
+
 ## Start Here
 
 Read these documents in this order:

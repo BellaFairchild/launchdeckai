@@ -30,6 +30,8 @@ Two root files carry the design system; read them before any UI work:
 
 ## Engineering Context
 
+Start at **`README.md`** for the full documentation map.
+
 The `Docs/` folder is the build command center (`Docs/00_README_START_HERE.md`).
 Before backend or build work, read:
 

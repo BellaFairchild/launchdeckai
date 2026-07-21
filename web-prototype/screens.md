@@ -1,6 +1,11 @@
-# LaunchDeck AI — Interface Screen & System Architecture
+# LaunchDeckAI — Interface Screen & System Architecture
 
-LaunchDeck AI is an immersive, high-fidelity app launch dashboard styled with a futuristic, multi-layered cosmic spacecraft cockpit. This document maps out the system's screen architecture, detailing each module, its feature-set, and the unified cargo/signals synchronization workflow.
+> **Web prototype only.** This document describes the React + Vite simulator in
+> `web-prototype/`. The canonical mobile v1 nav is
+> `Deck | Missions | AI Copilot Orb | Blueprints | Foundry` with Signal Deck and
+> Cargo Bay in the drawer — see [`../Docs/04_INFORMATION_ARCHITECTURE_NAVIGATION.md`](../Docs/04_INFORMATION_ARCHITECTURE_NAVIGATION.md).
+
+LaunchDeckAI is an immersive, high-fidelity app launch dashboard styled with a futuristic, multi-layered cosmic spacecraft cockpit. This document maps out the system's screen architecture, detailing each module, its feature-set, and the unified cargo/signals synchronization workflow.
 
 ---
 

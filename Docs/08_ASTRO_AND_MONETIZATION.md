@@ -88,6 +88,9 @@ Launch Pass has been renamed to Admiral.
 
 ## Plan Specs
 
+> **Source of truth for numeric plan values:** `src/constants/plans.ts`. The
+> summaries below mirror that file — when the two disagree, the code wins.
+
 ### Cadet
 
 Best for: first-time builders getting organized.
@@ -95,12 +98,13 @@ Best for: first-time builders getting organized.
 Includes:
 
 - 1 Active Mission
-- Limited Fuel capacity
-- Daily Fuel drip
-- Standard Copilot limits
+- 25 Fuel cap · 5/day drip
+- Standard Copilot (daily limit)
 - Basic Foundry access
 - Cargo Bay view
 - Signal Deck viewing and preparation
+
+Price: Free
 
 ### Commander
 
@@ -108,12 +112,14 @@ Best for: serious builders preparing for launch.
 
 Includes:
 
-- More Active Missions
-- Larger Fuel reserve
+- 3 Active Missions
+- 1,500 Fuel / mo
 - All core Foundry tools
-- Unlimited or higher Copilot limits
+- Unlimited Copilot
 - Signal Pack ZIP export
 - Streak Shield
+
+Price: $19/mo · $152/yr
 
 ### Admiral
 
@@ -121,12 +127,14 @@ Best for: advanced creators and power launchers.
 
 Includes:
 
-- Unlimited or highest mission allowance
-- Largest Fuel reserve
+- Unlimited Active Missions
+- 5,000 Fuel / mo
 - Powerful AI mode
-- Public Launch Decks later
+- Public Launch Decks (later)
 - Priority support
 - Premium Astro gold belt
+
+Price: $49/mo · $390/yr
 
 ## Main Conversion Moments
 
