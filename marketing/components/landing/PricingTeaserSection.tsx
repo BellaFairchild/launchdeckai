@@ -62,7 +62,7 @@ export function PricingTeaserSection() {
         </div>
 
         <p className="mt-8 text-center text-sm text-text-tertiary">
-          Pricing shown for planning. Checkout opens when the app launches.
+          Prices locked for launch. Checkout opens when the app ships.
         </p>
       </div>
     </section>

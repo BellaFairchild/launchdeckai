@@ -62,3 +62,11 @@ Use LaunchDeckAI language consistently:
 - Admiral
 
 Do not use Launch Pass anymore. Launch Pass has been renamed to Admiral.
+
+## Decisions Log
+
+Dated lock decisions. Do not re-litigate silently — append a new entry with date and reason if changing.
+
+| Date | Decision |
+|---|---|
+| 2026-07-20 | **Pricing locked:** Cadet free (25 Fuel cap · 5/day). Commander $19/mo · $152/yr · 1,500 Fuel/mo · 3 missions. Admiral $49/mo · $390/yr · 5,000 Fuel/mo · unlimited missions. Rejected alternate 500/2,000 Fuel proposal from Jul 2026 analysis. Canonical: `Docs/08`, `src/constants/plans.ts`, `marketing/lib/plans.ts`. |
