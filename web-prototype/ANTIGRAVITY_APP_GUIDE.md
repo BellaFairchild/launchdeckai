@@ -1,6 +1,10 @@
 # LaunchDeckAI — App & Architecture Reference Guide
 
-Welcome, Commander. This document serves as the primary technical specification and component playbook for **LaunchDeckAI Simulator**, compiled specifically to guide future agentic iterations, maintenance, and expansions of this workspace.
+> **Web prototype only.** This document describes the React + Vite simulator in
+> `web-prototype/`. For the canonical Expo mobile app spec, start at
+> [`../Docs/00_README_START_HERE.md`](../Docs/00_README_START_HERE.md).
+
+Welcome, Commander. This document serves as the primary technical specification and component playbook for the **LaunchDeckAI web prototype**, compiled specifically to guide future agentic iterations, maintenance, and expansions of this workspace.
 
 ---
 
@@ -74,7 +78,7 @@ export interface Asset {
   id: string;
   type: string;
   title: string;
-  status: "not_loaded" | "in_prep" | "needs_clearance" | "flight_ready" | "cleared";
+  status: "not_loaded" | "in_prep" | "needs_clearance" | "flight_ready" | "exported";
   category: "app_store" | "social" | "media" | "pr" | "legal" | "files";
 }
 ```
@@ -108,9 +112,12 @@ LaunchDeckAI implements a **Warm-Contrast Cosmic UI theme**. Custom styling para
 LaunchDeckAI simulates a premium subscription flow managed by RevenueCat tiers. Feature access constraints are enforced symmetrically:
 
 ### Tier Specs
-1.  **Cadet (Free)**: `1 Active Mission`, `25 Fuel Max Capacity` (5/day automatic solar drip), standard AI Copilot (5 query limits daily), standard Cargo Bay view.
+
+> Canonical values: `../src/constants/plans.ts` and `../Docs/08_ASTRO_AND_MONETIZATION.md`.
+
+1.  **Cadet (Free)**: `1 Active Mission`, `25 Fuel Max Capacity` (5/day automatic solar drip), standard AI Copilot (daily limit), standard Cargo Bay view.
 2.  **Commander ($19/mo or $152/yr)**: `3 Active Missions`, `1,500 Fuel Reserve / mo`, access to all Foundry generator options, ZIP assets packet exports, unlimited copilot questions, and one `Streak Shield` save.
-3.  **Admiral ($49/mo or $390/yr)**: `Unlimited Active Missions`, `5,000 Fuel Reserve / mo`, advanced "Powerful Claude-Opus AI" modes, custom public Launch Decks, immediate Priority Command priority support line.
+3.  **Admiral ($49/mo or $390/yr)**: `Unlimited Active Missions`, `5,000 Fuel Reserve / mo`, advanced "Powerful AI" mode, custom public Launch Decks (later), priority support.
 
 ### System Conversion Moments
 Code blocks handling gated actions MUST trigger the appropriate paywall triggers or upsell prompts for the following scenarios:

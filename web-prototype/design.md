@@ -1,5 +1,11 @@
 # Antigravity Design System Documentation
 
+> **Web prototype only.** Fonts and some layout patterns here differ from the
+> canonical mobile design system in [`../DESIGN.md`](../DESIGN.md) and
+> [`../Docs/05_DESIGN_SYSTEM.md`](../Docs/05_DESIGN_SYSTEM.md). Mobile uses
+> Space Grotesk / Inter / JetBrains Mono; this prototype uses Syne / Instrument
+> Sans / DM Mono.
+
 An overview of the visual identity, UI components, typography, layout structures, and animated feedback systems powering the Antigravity application.
 
 ---

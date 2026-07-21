@@ -63,11 +63,14 @@ linear-gradient(180deg, rgba(20,38,168,0.20), rgba(16,183,214,0.08))
 
 ## Typography
 
-Recommended mobile fonts:
+Canonical fonts (see also `DESIGN.md` at repo root):
 
-- Headings: Sora or Space Grotesk
-- Body: Inter or Manrope
-- Numbers: JetBrains Mono or DM Mono
+- Headings: **Space Grotesk**
+- Body: **Inter**
+- Numbers / telemetry: **JetBrains Mono**
+
+> The `web-prototype/` uses Syne, Instrument Sans, and DM Mono for its separate
+> React + Vite simulator — do not treat those as the mobile app standard.
 
 ## Type Scale
 
