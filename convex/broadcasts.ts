@@ -3,7 +3,7 @@ import type { MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import type { Id } from "./_generated/dataModel";
 
-import { requireUser } from "./helpers";
+import { requireUser, parseDestinationUrl } from "./helpers";
 
 /** The signed-in user's active mission, or null. */
 async function activeMission(ctx: MutationCtx, userId: Id<"users">) {
@@ -25,6 +25,7 @@ export const schedule = mutation({
     const user = await requireUser(ctx);
     const mission = await activeMission(ctx, user._id);
     if (!mission) throw new Error("No active mission");
+    const destinationUrl = parseDestinationUrl(args.destinationUrl);
 
     const existing = await ctx.db
       .query("broadcasts")
@@ -35,7 +36,7 @@ export const schedule = mutation({
 
     if (existing) {
       await ctx.db.patch(existing._id, {
-        destinationUrl: args.destinationUrl,
+        destinationUrl,
         scheduledAt: args.scheduledAt,
       });
       return existing._id;
@@ -45,7 +46,7 @@ export const schedule = mutation({
       missionId: mission._id,
       userId: user._id,
       signalId: args.signalId,
-      destinationUrl: args.destinationUrl,
+      destinationUrl,
       scheduledAt: args.scheduledAt,
     });
   },

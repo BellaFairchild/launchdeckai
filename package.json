@@ -65,7 +65,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "security:secrets": "bash ./scripts/security-secrets.sh"
   },
   "private": true
 }

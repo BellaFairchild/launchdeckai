@@ -3,22 +3,29 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { v } from "convex/values";
 import { action } from "./_generated/server";
+import { internal } from "./_generated/api";
 
 import { mockCopilotReply, mockGenerateAsset } from "./aiMock";
 
 /**
  * Shared AI generation pipeline (Docs/03 §AI). All Foundry/Copilot AI runs through
  * this Convex Action — the provider key lives ONLY in the Convex environment, never
- * in the app bundle. Identity/plan/fuel enforcement (steps 1-5 of the documented
- * pipeline) moves server-side once Clerk auth lands in Phase 4; for now this action
- * owns prompt-building + the provider call (steps 6-7), and the client handles the
- * mock fuel/plan gating + saving the result to Cargo Bay.
+ * in the app bundle. Live calls require an authenticated user who passes plan +
+ * Fuel checks (internal.users.authorize*). Unauthenticated callers get demo drafts
+ * and never touch Anthropic.
  *
  * Models: standard → Sonnet 4.6, powerful (Admiral) → Opus 4.8 (Docs/08).
  */
 
 const STANDARD_MODEL = "claude-sonnet-4-6";
 const POWERFUL_MODEL = "claude-opus-4-8";
+const MAX_FIELD = 4000;
+const MAX_MESSAGES = 40;
+const MAX_MESSAGE = 8000;
+
+function clip(value: string, max = MAX_FIELD): string {
+  return value.length <= max ? value : value.slice(0, max);
+}
 
 const SYSTEM_PROMPT = `You are Astro, the AI launch copilot inside LaunchDeckAI — a calm, capable guide for first-time app creators.
 
@@ -52,9 +59,19 @@ export const generateAsset = action({
     content: v.string(),
     mock: v.boolean(),
   }),
-  handler: async (_ctx, args) => {
+  handler: async (ctx, args) => {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
+      return {
+        content: mockGenerateAsset(args),
+        mock: true,
+      };
+    }
+
+    const gate = await ctx.runQuery(internal.users.authorizeFoundryGeneration, {
+      tool: args.tool,
+    });
+    if (!gate.ok) {
       return {
         content: mockGenerateAsset(args),
         mock: true,
@@ -66,18 +83,18 @@ export const generateAsset = action({
 
     const m = args.mission;
     const userPrompt = [
-      `Asset to create: ${args.toolLabel} (tool id: ${args.tool}).`,
+      `Asset to create: ${clip(args.toolLabel)} (tool id: ${clip(args.tool, 64)}).`,
       args.signalLabel
-        ? `This is for the Signal Deck step: "${args.signalLabel}".`
+        ? `This is for the Signal Deck step: "${clip(args.signalLabel)}".`
         : "",
       "",
       "Mission context:",
-      `- App name: ${m.appName}`,
-      `- One-liner: ${m.oneLiner}`,
-      m.appDescription ? `- Description: ${m.appDescription}` : "",
-      `- Target audience: ${m.targetAudience}`,
-      `- Platform: ${m.platform}`,
-      m.stage ? `- Stage: ${m.stage}` : "",
+      `- App name: ${clip(m.appName, 200)}`,
+      `- One-liner: ${clip(m.oneLiner, 500)}`,
+      m.appDescription ? `- Description: ${clip(m.appDescription)}` : "",
+      `- Target audience: ${clip(m.targetAudience, 500)}`,
+      `- Platform: ${clip(m.platform, 32)}`,
+      m.stage ? `- Stage: ${clip(m.stage, 64)}` : "",
       "",
       "Generate the asset now.",
     ]
@@ -141,7 +158,7 @@ export const copilotReply = action({
     content: v.string(),
     mock: v.boolean(),
   }),
-  handler: async (_ctx, args) => {
+  handler: async (ctx, args) => {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
       return {
@@ -150,24 +167,43 @@ export const copilotReply = action({
       };
     }
 
+    const mode = args.mode ?? "standard";
+    const gate = await ctx.runQuery(internal.users.authorizeCopilotTurn, {
+      mode,
+    });
+    if (!gate.ok) {
+      return {
+        content: mockCopilotReply(args),
+        mock: true,
+      };
+    }
+
     const client = new Anthropic({ apiKey });
-    const model = args.mode === "powerful" ? POWERFUL_MODEL : STANDARD_MODEL;
+    const model = mode === "powerful" ? POWERFUL_MODEL : STANDARD_MODEL;
 
     const m = args.mission;
     const c = args.context;
     const contextBlock = [
       "Current Mission context:",
-      `- App: ${m.appName} — "${m.oneLiner}"`,
-      `- Audience: ${m.targetAudience}`,
-      `- Platform: ${m.platform}${m.stage ? `, stage: ${m.stage}` : ""}`,
-      `- Launch: ${c.launchLabel}`,
+      `- App: ${clip(m.appName, 200)} — "${clip(m.oneLiner, 500)}"`,
+      `- Audience: ${clip(m.targetAudience, 500)}`,
+      `- Platform: ${clip(m.platform, 32)}${m.stage ? `, stage: ${clip(m.stage, 64)}` : ""}`,
+      `- Launch: ${clip(c.launchLabel, 200)}`,
       `- Readiness: ${c.readinessScore}%`,
       `- Blueprint completion: ${c.blueprintProgress}%`,
       `- Signals ready: ${c.signalsReady}/16`,
       c.incompleteMilestones.length
-        ? `- Top incomplete milestones: ${c.incompleteMilestones.slice(0, 5).join("; ")}`
+        ? `- Top incomplete milestones: ${c.incompleteMilestones
+            .slice(0, 5)
+            .map((title) => clip(title, 200))
+            .join("; ")}`
         : "- All available milestones complete.",
     ].join("\n");
+
+    const trimmedMessages = args.messages.slice(-MAX_MESSAGES).map((msg) => ({
+      role: msg.role,
+      content: clip(msg.content, MAX_MESSAGE),
+    }));
 
     const message = await client.messages.create({
       model,
@@ -180,10 +216,7 @@ export const copilotReply = action({
         },
         { type: "text", text: contextBlock },
       ],
-      messages: args.messages.map((msg) => ({
-        role: msg.role,
-        content: msg.content,
-      })),
+      messages: trimmedMessages,
     });
 
     const content = message.content
@@ -191,6 +224,10 @@ export const copilotReply = action({
       .map((b) => b.text)
       .join("\n")
       .trim();
+
+    if (mode === "standard") {
+      await ctx.runMutation(internal.users.consumeCopilotFuel, {});
+    }
 
     return { content: content || "(No reply generated.)", mock: false };
   },

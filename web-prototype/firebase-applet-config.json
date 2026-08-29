@@ -1,7 +1,7 @@
 {
   "projectId": "launchdeckai",
   "appId": "1:749606370280:web:e301ed54668f3a756bc25d",
-  "apiKey": "AIzaSyD-vh4tD9OwTAlzDj4gmJwO2wYw5pDtNIs",
+  "apiKey": "",
   "authDomain": "launchdeckai.firebaseapp.com",
   "firestoreDatabaseId": "ai-studio-e90fecaf-6d71-4efc-bdee-df6cbe79b175",
   "storageBucket": "launchdeckai.firebasestorage.app",
