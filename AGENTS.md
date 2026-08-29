@@ -38,6 +38,7 @@ Mixpanel is the product analytics tool. Do not add a second analytics SDK (excep
 - **CDP:** none
 - **Consent:** not gated at setup (add a consent gate before EU/CA production traffic — Mixpanel `opt_out_tracking_by_default`)
 - **Token:** `EXPO_PUBLIC_MIXPANEL_TOKEN` (see `.env.example`)
+- **MCP:** project Cursor config in `.cursor/mcp.json` (`npx -y mcp-remote https://mcp.mixpanel.com/mcp`). Authorize Mixpanel in Cursor on first connect (Settings → Tools & MCP).
 - **Initialization:** `initAnalytics()` in `src/lib/analytics.ts`, called from `src/app/_layout.tsx`
 - **Identity:**
   - `identifyAnalyticsUser()` / `setAnalyticsUser()` after Clerk user creation in `src/app/(auth)/sign-up.tsx`, and on login/re-open in `src/components/DataSync.tsx` (Clerk id as `$user_id`, never email)
