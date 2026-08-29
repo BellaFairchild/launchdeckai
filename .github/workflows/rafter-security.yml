@@ -28,4 +28,6 @@ jobs:
           rafter secrets convex --quiet
           rafter secrets scripts --quiet
           rafter secrets .env.example --quiet
-          rafter secrets web-prototype --quiet
+          rafter secrets web-prototype/src --quiet
+          rafter secrets web-prototype/.env.example --quiet
+          rafter secrets web-prototype/firebase-applet-config.json --quiet

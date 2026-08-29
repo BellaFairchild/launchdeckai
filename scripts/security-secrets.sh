@@ -12,4 +12,6 @@ RAFTER=(npx --yes @rafter-security/cli)
 "${RAFTER[@]}" secrets convex
 "${RAFTER[@]}" secrets scripts
 "${RAFTER[@]}" secrets .env.example
-"${RAFTER[@]}" secrets web-prototype
+"${RAFTER[@]}" secrets web-prototype/src
+"${RAFTER[@]}" secrets web-prototype/.env.example
+"${RAFTER[@]}" secrets web-prototype/firebase-applet-config.json

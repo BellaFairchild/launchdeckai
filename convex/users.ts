@@ -61,12 +61,12 @@ export const authorizeFoundryGeneration = internalQuery({
   returns: aiAuthResult,
   handler: async (ctx, args) => {
     const user = await getUserOrNull(ctx);
-    if (!user) return { ok: false, mock: true };
+    if (!user) return { ok: false, mock: true } as const;
     const econ = FOUNDRY_TOOLS[args.tool];
     if (!econ) throw new Error("Unknown Foundry tool");
     if (!planMeets(user.plan, econ.requiredPlan)) throw new Error("Plan required");
     if (user.fuelBalance < econ.fuelCost) throw new Error("Insufficient Fuel");
-    return { ok: true };
+    return { ok: true } as const;
   },
 });
 
@@ -78,14 +78,14 @@ export const authorizeCopilotTurn = internalQuery({
   returns: aiAuthResult,
   handler: async (ctx, args) => {
     const user = await getUserOrNull(ctx);
-    if (!user) return { ok: false, mock: true };
+    if (!user) return { ok: false, mock: true } as const;
     if (args.mode === "powerful" && !planMeets(user.plan, "admiral")) {
       throw new Error("Plan required");
     }
     if (args.mode === "standard" && user.fuelBalance < COPILOT_STANDARD_COST) {
       throw new Error("Insufficient Fuel");
     }
-    return { ok: true };
+    return { ok: true } as const;
   },
 });
 
