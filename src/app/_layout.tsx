@@ -11,6 +11,7 @@ import { AudioController } from "@/components/AudioController";
 import { DataSync } from "@/components/DataSync";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DrawerOverlay } from "@/components/navigation/DrawerOverlay";
+import { initAnalytics } from "@/lib/analytics";
 import { ConvexClientProvider } from "@/lib/convex";
 import { registerBroadcastResponseListener } from "@/lib/notifications";
 
@@ -18,6 +19,7 @@ const DEEP = "#060B14";
 
 export default function RootLayout() {
   useEffect(() => {
+    void initAnalytics();
     const sub = registerBroadcastResponseListener();
     return () => sub.remove();
   }, []);

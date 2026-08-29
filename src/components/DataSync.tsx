@@ -6,7 +6,7 @@ import { api } from "@cvx/_generated/api";
 import type { Id, Doc } from "@cvx/_generated/dataModel";
 import { authEnabled } from "@/lib/auth";
 import { configurePurchases } from "@/lib/purchases";
-import { setAnalyticsUser } from "@/lib/analytics";
+import { resetAnalytics, setAnalyticsUser } from "@/lib/analytics";
 import { useUIStore } from "@/store/ui";
 import { useMissionStore } from "@/store/mission";
 import { reconcileBroadcastReminders } from "@/lib/notifications";
@@ -96,7 +96,13 @@ function DataSyncInner() {
 
   // Expose Clerk sign-out to the UI store (used by the drawer + settings).
   React.useEffect(() => {
-    useUIStore.setState({ signOut: () => void clerk.signOut() });
+    useUIStore.setState({
+      signOut: () => {
+        void clerk.signOut().finally(() => {
+          resetAnalytics();
+        });
+      },
+    });
   }, [clerk]);
 
   // Ensure the Convex user record exists on first sign-in.
@@ -160,7 +166,7 @@ function DataSyncInner() {
       });
       // Tie RevenueCat purchases + analytics to the Clerk user.
       configurePurchases(data.user.clerkId);
-      setAnalyticsUser(data.user.clerkId);
+      setAnalyticsUser(data.user.clerkId, { plan_type: data.user.plan });
     }
     if (data.mission) {
       useMissionStore.getState().hydrate({
