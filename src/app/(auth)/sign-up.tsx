@@ -7,7 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AstroAvatar } from "@/components/astro/AstroAvatar";
 import { ScreenBackground } from "@/components/layout/ScreenBackground";
 import { Button } from "@/components/ui/Button";
-import { track } from "@/lib/analytics";
+import { identifyAnalyticsUser, track } from "@/lib/analytics";
 import { Pressable, Text, TextInput, View } from "@/tw";
 
 export default function SignUpScreen() {
@@ -45,7 +45,12 @@ export default function SignUpScreen() {
         code: code.trim(),
       });
       if (res.status === "complete") {
-        track("user_signed_up");
+        if (res.createdUserId) {
+          await identifyAnalyticsUser(res.createdUserId, {
+            plan_type: "cadet",
+          });
+        }
+        track("sign_up_completed", { sign_up_method: "email" });
         await setActive({ session: res.createdSessionId });
         router.replace("/");
       } else {

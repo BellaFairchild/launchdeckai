@@ -106,7 +106,10 @@ export default function OnboardingScreen() {
       haptics.success();
       playSignature("milestone");
       track("onboarding_completed");
-      track("mission_created", { platform, stage });
+      track("mission_created", {
+        app_target_platform: platform,
+        stage,
+      });
     };
 
     if (authEnabled) {
