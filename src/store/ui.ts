@@ -4,9 +4,8 @@ import type { Plan } from "@/constants/plans";
 /**
  * Client-only UI state (Docs/03: client owns ephemeral UI state) PLUS a
  * hydration surface for plan/fuel/streak. In demo mode these are mock values;
- * when signed in, DataSync sets `serverOwned` and hydrates them from Convex, and
- * fuel/plan mutations are owned by the backend (local setters become no-ops or
- * delegate to the injected Convex setter).
+ * when signed in, DataSync sets `serverOwned` and hydrates them from Convex.
+ * Fuel/plan mutations are backend-owned (local setters become no-ops).
  */
 type UIState = {
   drawerOpen: boolean;
@@ -23,13 +22,10 @@ type UIState = {
 
   /** True once Convex owns plan/fuel (signed in). */
   serverOwned: boolean;
-  /** Injected by DataSync to push plan changes to Convex (dev convenience). */
-  convexSetPlan: ((plan: Plan) => void) | null;
   setServerState: (s: {
     plan: Plan;
     fuel: number;
     streak: number;
-    convexSetPlan: (plan: Plan) => void;
   }) => void;
   clearServerState: () => void;
 
@@ -52,17 +48,13 @@ export const useUIStore = create<UIState>((set, get) => ({
   signOut: () => {},
 
   serverOwned: false,
-  convexSetPlan: null,
-  setServerState: ({ plan, fuel, streak, convexSetPlan }) =>
-    set({ serverOwned: true, plan, fuel, streak, convexSetPlan }),
+  setServerState: ({ plan, fuel, streak }) =>
+    set({ serverOwned: true, plan, fuel, streak }),
   clearServerState: () =>
-    set({ serverOwned: false, convexSetPlan: null, plan: "cadet", fuel: 420, streak: 3 }),
+    set({ serverOwned: false, plan: "cadet", fuel: 420, streak: 3 }),
 
   setPlan: (plan) => {
-    if (get().serverOwned) {
-      get().convexSetPlan?.(plan);
-      return;
-    }
+    if (get().serverOwned) return; // plan is backend-owned (RevenueCat webhook)
     set({ plan });
   },
   addFuel: (amount) => {

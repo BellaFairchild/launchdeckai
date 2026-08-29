@@ -62,7 +62,7 @@ export function ProfileModal({ onClose, onOpenStreak }: ProfileModalProps) {
     return s !== null ? s === 'true' : false;
   });
   const [isTokenVisible, setIsTokenVisible] = useState(false);
-  const [securityToken, setSecurityToken] = useState("ssp_live_9b42ff77a8");
+  const [securityToken, setSecurityToken] = useState("ssp_live_demo_placeholder");
 
   const handleSaveDisplayName = (name: string) => {
     setDisplayName(name);
