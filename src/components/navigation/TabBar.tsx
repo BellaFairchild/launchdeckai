@@ -63,7 +63,7 @@ function WalnutTabBarSurface() {
 const INACTIVE_LABEL = "text-text-primary/45";
 /** Content height above the home-indicator safe area. */
 const TAB_BAR_BODY_HEIGHT = 92;
-const TAB_ICON_SIZE = 46;
+const TAB_ICON_SIZE = 36;
 
 function NavTabIcon({
   name,

@@ -1,12 +1,24 @@
 /**
- * Product analytics via PostHog's HTTP capture endpoint — no native SDK, works
- * on every platform, and a no-op without a key. Per Docs/11, NEVER send private
- * content (asset bodies, messages) — only event names + non-PII properties.
+ * Product analytics via Mixpanel (web SDK + native HTTP) and PostHog's HTTP
+ * capture endpoint. Per Docs/11, NEVER send private content (asset bodies,
+ * messages) — only event names + non-PII properties.
  */
+import {
+    identifyMixpanel,
+    initMixpanel,
+    mixpanelEnabled,
+    trackMixpanel,
+} from "@/lib/mixpanel";
+
 const KEY = process.env.EXPO_PUBLIC_POSTHOG_KEY ?? "";
 const HOST = process.env.EXPO_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com";
 
-export const analyticsEnabled = KEY.length > 0;
+export const analyticsEnabled = KEY.length > 0 || mixpanelEnabled;
+
+/** Start Mixpanel (web: autocapture + session replay). Safe to call twice. */
+export function initAnalytics(): void {
+  initMixpanel();
+}
 
 /** Canonical event names (Docs/11). */
 export type AnalyticsEvent =
@@ -42,10 +54,15 @@ let distinctId = "anonymous";
 
 export function setAnalyticsUser(id: string): void {
   distinctId = id;
+  identifyMixpanel(id);
 }
 
-export function track(event: AnalyticsEvent, properties?: Record<string, unknown>): void {
-  if (!analyticsEnabled) return;
+export function track(
+  event: AnalyticsEvent,
+  properties?: Record<string, unknown>,
+): void {
+  trackMixpanel(event, properties);
+  if (!KEY) return;
   fetch(`${HOST.replace(/\/$/, "")}/capture/`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

@@ -6,6 +6,7 @@ import { ScreenBackground } from "@/components/layout/ScreenBackground";
 import { AppHeader } from "@/components/navigation/AppHeader";
 import { TabBar } from "@/components/navigation/TabBar";
 import { authEnabled } from "@/lib/auth";
+import { allowUnauthedScreenPreview } from "@/lib/screenPreview";
 
 const isWeb = Platform.OS === "web";
 
@@ -52,7 +53,7 @@ function AuthenticatedTabsLayout() {
 }
 
 export default function TabsLayout() {
-  if (!authEnabled) return <TabsShell />;
+  if (!authEnabled || allowUnauthedScreenPreview()) return <TabsShell />;
   return <AuthenticatedTabsLayout />;
 }
 

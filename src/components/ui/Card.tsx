@@ -1,8 +1,8 @@
 import React from "react";
 import type { ViewStyle } from "react-native";
 
-import { Pressable, View } from "@/tw";
 import { cn } from "@/lib/cn";
+import { Pressable, View } from "@/tw";
 import { GradientView } from "./GradientView";
 
 export type CardVariant =
@@ -89,7 +89,7 @@ export function Card({
           backgroundColor: "rgba(255,255,255,0.07)",
         }}
       />
-      <View className="p-4">{children}</View>
+      <View className="p-[15px]">{children}</View>
     </>
   );
 

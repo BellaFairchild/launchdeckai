@@ -111,7 +111,7 @@ function MilestoneRow({
           <View className="flex-1">
             <Text
               className={
-                "font-body text-base font-semibold " +
+                "font-body text-[15px] font-semibold " +
                 (completed
                   ? "text-text-secondary line-through"
                   : "text-text-primary")
@@ -119,7 +119,7 @@ function MilestoneRow({
             >
               {milestone.title}
             </Text>
-            <Text className="mt-0.5 font-body text-sm text-text-secondary">
+            <Text className="mt-0.5 font-body text-[13px] text-text-secondary">
               {milestone.description}
             </Text>
             <View className="mt-2 flex-row items-center gap-2">

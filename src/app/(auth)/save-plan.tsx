@@ -1,4 +1,4 @@
-import { useSignIn, useSSO } from "@clerk/clerk-expo";
+import { useSignUp, useSSO } from "@clerk/clerk-expo";
 import * as Linking from "expo-linking";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
@@ -6,6 +6,7 @@ import { KeyboardAvoidingView, Platform } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { ClerkAuthGate } from "@/components/auth/ClerkAuthGate";
+import { ClerkCaptcha } from "@/components/auth/ClerkCaptcha";
 import { ScreenBackground } from "@/components/layout/ScreenBackground";
 import { Button } from "@/components/ui/Button";
 import { track } from "@/lib/analytics";
@@ -23,11 +24,13 @@ export default function SavePlanScreen() {
 
 function SavePlanContent() {
   const router = useRouter();
-  const { signIn, setActive, isLoaded } = useSignIn();
+  const { signUp, setActive, isLoaded } = useSignUp();
   const { startSSOFlow } = useSSO();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [pending, setPending] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,23 +38,38 @@ function SavePlanContent() {
     track("save_plan_viewed");
   }, []);
 
-  const onSignIn = async () => {
+  const onSignUp = async () => {
     if (!isLoaded || busy) return;
     track("save_plan_sign_in_started");
     setBusy(true);
     setError(null);
     try {
-      const res = await signIn.create({ identifier: email.trim(), password });
+      await signUp.create({ emailAddress: email.trim(), password });
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      setPending(true);
+    } catch (e: any) {
+      setError(e?.errors?.[0]?.message ?? "Sign-up failed.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onVerify = async () => {
+    if (!isLoaded || busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await signUp.attemptEmailAddressVerification({
+        code: code.trim(),
+      });
       if (res.status === "complete") {
         await setActive({ session: res.createdSessionId });
         router.replace(MISSION_ROUTE);
       } else {
-        setError(
-          "Additional verification required — check your Clerk settings.",
-        );
+        setError("Verification incomplete — try again.");
       }
     } catch (e: any) {
-      setError(e?.errors?.[0]?.message ?? "Sign-in failed.");
+      setError(e?.errors?.[0]?.message ?? "Verification failed.");
     } finally {
       setBusy(false);
     }
@@ -87,83 +105,111 @@ function SavePlanContent() {
                 accessibilityRole="header"
                 className="text-center font-display text-2xl font-bold text-text-primary"
               >
-                Save your app plan
+                {pending ? "Check your email" : "Save your app plan"}
               </Text>
               <Text className="text-center font-body text-sm leading-relaxed text-text-secondary">
-                Create an account so your answers, checklists, and plan details
-                stay saved securely.
+                {pending
+                  ? "Enter the 6-digit code we sent you."
+                  : "Create an account so your answers, checklists, and plan details stay saved securely."}
               </Text>
             </View>
 
-            <View className="gap-2">
-              <Button
-                label="Continue with Google"
-                variant="secondary"
-                fullWidth
-                onPress={() => onOAuth("oauth_google")}
-              />
-              <Button
-                label="Continue with Apple"
-                variant="secondary"
-                fullWidth
-                onPress={() => onOAuth("oauth_apple")}
-              />
-            </View>
+            {!pending ? (
+              <>
+                <View className="gap-2">
+                  <Button
+                    label="Continue with Google"
+                    variant="secondary"
+                    fullWidth
+                    onPress={() => onOAuth("oauth_google")}
+                  />
+                  <Button
+                    label="Continue with Apple"
+                    variant="secondary"
+                    fullWidth
+                    onPress={() => onOAuth("oauth_apple")}
+                  />
+                </View>
 
-            <View className="flex-row items-center gap-3">
-              <View className="h-px flex-1 bg-border-default" />
-              <Text className="font-mono text-[11px] uppercase tracking-wider text-text-tertiary">
-                or
-              </Text>
-              <View className="h-px flex-1 bg-border-default" />
-            </View>
+                <View className="flex-row items-center gap-3">
+                  <View className="h-px flex-1 bg-border-default" />
+                  <Text className="font-mono text-[11px] uppercase tracking-wider text-text-tertiary">
+                    or
+                  </Text>
+                  <View className="h-px flex-1 bg-border-default" />
+                </View>
 
-            <View className="gap-2">
-              <TextInput
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Email"
-                placeholderTextColor="#64748B"
-                autoCapitalize="none"
-                keyboardType="email-address"
-                className="rounded-2xl border border-border-med bg-bg-card px-4 py-3 font-body text-base text-text-primary"
-              />
-              <TextInput
-                value={password}
-                onChangeText={setPassword}
-                placeholder="Password"
-                placeholderTextColor="#64748B"
-                secureTextEntry
-                className="rounded-2xl border border-border-med bg-bg-card px-4 py-3 font-body text-base text-text-primary"
-              />
-            </View>
+                <View className="gap-2">
+                  <TextInput
+                    value={email}
+                    onChangeText={setEmail}
+                    placeholder="Email"
+                    placeholderTextColor="#64748B"
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    className="rounded-2xl border border-border-med bg-bg-card px-4 py-3 font-body text-base text-text-primary"
+                  />
+                  <TextInput
+                    value={password}
+                    onChangeText={setPassword}
+                    placeholder="Password"
+                    placeholderTextColor="#64748B"
+                    secureTextEntry
+                    className="rounded-2xl border border-border-med bg-bg-card px-4 py-3 font-body text-base text-text-primary"
+                  />
+                </View>
 
-            {error ? (
-              <Text className="font-body text-sm text-status-error">
-                {error}
-              </Text>
-            ) : null}
+                {error ? (
+                  <Text className="font-body text-sm text-status-error">
+                    {error}
+                  </Text>
+                ) : null}
 
-            <Button
-              label="Sign In"
-              fullWidth
-              loading={busy}
-              onPress={onSignIn}
-            />
+                <ClerkCaptcha />
+                <Button
+                  label="Create Account"
+                  fullWidth
+                  loading={busy}
+                  onPress={onSignUp}
+                />
 
-            <Text className="text-center font-body text-xs leading-relaxed text-text-tertiary">
-              Your plan is private, secure, and editable anytime.
-            </Text>
+                <Text className="text-center font-body text-xs leading-relaxed text-text-tertiary">
+                  Your plan is private, secure, and editable anytime.
+                </Text>
 
-            <Pressable
-              onPress={() => router.replace("/(auth)/sign-up")}
-              className="items-center py-2"
-            >
-              <Text className="font-body text-sm text-text-secondary">
-                New here?{" "}
-                <Text className="text-brand-teal">Create an account</Text>
-              </Text>
-            </Pressable>
+                <Pressable
+                  onPress={() => router.replace("/(auth)/sign-in")}
+                  className="items-center py-2"
+                >
+                  <Text className="font-body text-sm text-text-secondary">
+                    Already have an account?{" "}
+                    <Text className="text-brand-teal">Sign in</Text>
+                  </Text>
+                </Pressable>
+              </>
+            ) : (
+              <>
+                <TextInput
+                  value={code}
+                  onChangeText={setCode}
+                  placeholder="123456"
+                  placeholderTextColor="#64748B"
+                  keyboardType="number-pad"
+                  className="rounded-2xl border border-border-med bg-bg-card px-4 py-3 text-center font-mono text-xl tracking-[6px] text-text-primary"
+                />
+                {error ? (
+                  <Text className="font-body text-sm text-status-error">
+                    {error}
+                  </Text>
+                ) : null}
+                <Button
+                  label="Verify"
+                  fullWidth
+                  loading={busy}
+                  onPress={onVerify}
+                />
+              </>
+            )}
           </View>
         </KeyboardAvoidingView>
       </SafeAreaView>

@@ -38,6 +38,15 @@ jest.mock("@/lib/haptics", () => ({
   },
 }));
 
+jest.mock("mixpanel-browser", () => ({
+  __esModule: true,
+  default: {
+    init: jest.fn(),
+    identify: jest.fn(),
+    track: jest.fn(),
+  },
+}));
+
 jest.mock("@/lib/audio", () => ({
   notifyUserInteraction: jest.fn(),
   isSoundEnabled: jest.fn(() => true),

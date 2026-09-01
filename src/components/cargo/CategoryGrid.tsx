@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import { useState } from "react";
 import { useRouter } from "expo-router";
 
@@ -13,9 +12,9 @@ import { AssetRow } from "./AssetRow";
 import { CategoryCard } from "./CategoryCard";
 
 /**
- * Cargo Bay top level: a 2-column grid of category cards. Tapping a card
- * expands it in place (single-open accordion) to its asset rows; each row opens
- * the asset detail screen. Empty categories are dropped.
+ * Cargo Bay top level: a single vertical column of category cards. Tapping a
+ * card expands it in place (single-open accordion) to its asset rows; each row
+ * opens the asset detail screen. Empty categories are dropped.
  */
 export function CategoryGrid({ assets }: { assets: Asset[] }) {
   const router = useRouter();
@@ -65,43 +64,17 @@ export function CategoryGrid({ assets }: { assets: Asset[] }) {
     />
   );
 
-  // Lay out collapsed cards two-per-row; an expanded card breaks to full width
-  // in place, so it "expands where it sits".
-  const rows: ReactNode[] = [];
-  let buffer: AssetCategory[] = [];
-  const flushPair = () => {
-    if (buffer.length === 0) return;
-    const pair = buffer;
-    rows.push(
-      <View key={`pair-${rows.length}`} className="flex-row gap-3">
-        {pair.map((category) => {
-          const group = groups.find((g) => g.category === category);
-          return (
-            <View key={category} className="flex-1">
-              {collapsedCard(category, group?.assets.length ?? 0)}
-            </View>
-          );
-        })}
-        {pair.length === 1 ? <View className="flex-1" /> : null}
-      </View>,
-    );
-    buffer = [];
-  };
-
-  for (const group of groups) {
-    if (group.category === open) {
-      flushPair();
-      rows.push(
-        <View key={`expanded-${group.category}`}>
-          {expandedCard(group.category, group.assets)}
-        </View>,
-      );
-    } else {
-      buffer.push(group.category);
-      if (buffer.length === 2) flushPair();
-    }
-  }
-  flushPair();
-
-  return <View className="gap-3">{rows}</View>;
+  // One full-width card per category, stacked top to bottom. The open one
+  // expands in place, so the column order never shifts.
+  return (
+    <View className="gap-3">
+      {groups.map((group) => (
+        <View key={group.category}>
+          {group.category === open
+            ? expandedCard(group.category, group.assets)
+            : collapsedCard(group.category, group.assets.length)}
+        </View>
+      ))}
+    </View>
+  );
 }

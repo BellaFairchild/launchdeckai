@@ -1,12 +1,12 @@
 import "@/global.css";
 
-import { useEffect } from "react";
 import { Arvo_400Regular } from "@expo-google-fonts/arvo";
 import { Ledger_400Regular } from "@expo-google-fonts/ledger";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
 import { StyleSheet, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -15,6 +15,8 @@ import { AudioController } from "@/components/AudioController";
 import { DataSync } from "@/components/DataSync";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { DrawerOverlay } from "@/components/navigation/DrawerOverlay";
+import { ScreenPreviewFab } from "@/components/navigation/ScreenPreviewFab";
+import { initAnalytics } from "@/lib/analytics";
 import { ConvexClientProvider } from "@/lib/convex";
 import { registerBroadcastResponseListener } from "@/lib/notifications";
 
@@ -30,6 +32,10 @@ export default function RootLayout() {
     Arvo: Arvo_400Regular,
     Ledger: Ledger_400Regular,
   });
+
+  useEffect(() => {
+    initAnalytics();
+  }, []);
 
   useEffect(() => {
     const sub = registerBroadcastResponseListener();
@@ -76,6 +82,7 @@ export default function RootLayout() {
                 />
               </Stack>
               <DrawerOverlay />
+              <ScreenPreviewFab />
             </View>
           </ErrorBoundary>
         </ConvexClientProvider>

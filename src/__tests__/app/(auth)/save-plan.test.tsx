@@ -65,19 +65,27 @@ jest.mock("@/lib/auth", () => ({
   CLERK_PUBLISHABLE_KEY: "pk_test_mock",
 }));
 
-const mockSignInCreate = jest.fn();
+const mockSignUpCreate = jest.fn();
+const mockPrepareEmailAddressVerification = jest.fn();
 const mockSetActive = jest.fn();
 const mockStartSSOFlow = jest.fn();
 
 jest.mock("@clerk/clerk-expo", () => ({
-  useSignIn: () => ({
-    signIn: { create: mockSignInCreate },
+  useSignUp: () => ({
+    signUp: {
+      create: mockSignUpCreate,
+      prepareEmailAddressVerification: mockPrepareEmailAddressVerification,
+    },
     setActive: mockSetActive,
     isLoaded: true,
   }),
   useSSO: () => ({
     startSSOFlow: mockStartSSOFlow,
   }),
+}));
+
+jest.mock("@/components/auth/ClerkCaptcha", () => ({
+  ClerkCaptcha: () => null,
 }));
 
 import SavePlanScreen from "@/app/(auth)/save-plan";
@@ -91,4 +99,5 @@ it("renders title and OAuth buttons", () => {
   expect(screen.getByText("Save your app plan")).toBeTruthy();
   expect(screen.getByText("Continue with Google")).toBeTruthy();
   expect(screen.getByText("Continue with Apple")).toBeTruthy();
+  expect(screen.getByText("Create Account")).toBeTruthy();
 });
