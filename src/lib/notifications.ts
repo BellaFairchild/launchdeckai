@@ -155,7 +155,12 @@ export async function reconcileBroadcastReminders(
   if (Platform.OS === "web") return;
   try {
     const wanted = new Set(
-      broadcasts.filter((b) => b.scheduledAt > Date.now()).map((b) => broadcastId(b.signalId)),
+      broadcasts
+        .filter(
+          (b) =>
+            b.scheduledAt > Date.now() && isValidDestinationUrl(b.destinationUrl),
+        )
+        .map((b) => broadcastId(b.signalId)),
     );
 
     const scheduled = await Notifications.getAllScheduledNotificationsAsync();

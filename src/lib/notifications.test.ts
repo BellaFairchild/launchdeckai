@@ -88,6 +88,28 @@ describe("reconcileBroadcastReminders", () => {
     expect(Notifications.cancelScheduledNotificationAsync).toHaveBeenCalledWith("broadcast:old");
     expect(Notifications.cancelScheduledNotificationAsync).not.toHaveBeenCalledWith("launch:day");
   });
+
+  it("cancels an existing reminder for an unsafe legacy destination", async () => {
+    (Notifications.getAllScheduledNotificationsAsync as jest.Mock).mockResolvedValueOnce([
+      { identifier: "broadcast:pre_1" },
+    ]);
+
+    await reconcileBroadcastReminders(
+      [
+        {
+          signalId: "pre_1",
+          destinationUrl: "javascript:alert(1)",
+          scheduledAt: FUTURE,
+        },
+      ],
+      () => ({ label: "Dev log", platform: "X" }),
+    );
+
+    expect(Notifications.cancelScheduledNotificationAsync).toHaveBeenCalledWith(
+      "broadcast:pre_1",
+    );
+    expect(Notifications.scheduleNotificationAsync).not.toHaveBeenCalled();
+  });
 });
 
 describe("handleBroadcastResponse", () => {
