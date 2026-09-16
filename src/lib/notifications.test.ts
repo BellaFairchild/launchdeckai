@@ -52,6 +52,19 @@ describe("scheduleBroadcastReminder", () => {
     expect(ok).toBe(false);
     expect(Notifications.scheduleNotificationAsync).not.toHaveBeenCalled();
   });
+
+  it("does not schedule a reminder with an unsafe destination", async () => {
+    const ok = await scheduleBroadcastReminder({
+      signalId: "pre_1",
+      signalLabel: "x",
+      platform: "X",
+      destinationUrl: "javascript:alert(1)",
+      scheduledAt: FUTURE,
+    });
+
+    expect(ok).toBe(false);
+    expect(Notifications.scheduleNotificationAsync).not.toHaveBeenCalled();
+  });
 });
 
 describe("cancelBroadcastReminder", () => {
@@ -89,6 +102,16 @@ describe("handleBroadcastResponse", () => {
     handleBroadcastResponse({
       notification: { request: { content: { data: {} } } },
     } as any);
+    expect(Linking.openURL).not.toHaveBeenCalled();
+  });
+
+  it("does not open an unsafe legacy broadcast URL", () => {
+    handleBroadcastResponse({
+      notification: {
+        request: { content: { data: { url: "data:text/html,unsafe" } } },
+      },
+    } as any);
+
     expect(Linking.openURL).not.toHaveBeenCalled();
   });
 });
