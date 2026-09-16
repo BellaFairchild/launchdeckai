@@ -11,3 +11,11 @@ Convex agent skills for common tasks can be installed by running
 `npx convex ai-files install`.
 
 <!-- convex-ai-end -->
+
+<!-- rafter:start -->
+## Security: Rafter
+
+See `AGENTS.md` (Rafter section) and `.rafter.yml`. Scan with
+`npm run security:secrets`. Plan/Fuel are backend-owned; do not add client
+mutations that set `users.plan`. The RevenueCat webhook must fail closed.
+<!-- rafter:end -->

@@ -1,7 +1,17 @@
+/// <reference types="vite/client" />
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, User } from 'firebase/auth';
 import { initializeFirestore, setLogLevel } from 'firebase/firestore';
-import firebaseConfig from '../../firebase-applet-config.json';
+import rawConfig from '../../firebase-applet-config.json';
+
+const firebaseConfig = {
+  ...rawConfig,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || rawConfig.apiKey,
+};
+
+if (!firebaseConfig.apiKey) {
+  console.warn('VITE_FIREBASE_API_KEY is not set; Firebase client features will not initialize.');
+}
 
 // Initialize Firebase App
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
@@ -13,7 +23,7 @@ setLogLevel('silent');
 
 export const db = initializeFirestore(app, {
   experimentalForceLongPolling: true,
-}, (firebaseConfig as any).firestoreDatabaseId);
+}, rawConfig.firestoreDatabaseId);
 
 import { doc, getDocFromServer } from 'firebase/firestore';
 

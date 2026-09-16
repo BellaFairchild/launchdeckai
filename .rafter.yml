@@ -1,0 +1,40 @@
+version: "1"
+
+# LaunchDeckAI: Clerk + Convex + RevenueCat + Anthropic. Plan, fuel, and
+# entitlements are backend-owned — never trust the client for those.
+risk_level: moderate
+
+command_policy:
+  mode: approve-dangerous
+  blocked_patterns:
+    - "rm -rf /"
+    - "curl.*\\|.*sh"
+    - "wget.*\\|.*sh"
+  require_approval:
+    - "npm publish"
+    - "npx convex deploy"
+    - "git push --force"
+    - "git push -f"
+
+scan:
+  exclude_paths:
+    - "web-build/"
+    - "coverage/"
+    - "dist/"
+  custom_patterns:
+    - name: "Anthropic API Key"
+      regex: "sk-ant-[a-zA-Z0-9\\-_]{20,}"
+      severity: critical
+    - name: "Clerk Secret Key"
+      regex: "sk_(live|test)_[a-zA-Z0-9]{20,}"
+      severity: critical
+    - name: "Convex Deploy Key"
+      regex: "prod:[a-z0-9]+\\|[A-Za-z0-9+/_\\-]{20,}"
+      severity: critical
+    - name: "RevenueCat Webhook Secret"
+      regex: "REVENUECAT_WEBHOOK_SECRET\\s*[=:]\\s*['\\\"][^'\\\"]{8,}"
+      severity: high
+
+audit:
+  retention_days: 90
+  log_level: info

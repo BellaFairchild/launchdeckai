@@ -1,12 +1,26 @@
 /** Lightweight destination-URL validation for the Broadcast scheduler. */
 
+const MAX_DESTINATION_URL = 2048;
+
+function parseUrl(value: string): URL | null {
+  const v = value.trim();
+  if (!v || v.length > MAX_DESTINATION_URL || /\s/.test(v)) return null;
+  const candidate = /^https?:\/\//i.test(v) ? v : `https://${v}`;
+  try {
+    return new URL(candidate);
+  } catch {
+    return null;
+  }
+}
+
 /** True if the value looks like a URL or a bare domain (e.g. "x.com/x"). */
 export function isValidDestinationUrl(value: string): boolean {
-  const v = value.trim();
-  if (!v) return false;
-  if (/^https?:\/\/\S+\.\S+/i.test(v)) return true;
-  if (/^[\w-]+(\.[\w-]+)+(\/\S*)?$/i.test(v)) return true;
-  return false;
+  const u = parseUrl(value);
+  if (!u) return false;
+  if (u.protocol !== "http:" && u.protocol !== "https:") return false;
+  if (u.username || u.password) return false;
+  if (!u.hostname.includes(".")) return false;
+  return true;
 }
 
 /** Ensure a protocol so the reminder can open it; assumes the value is valid. */

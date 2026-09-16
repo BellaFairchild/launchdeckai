@@ -1,0 +1,50 @@
+---
+description: Rafter security review gate — invoke on auth, payments, secrets, and untrusted input.
+alwaysApply: true
+---
+
+<!-- rafter:start -->
+## Security: Rafter (surface-driven review gate)
+
+Rafter is this project's security review gate — driven by the change's **security
+surface**, not by the task label. When a diff touches a real surface (below), it is
+**not complete** until a rafter skill (or `rafter run`) has reviewed it: don't mark
+done, don't hand off, don't open a PR without that pass. When it touches **none** of
+that surface — research / experimental / local-only / throwaway code (training
+scripts, data analysis, plotting, model eval, notebooks, pure computation over
+trusted local data) — a quick surface check is enough; proceed without the full
+gate. Judge by the diff's actual surface, not the "research" label: research code
+that reads a secret, shells out, hits the network, parses untrusted input, or bumps
+a dependency still gets the full gate.
+
+**Stop and invoke when the change touches that surface:**
+
+- Designing auth, payments, credentials, tokens, sessions, file upload,
+  user/untrusted data, deserialization, network endpoints, or data deletion
+  → **`rafter-secure-design`** (before writing code).
+- Diff touches user/untrusted input, SQL/query building, shell/exec, auth,
+  credentials, file paths, (de)serialization, crypto, network endpoints/outbound
+  fetchers (SSRF), data deletion, or dependencies → **`rafter-code-review`** +
+  `rafter run` (before declaring done).
+- About to install or forward a third-party SKILL.md, MCP manifest, Cursor
+  rule, or agent config → **`rafter-skill-review`** (before copying anywhere).
+- Security-adjacent but the angle isn't clear → **`rafter`** (the router skill,
+  powerful toolkit to help you write more secure code).
+
+**LaunchDeckAI specifics:**
+
+- Plan and Fuel are backend-owned. Never add a client-callable mutation that
+  sets `users.plan` or grants Fuel. Entitlements arrive via the RevenueCat
+  webhook (`internal.subscriptions.applyEntitlement`).
+- Anthropic keys live only in Convex env. Public AI actions must not call the
+  provider unless the caller is authenticated and passes plan/fuel checks.
+- The RevenueCat HTTP endpoint must fail closed when `REVENUECAT_WEBHOOK_SECRET`
+  is missing.
+
+**CLI:**
+
+- `npx @rafter-security/cli secrets src` — local secrets only (offline)
+- `npm run security:secrets` — scan app source, Convex, scripts, env examples
+- `rafter run` — remote SAST + SCA + secrets (needs `RAFTER_API_KEY`)
+- `rafter run --mode plus` — agentic deep-dives (paid; ask before running)
+<!-- rafter:end -->

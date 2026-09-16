@@ -92,7 +92,6 @@ function DataSyncInner() {
   const createFoundryAsset = useMutation(api.assets.createFoundryAsset);
   const scheduleBroadcast = useMutation(api.broadcasts.schedule);
   const cancelBroadcast = useMutation(api.broadcasts.cancel);
-  const setPlan = useMutation(api.users.setPlan);
 
   // Expose Clerk sign-out to the UI store (used by the drawer + settings).
   React.useEffect(() => {
@@ -154,9 +153,6 @@ function DataSyncInner() {
         plan: data.user.plan,
         fuel: data.user.fuelBalance,
         streak: data.user.currentStreak,
-        convexSetPlan: (plan) => {
-          void setPlan({ plan });
-        },
       });
       // Tie RevenueCat purchases + analytics to the Clerk user.
       configurePurchases(data.user.clerkId);
@@ -178,7 +174,7 @@ function DataSyncInner() {
         },
       );
     }
-  }, [isAuthenticated, data, setPlan]);
+  }, [isAuthenticated, data]);
 
   return null;
 }

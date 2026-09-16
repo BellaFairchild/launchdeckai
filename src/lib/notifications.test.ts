@@ -52,6 +52,19 @@ describe("scheduleBroadcastReminder", () => {
     expect(ok).toBe(false);
     expect(Notifications.scheduleNotificationAsync).not.toHaveBeenCalled();
   });
+
+  it("does not schedule a reminder with an unsafe destination", async () => {
+    const ok = await scheduleBroadcastReminder({
+      signalId: "pre_1",
+      signalLabel: "x",
+      platform: "X",
+      destinationUrl: "javascript:alert(1)",
+      scheduledAt: FUTURE,
+    });
+
+    expect(ok).toBe(false);
+    expect(Notifications.scheduleNotificationAsync).not.toHaveBeenCalled();
+  });
 });
 
 describe("cancelBroadcastReminder", () => {
@@ -75,6 +88,28 @@ describe("reconcileBroadcastReminders", () => {
     expect(Notifications.cancelScheduledNotificationAsync).toHaveBeenCalledWith("broadcast:old");
     expect(Notifications.cancelScheduledNotificationAsync).not.toHaveBeenCalledWith("launch:day");
   });
+
+  it("cancels an existing reminder for an unsafe legacy destination", async () => {
+    (Notifications.getAllScheduledNotificationsAsync as jest.Mock).mockResolvedValueOnce([
+      { identifier: "broadcast:pre_1" },
+    ]);
+
+    await reconcileBroadcastReminders(
+      [
+        {
+          signalId: "pre_1",
+          destinationUrl: "javascript:alert(1)",
+          scheduledAt: FUTURE,
+        },
+      ],
+      () => ({ label: "Dev log", platform: "X" }),
+    );
+
+    expect(Notifications.cancelScheduledNotificationAsync).toHaveBeenCalledWith(
+      "broadcast:pre_1",
+    );
+    expect(Notifications.scheduleNotificationAsync).not.toHaveBeenCalled();
+  });
 });
 
 describe("handleBroadcastResponse", () => {
@@ -89,6 +124,16 @@ describe("handleBroadcastResponse", () => {
     handleBroadcastResponse({
       notification: { request: { content: { data: {} } } },
     } as any);
+    expect(Linking.openURL).not.toHaveBeenCalled();
+  });
+
+  it("does not open an unsafe legacy broadcast URL", () => {
+    handleBroadcastResponse({
+      notification: {
+        request: { content: { data: { url: "data:text/html,unsafe" } } },
+      },
+    } as any);
+
     expect(Linking.openURL).not.toHaveBeenCalled();
   });
 });

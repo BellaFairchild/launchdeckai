@@ -14,6 +14,13 @@ describe("isValidDestinationUrl", () => {
     expect(isValidDestinationUrl("   ")).toBe(false);
     expect(isValidDestinationUrl("not a url")).toBe(false);
   });
+  it("rejects javascript, data, and credentialed URLs", () => {
+    expect(isValidDestinationUrl("javascript:alert(1)")).toBe(false);
+    expect(isValidDestinationUrl("data:text/html,hi")).toBe(false);
+    expect(isValidDestinationUrl("https://user:pass@evil.example/x")).toBe(
+      false,
+    );
+  });
 });
 
 describe("normalizeDestinationUrl", () => {

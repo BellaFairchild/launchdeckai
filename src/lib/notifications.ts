@@ -3,6 +3,7 @@ import * as Linking from "expo-linking";
 import { Platform } from "react-native";
 
 import { track } from "@/lib/analytics";
+import { isValidDestinationUrl } from "./url";
 
 /** Launch reminders + per-signal broadcast reminders (Docs/02). No-op on web. */
 
@@ -105,6 +106,7 @@ export type BroadcastReminder = {
 export async function scheduleBroadcastReminder(r: BroadcastReminder): Promise<boolean> {
   if (Platform.OS === "web") return false;
   if (r.scheduledAt <= Date.now()) return false;
+  if (!isValidDestinationUrl(r.destinationUrl)) return false;
   const granted = await requestNotificationPermission();
   if (!granted) return false;
   try {
@@ -153,7 +155,12 @@ export async function reconcileBroadcastReminders(
   if (Platform.OS === "web") return;
   try {
     const wanted = new Set(
-      broadcasts.filter((b) => b.scheduledAt > Date.now()).map((b) => broadcastId(b.signalId)),
+      broadcasts
+        .filter(
+          (b) =>
+            b.scheduledAt > Date.now() && isValidDestinationUrl(b.destinationUrl),
+        )
+        .map((b) => broadcastId(b.signalId)),
     );
 
     const scheduled = await Notifications.getAllScheduledNotificationsAsync();
@@ -186,7 +193,7 @@ export function handleBroadcastResponse(
   response: Notifications.NotificationResponse,
 ): void {
   const url = response?.notification?.request?.content?.data?.url;
-  if (typeof url === "string" && url.length > 0) {
+  if (typeof url === "string" && isValidDestinationUrl(url)) {
     track("broadcast_reminder_tapped");
     void Linking.openURL(url).catch(() => {});
   }

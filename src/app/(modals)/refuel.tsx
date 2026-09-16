@@ -30,7 +30,7 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 export default function RefuelModal() {
-  const { plan, fuel, setPlan } = useUIStore();
+  const { plan, fuel, setPlan, serverOwned } = useUIStore();
   const [packages, setPackages] = useState<PlanPackage[]>([]);
   const [busyPlan, setBusyPlan] = useState<Plan | null>(null);
   const [note, setNote] = useState<string | null>(null);
@@ -47,7 +47,13 @@ export default function RefuelModal() {
   const onCta = async (id: Plan) => {
     setNote(null);
     if (!revenueCatEnabled) {
-      // Demo / dev: switch plan directly (mock, or the dev Convex setPlan).
+      if (serverOwned) {
+        setNote(
+          "Plan is set by your subscription. This build has no store offering configured.",
+        );
+        return;
+      }
+      // Demo mode (signed out): switch the local mock plan only.
       setPlan(id);
       haptics.success();
       playSignature("fuel_earned");

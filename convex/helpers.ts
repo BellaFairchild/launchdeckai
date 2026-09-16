@@ -5,6 +5,17 @@ import type { Doc, Id } from "./_generated/dataModel";
  * Resolve the signed-in user from Clerk identity (never trust a client userId).
  * Identity.subject is the Clerk user id, mapped to users.clerkId.
  */
+export async function getUserOrNull(
+  ctx: QueryCtx | MutationCtx,
+): Promise<Doc<"users"> | null> {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) return null;
+  return await ctx.db
+    .query("users")
+    .withIndex("by_clerkId", (q) => q.eq("clerkId", identity.subject))
+    .unique();
+}
+
 export async function requireUser(
   ctx: QueryCtx | MutationCtx,
 ): Promise<Doc<"users">> {
@@ -16,6 +27,36 @@ export async function requireUser(
     .unique();
   if (!user) throw new Error("User not found — create the user record first");
   return user;
+}
+
+const MAX_DESTINATION_URL = 2048;
+
+/**
+ * Server-side destination URL check (keep in sync with src/lib/url.ts).
+ * Rejects non-http(s) schemes, credentials-in-URL, and oversized values.
+ */
+export function parseDestinationUrl(raw: string): string {
+  const v = raw.trim();
+  if (!v || v.length > MAX_DESTINATION_URL || /\s/.test(v)) {
+    throw new Error("Invalid destination URL");
+  }
+  const candidate = /^https?:\/\//i.test(v) ? v : `https://${v}`;
+  let u: URL;
+  try {
+    u = new URL(candidate);
+  } catch {
+    throw new Error("Invalid destination URL");
+  }
+  if (u.protocol !== "http:" && u.protocol !== "https:") {
+    throw new Error("Invalid destination URL");
+  }
+  if (u.username || u.password) {
+    throw new Error("Invalid destination URL");
+  }
+  if (!u.hostname.includes(".")) {
+    throw new Error("Invalid destination URL");
+  }
+  return u.toString();
 }
 
 /** Backend-owned readiness: % of milestones completed (Docs/09). */
