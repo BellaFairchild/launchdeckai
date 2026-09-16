@@ -14,5 +14,6 @@ describe("Vercel build configuration", () => {
     const vercelConfig = JSON.parse(fs.readFileSync(vercelConfigPath, "utf8"));
     expect(vercelConfig.outputDirectory).toBe("dist");
     expect(vercelConfig.cleanUrls).toBe(true);
+    expect(vercelConfig.framework).toBeNull();
   });
 });
