@@ -2,7 +2,7 @@ import React from "react";
 import { ConvexProvider, ConvexReactClient } from "convex/react";
 import { ConvexProviderWithClerk } from "convex/react-clerk";
 import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
-import * as SecureStore from "expo-secure-store";
+import * as Storage from "./storage";
 
 import { authEnabled, CLERK_PUBLISHABLE_KEY } from "./auth";
 
@@ -20,18 +20,10 @@ const convex = new ConvexReactClient(url, {
 /** Persist the Clerk session token in the device secure store. */
 const tokenCache = {
   async getToken(key: string) {
-    try {
-      return await SecureStore.getItemAsync(key);
-    } catch {
-      return null;
-    }
+    return await Storage.getItemAsync(key);
   },
   async saveToken(key: string, value: string) {
-    try {
-      await SecureStore.setItemAsync(key, value);
-    } catch {
-      // ignore
-    }
+    await Storage.setItemAsync(key, value);
   },
 };
 

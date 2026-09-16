@@ -1,4 +1,4 @@
-import * as SecureStore from "expo-secure-store";
+import * as Storage from "@/lib/storage";
 import { create } from "zustand";
 
 const KEYS = {
@@ -12,13 +12,13 @@ const KEYS = {
 } as const;
 
 async function readBool(key: string, fallback: boolean): Promise<boolean> {
-  const raw = await SecureStore.getItemAsync(key);
+  const raw = await Storage.getItemAsync(key);
   if (raw === null) return fallback;
   return raw === "true";
 }
 
 async function writeBool(key: string, value: boolean): Promise<void> {
-  await SecureStore.setItemAsync(key, value ? "true" : "false");
+  await Storage.setItemAsync(key, value ? "true" : "false");
 }
 
 type AudioPreferencesState = {
@@ -58,7 +58,7 @@ export const useAudioPreferences = create<AudioPreferencesState>(
         readBool(KEYS.haptics, true),
         readBool(KEYS.ambient, false),
         readBool(KEYS.playInSilent, false),
-        SecureStore.getItemAsync(KEYS.ambientVolume),
+        Storage.getItemAsync(KEYS.ambientVolume),
       ]);
       const ambientVolume =
         volRaw !== null ? Math.min(1, Math.max(0, parseFloat(volRaw) || 1)) : 1;
@@ -94,7 +94,7 @@ export const useAudioPreferences = create<AudioPreferencesState>(
 
     setAmbientVolume: async (value) => {
       const clamped = Math.min(1, Math.max(0, value));
-      await SecureStore.setItemAsync(KEYS.ambientVolume, String(clamped));
+      await Storage.setItemAsync(KEYS.ambientVolume, String(clamped));
       set({ ambientVolume: clamped });
     },
   }),
@@ -105,11 +105,11 @@ export function getAudioPreferences() {
 }
 
 export async function markBrandStingerPlayedThisSession(): Promise<void> {
-  await SecureStore.setItemAsync(KEYS.brandStingerSession, String(Date.now()));
+  await Storage.setItemAsync(KEYS.brandStingerSession, String(Date.now()));
 }
 
 export async function shouldPlayBrandStingerThisSession(): Promise<boolean> {
-  const raw = await SecureStore.getItemAsync(KEYS.brandStingerSession);
+  const raw = await Storage.getItemAsync(KEYS.brandStingerSession);
   if (!raw) return true;
   const ts = parseInt(raw, 10);
   if (Number.isNaN(ts)) return true;
@@ -120,13 +120,13 @@ export async function markLaunchDayPlayedToday(
   launchDate: number,
 ): Promise<void> {
   const day = new Date(launchDate).toDateString();
-  await SecureStore.setItemAsync(KEYS.launchDayPlayed, day);
+  await Storage.setItemAsync(KEYS.launchDayPlayed, day);
 }
 
 export async function shouldPlayLaunchDayToday(
   launchDate: number,
 ): Promise<boolean> {
   const day = new Date(launchDate).toDateString();
-  const played = await SecureStore.getItemAsync(KEYS.launchDayPlayed);
+  const played = await Storage.getItemAsync(KEYS.launchDayPlayed);
   return played !== day;
 }
