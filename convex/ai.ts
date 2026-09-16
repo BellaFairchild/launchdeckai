@@ -68,8 +68,10 @@ export const generateAsset = action({
       };
     }
 
+    const mode = args.mode ?? "standard";
     const gate = await ctx.runQuery(internal.users.authorizeFoundryGeneration, {
       tool: args.tool,
+      mode,
     });
     if (!gate.ok) {
       return {
@@ -79,7 +81,7 @@ export const generateAsset = action({
     }
 
     const client = new Anthropic({ apiKey });
-    const model = args.mode === "powerful" ? POWERFUL_MODEL : STANDARD_MODEL;
+    const model = mode === "powerful" ? POWERFUL_MODEL : STANDARD_MODEL;
 
     const m = args.mission;
     const userPrompt = [
@@ -200,7 +202,12 @@ export const copilotReply = action({
         : "- All available milestones complete.",
     ].join("\n");
 
-    const trimmedMessages = args.messages.slice(-MAX_MESSAGES).map((msg) => ({
+    const recentMessages = args.messages.slice(-MAX_MESSAGES);
+    const trimmedMessages = (
+      recentMessages[0]?.role === "assistant"
+        ? recentMessages.slice(1)
+        : recentMessages
+    ).map((msg) => ({
       role: msg.role,
       content: clip(msg.content, MAX_MESSAGE),
     }));

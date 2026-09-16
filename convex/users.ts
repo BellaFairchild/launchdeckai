@@ -57,7 +57,10 @@ const aiAuthResult = v.union(
  * burned from the public action without an entitled account.
  */
 export const authorizeFoundryGeneration = internalQuery({
-  args: { tool: v.string() },
+  args: {
+    tool: v.string(),
+    mode: v.union(v.literal("standard"), v.literal("powerful")),
+  },
   returns: aiAuthResult,
   handler: async (ctx, args) => {
     const user = await getUserOrNull(ctx);
@@ -65,6 +68,9 @@ export const authorizeFoundryGeneration = internalQuery({
     const econ = FOUNDRY_TOOLS[args.tool];
     if (!econ) throw new Error("Unknown Foundry tool");
     if (!planMeets(user.plan, econ.requiredPlan)) throw new Error("Plan required");
+    if (args.mode === "powerful" && !planMeets(user.plan, "admiral")) {
+      throw new Error("Plan required");
+    }
     if (user.fuelBalance < econ.fuelCost) throw new Error("Insufficient Fuel");
     return { ok: true } as const;
   },
